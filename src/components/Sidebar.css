@@ -1,0 +1,74 @@
+/* The Hamburger Icon at top left */
+.hamburger-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 50; /* Keeps it above standard content */
+  color: #333;
+}
+
+/* The Sidebar styling */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Hidden off-screen to the left by default */
+  width: 250px;
+  height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  transition: left 0.3s ease-in-out; /* Smooth sliding animation */
+  z-index: 100; /* Keeps it above the overlay */
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+}
+
+/* When the state is 'open', move it on-screen */
+.sidebar.open {
+  left: 0; 
+}
+
+/* The Close Icon inside the sidebar */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* The Navigation Links */
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+.sidebar-links a {
+  text-decoration: none;
+  color: #333;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.sidebar-links a:hover {
+  color: #4CAF50; /* Change to your app's main color */
+}
+
+/* Dark Background Overlay when menu is open */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90; /* Below sidebar, above page */
+}
