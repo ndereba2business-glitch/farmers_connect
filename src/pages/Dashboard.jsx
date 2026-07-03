@@ -2,108 +2,233 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import UserGuideModal from "../components/UserGuideModal";
 import {
-  Egg, Syringe, ShoppingBag, Users,
-  ArrowUpRight, Plus, MessageCircle,
-  CheckCircle2, DollarSign, AlertTriangle, X
+  Egg, Syringe, ShoppingBag, Users, ArrowUpRight,
+  Plus, MessageCircle, CheckCircle2,
+  AlertTriangle, X, TrendingUp, TrendingDown, DollarSign, Wallet
 } from "lucide-react";
+import {
+  ComposedChart, BarChart as RechartsBarChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, ResponsiveContainer
+} from "recharts";
+
+
+function DailyFinanceTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div style={{
+      background: "white", borderRadius: "10px", padding: "10px 14px",
+      border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
+    }}>
+      <p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#111827" }}>{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ margin: "4px 0 0", fontSize: "12px", color: p.color, fontWeight: "600" }}>
+          {p.name}: KES {Number(p.value).toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ── CUSTOM TOOLTIP FOR THE 14-DAY DAILY DEATHS CHART ──
+function DailyDeathsTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div style={{
+      background: "white", borderRadius: "10px", padding: "10px 14px",
+      border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
+    }}>
+      <p style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#1e293b" }}>{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ margin: "4px 0 0", fontSize: "12px", color: "#ef4444", fontWeight: "600" }}>
+          {p.name} : {p.value}
+        </p>
+      ))}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { profile, userEmail } = useAuth();
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState({ batches: 0, vaccines: 0, listings: 0, posts: 0, tasks: 0, profit: 0 });
-  const [recentTasks, setRecentTasks] = useState([]);
-  const [overdueVaccines, setOverdueVaccines] = useState([]);
-  const [batchCosts, setBatchCosts] = useState([]);
-  const [mortalityData, setMortalityData] = useState([]);
-  const [activeBatches, setActiveBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dismissedAlerts, setDismissedAlerts] = useState([]);
 
+  const [stats, setStats] = useState({
+    batches: 0, vaccines: 0, listings: 0, posts: 0, tasks: 0
+  });
+
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [overdueVaccines, setOverdueVaccines] = useState([]);
+  const [mortalityData, setMortalityData] = useState([]);
+  const [financeData, setFinanceData] = useState({
+    totalIncome: 0, totalExpenses: 0, profit: 0
+  });
+
+  // ── NEW: 14-day Sales & Profit trend ──
+  const [dailyFinanceData, setDailyFinanceData] = useState([]);
+  const [periodTotals, setPeriodTotals] = useState({ revenue: 0, expenses: 0, profit: 0 });
+
+  // ── NEW: 14-day Daily Deaths trend ──
+  const [dailyMortalityData, setDailyMortalityData] = useState([]);
+
   useEffect(() => {
-    async function loadDashboard() {
-      if (!userEmail) return;
-      setLoading(true);
-      const today = new Date().toISOString().split("T")[0];
+    if (userEmail) loadDashboard();
+  }, [userEmail]);
 
-      const [
-        { count: batches },
-        { count: listings },
-        { count: posts },
-        { count: tasks },
-        { data: taskData },
-        { data: vaccineData },
-        { data: batchData },
-        { data: mortalityLogs },
-        { data: expenseData }
-      ] = await Promise.all([
-        supabase.from("farm_batches").select("*", { count: "exact", head: true }).eq("user_email", userEmail).eq("status", "active"),
-        supabase.from("products").select("*", { count: "exact", head: true }),
-        supabase.from("community_posts").select("*", { count: "exact", head: true }),
-        supabase.from("farm_tasks").select("*", { count: "exact", head: true }).eq("user_email", userEmail).eq("completed", false),
-        supabase.from("farm_tasks").select("*").eq("user_email", userEmail).eq("completed", false).order("due_date", { ascending: true }).limit(4),
-        supabase.from("vaccination_tasks").select("*, farm_batches(batch_name)").eq("user_email", userEmail).eq("completed", false).lt("scheduled_date", today),
-        supabase.from("farm_batches").select("*").eq("user_email", userEmail).eq("status", "active"),
-        supabase.from("mortality_logs").select("*").eq("user_email", userEmail),
-        supabase.from("batch_expenses").select("*").eq("user_email", userEmail)
-      ]);
+  async function loadDashboard() {
+    setLoading(true);
+    const today = new Date().toISOString().split("T")[0];
 
-      // OVERDUE VACCINES
-      setOverdueVaccines(vaccineData || []);
+    // batch_expenses and batch_sales are keyed by user_id (UUID), not user_email —
+    // see MyFarm.jsx's getCurrentUserId(). Fetch it here so those two queries
+    // actually match rows instead of silently returning nothing.
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) console.error("Dashboard: failed to get current user —", authError.message);
+    const userId = authData?.user?.id || null;
 
-      // ACTIVE BATCHES
-      setActiveBatches(batchData || []);
+    const [
+      { count: batches },
+      { count: listings },
+      { count: posts },
+      { count: tasks },
+      { data: taskData },
+      { data: vaccineData },
+      { data: batchData },
+      { data: mortalityLogs },
+      { data: expenseData, error: expenseError },
+      { data: salesData, error: salesError },
+      { data: financeRecords }
+    ] = await Promise.all([
+      supabase.from("farm_batches").select("*", { count: "exact", head: true })
+        .eq("user_email", userEmail).eq("status", "active"),
+      supabase.from("products").select("*", { count: "exact", head: true }),
+      supabase.from("community_posts").select("*", { count: "exact", head: true }),
+      supabase.from("farm_tasks").select("*", { count: "exact", head: true })
+        .eq("user_email", userEmail).eq("completed", false),
+      supabase.from("farm_tasks").select("*")
+        .eq("user_email", userEmail).eq("completed", false)
+        .order("due_date", { ascending: true }).limit(4),
+      supabase.from("vaccination_tasks")
+        .select("*, farm_batches(batch_name)")
+        .eq("user_email", userEmail)
+        .eq("completed", false)
+        .lt("scheduled_date", today),
+      supabase.from("farm_batches").select("*")
+        .eq("user_email", userEmail),
+      supabase.from("mortality_logs").select("*")
+        .eq("user_email", userEmail),
+      supabase.from("batch_expenses").select("*")
+        .eq("user_id", userId),
+      supabase.from("batch_sales").select("*")
+        .eq("user_id", userId),
+      supabase.from("farm_finances").select("*")
+        .eq("user_email", userEmail)
+    ]);
 
-      // BATCH COST SUMMARY
-      const costs = (batchData || []).map(batch => {
-        const batchExpenses = (expenseData || []).filter(e => e.batch_id === batch.id);
-        const total = batchExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
-        const byCategory = {};
-        batchExpenses.forEach(e => {
-          byCategory[e.category] = (byCategory[e.category] || 0) + Number(e.amount);
-        });
-        const aliveCount = batch.current_count || batch.quantity;
-        return {
-          batch_name: batch.batch_name,
-          total,
-          aliveCount,
-          costPerBird: aliveCount > 0 ? (total / aliveCount).toFixed(2) : 0,
-          byCategory
-        };
-      });
-      setBatchCosts(costs);
+    if (expenseError) console.error("Dashboard: failed to load expenses —", expenseError.message);
+    if (salesError) console.error("Dashboard: failed to load sales —", salesError.message);
 
-      // MORTALITY DATA
-      const mortalityByBatch = (batchData || []).map(batch => {
-        const logs = (mortalityLogs || []).filter(m => m.batch_id === batch.id);
-        const totalDeaths = logs.reduce((sum, m) => sum + Number(m.count), 0);
-        const aliveCount = batch.current_count || batch.quantity;
-        const totalCount = batch.quantity;
-        const survivalRate = totalCount > 0 ? (((totalCount - totalDeaths) / totalCount) * 100).toFixed(1) : 100;
-        return { batch_name: batch.batch_name, totalDeaths, aliveCount, survivalRate, totalCount };
-      });
-      setMortalityData(mortalityByBatch);
+    setOverdueVaccines(vaccineData || []);
 
-      // PENDING VACCINES COUNT
-      const pendingVaccines = (vaccineData || []).length;
+    // ── MORTALITY DATA ──
+    const mortality = (batchData || []).map(batch => {
+      const logs = (mortalityLogs || []).filter(m => m.batch_id === batch.id);
+      const totalDeaths = logs.reduce((s, m) => s + Number(m.count), 0);
+      const aliveCount = batch.current_count || batch.quantity;
+      const totalCount = batch.quantity;
+      const survivalRate = totalCount > 0
+        ? (((totalCount - totalDeaths) / totalCount) * 100).toFixed(1)
+        : "100.0";
+      return { batch_name: batch.batch_name, totalDeaths, aliveCount, survivalRate, totalCount };
+    });
+    setMortalityData(mortality);
 
-      setStats({
-        batches: batches || 0,
-        vaccines: pendingVaccines,
-        listings: listings || 0,
-        posts: posts || 0,
-        tasks: tasks || 0,
-        profit: 0
-      });
+    // ── FINANCE DATA ──
+    const income = (financeRecords || [])
+      .filter(r => r.type === "income")
+      .reduce((s, r) => s + Number(r.amount), 0);
+    const expenses = (financeRecords || [])
+      .filter(r => r.type === "expense")
+      .reduce((s, r) => s + Number(r.amount), 0);
+    setFinanceData({ totalIncome: income, totalExpenses: expenses, profit: income - expenses });
 
-      setRecentTasks(taskData || []);
-      setLoading(false);
+    // ── NEW: LAST 14 DAYS SALES vs EXPENSES vs PROFIT ──
+    const dayList = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      dayList.push(d);
     }
 
-    loadDashboard();
-  }, [userEmail]);
+    const salesByDate = {};
+    (salesData || []).forEach(sale => {
+      if (!sale.sale_date) return;
+      const key = String(sale.sale_date).split("T")[0];
+      salesByDate[key] = (salesByDate[key] || 0) + Number(sale.total_amount || 0);
+    });
+
+    const expensesByDate = {};
+    (expenseData || []).forEach(exp => {
+      if (!exp.expense_date) return;
+      const key = String(exp.expense_date).split("T")[0];
+      expensesByDate[key] = (expensesByDate[key] || 0) + Number(exp.amount || 0);
+    });
+
+    const daily = dayList.map(d => {
+      const key = d.toISOString().split("T")[0];
+      const daySales = salesByDate[key] || 0;
+      const dayExpenses = expensesByDate[key] || 0;
+      return {
+        date: key,
+        label: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        sales: daySales,
+        expenses: dayExpenses,
+        profit: daySales - dayExpenses
+      };
+    });
+    setDailyFinanceData(daily);
+
+    const periodRevenue = daily.reduce((s, d) => s + d.sales, 0);
+    const periodExpenses = daily.reduce((s, d) => s + d.expenses, 0);
+    setPeriodTotals({
+      revenue: periodRevenue,
+      expenses: periodExpenses,
+      profit: periodRevenue - periodExpenses
+    });
+
+    // ── NEW: LAST 14 DAYS DAILY DEATHS ──
+    const deathsByDate = {};
+    (mortalityLogs || []).forEach(log => {
+      if (!log.date) return;
+      const key = String(log.date).split("T")[0];
+      deathsByDate[key] = (deathsByDate[key] || 0) + Number(log.count || 0);
+    });
+
+    const dailyDeaths = dayList.map(d => {
+      const key = d.toISOString().split("T")[0];
+      const deaths = deathsByDate[key] || 0;
+      return {
+        date: key,
+        label: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        deaths
+      };
+    });
+    setDailyMortalityData(dailyDeaths);
+
+    // ── STATS ──
+    setStats({
+      batches: batches || 0,
+      vaccines: (vaccineData || []).length,
+      listings: listings || 0,
+      posts: posts || 0,
+      tasks: tasks || 0
+    });
+
+    setRecentTasks(taskData || []);
+    setLoading(false);
+  }
 
   const statCards = [
     { title: "Active Batches", value: stats.batches, icon: Egg, color: "#edf9f1", iconColor: "#22c55e", path: "/my-farm" },
@@ -120,66 +245,90 @@ export default function Dashboard() {
   ];
 
   const greetingHour = new Date().getHours();
-  const greeting = greetingHour < 12 ? "Good morning" : greetingHour < 17 ? "Good afternoon" : "Good evening";
-  const totalBatchCost = batchCosts.reduce((sum, b) => sum + b.total, 0);
+  const greeting = greetingHour < 12 ? "Good morning"
+    : greetingHour < 17 ? "Good afternoon" : "Good evening";
+
+  // Y-axis ceiling for the 14-day chart, rounded up to the nearest 1500
+  const dailyMax = Math.max(
+    ...dailyFinanceData.map(d => Math.max(d.sales, d.expenses)),
+    1
+  );
+  const yAxisMax = Math.max(Math.ceil(dailyMax / 1500) * 1500, 1500);
+  const yTicks = [];
+  for (let t = 0; t <= yAxisMax; t += yAxisMax / 4) yTicks.push(Math.round(t));
+
+  // Horizontal survival-rate bars (Mortality & Survival section)
+  const survivalChartData = mortalityData.map(b => ({
+    name: b.batch_name,
+    survival: Number(b.survivalRate)
+  }));
+
+  // Y-axis ceiling/ticks for the daily deaths chart
+  const deathsMax = Math.max(...dailyMortalityData.map(d => d.deaths), 1);
+  const deathsYMax = Math.max(Math.ceil(deathsMax / 4) * 4, 4);
+  const deathsYTicks = [];
+  for (let t = 0; t <= deathsYMax; t += deathsYMax / 4) deathsYTicks.push(Math.round(t));
 
   return (
     <div>
-      <UserGuideModal />
 
-      {/* ======================== OVERDUE VACCINE ALERTS ======================== */}
-      {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).map(vaccine => (
-        <div key={vaccine.id} style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "12px 16px", borderRadius: "12px",
-          background: "#fef2f2", border: "1px solid #fecaca",
-          marginBottom: "10px", gap: "12px"
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1 }}>
-            <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: "2px" }} />
-            <div>
-              <span style={{ fontSize: "14px", color: "#991b1b", fontWeight: "700" }}>
-                Vaccination overdue!{" "}
-              </span>
-              <span style={{ fontSize: "14px", color: "#7f1d1d" }}>
-                Go to your farm to mark it done.
-              </span>
-              <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "2px" }}>
-                💉 {vaccine.vaccine_name}
-                {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
-                {" "}· Due: {vaccine.scheduled_date}
+      {/* ── OVERDUE VACCINE ALERTS ── */}
+      {overdueVaccines
+        .filter(v => !dismissedAlerts.includes(v.id))
+        .map(vaccine => (
+          <div key={vaccine.id} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "12px 16px", borderRadius: "12px",
+            background: "#fef2f2", border: "1px solid #fecaca",
+            marginBottom: "10px", gap: "12px"
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1 }}>
+              <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: "2px" }} />
+              <div>
+                <span style={{ fontSize: "14px", color: "#991b1b", fontWeight: "700" }}>
+                  {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length} vaccination
+                  {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length > 1 ? "s are" : " is"} overdue!{" "}
+                </span>
+                <span style={{ fontSize: "14px", color: "#7f1d1d" }}>
+                  Go to your farm to mark them done.
+                </span>
+                <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "2px" }}>
+                  💉 {vaccine.vaccine_name}
+                  {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
+                  {" "}· Due: {vaccine.scheduled_date}
+                </div>
               </div>
             </div>
+            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+              <button
+                onClick={() => navigate("/my-farm")}
+                style={{
+                  padding: "6px 14px", background: "none",
+                  border: "1px solid #fca5a5", borderRadius: "8px",
+                  color: "#ef4444", fontWeight: "600", fontSize: "12px", cursor: "pointer"
+                }}
+              >
+                View Farm
+              </button>
+              <button
+                onClick={() => setDismissedAlerts(prev => [...prev, vaccine.id])}
+                style={{
+                  width: "28px", height: "28px", borderRadius: "6px",
+                  border: "none", background: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center"
+                }}
+              >
+                <X size={16} color="#ef4444" />
+              </button>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-            <button
-              onClick={() => navigate("/my-farm")}
-              style={{
-                padding: "6px 14px", background: "none",
-                border: "1px solid #fca5a5", borderRadius: "8px",
-                color: "#ef4444", fontWeight: "600",
-                fontSize: "12px", cursor: "pointer"
-              }}
-            >
-              View Farm
-            </button>
-            <button
-              onClick={() => setDismissedAlerts(prev => [...prev, vaccine.id])}
-              style={{
-                width: "28px", height: "28px", borderRadius: "6px",
-                border: "none", background: "none",
-                cursor: "pointer", display: "flex",
-                alignItems: "center", justifyContent: "center"
-              }}
-            >
-              <X size={16} color="#ef4444" />
-            </button>
-          </div>
-        </div>
-      ))}
+        ))}
 
-      {/* ======================== HEADER ======================== */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+      {/* ── HEADER ── */}
+      <div style={{
+        display: "flex", justifyContent: "space-between",
+        alignItems: "center", marginBottom: "28px"
+      }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "36px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
             Dashboard
@@ -194,8 +343,8 @@ export default function Dashboard() {
             height: "48px", padding: "0 22px", border: "none",
             borderRadius: "14px",
             background: "linear-gradient(135deg,#22c55e,#16a34a)",
-            color: "white", fontWeight: "700", cursor: "pointer", fontSize: "14px",
-            boxShadow: "0 8px 24px rgba(34,197,94,0.3)",
+            color: "white", fontWeight: "700", cursor: "pointer",
+            fontSize: "14px", boxShadow: "0 8px 24px rgba(34,197,94,0.3)",
             display: "flex", alignItems: "center", gap: "8px"
           }}
         >
@@ -203,9 +352,13 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* ======================== STAT CARDS ======================== */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "18px", marginBottom: "24px" }}>
-        {statCards.map((item) => {
+      {/* ── STAT CARDS ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+        gap: "18px", marginBottom: "24px"
+      }}>
+        {statCards.map(item => {
           const Icon = item.icon;
           return (
             <div
@@ -217,11 +370,21 @@ export default function Dashboard() {
                 border: "1px solid rgba(226,232,240,0.8)",
                 cursor: "pointer", transition: "all 0.2s ease"
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(15,23,42,0.1)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(15,23,42,0.05)"; }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = "translateY(-3px)";
+                e.currentTarget.style.boxShadow = "0 10px 30px rgba(15,23,42,0.1)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(15,23,42,0.05)";
+              }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: item.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{
+                  width: "64px", height: "64px", borderRadius: "20px",
+                  background: item.color, display: "flex",
+                  alignItems: "center", justifyContent: "center"
+                }}>
                   <Icon size={28} color={item.iconColor} />
                 </div>
                 <ArrowUpRight size={18} color="#d1d5db" />
@@ -239,163 +402,252 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* ======================== MORTALITY & SURVIVAL ======================== */}
+      {/* ── MORTALITY & SURVIVAL ── */}
       {mortalityData.length > 0 && (
         <div style={{
           background: "#fff", borderRadius: "24px", padding: "24px",
           border: "1px solid rgba(226,232,240,0.8)",
           boxShadow: "0 4px 20px rgba(15,23,42,0.05)", marginBottom: "18px"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
-            <span style={{ fontSize: "18px" }}>📉</span>
-            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+            <TrendingDown size={20} color="#ef4444" />
+            <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
               Mortality & Survival
             </h2>
           </div>
 
-          <p style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>
+          {/* BATCH SURVIVAL RATE — HORIZONTAL BAR CHART */}
+          <p style={{
+            fontSize: "11px", color: "#9ca3af", fontWeight: "700",
+            textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
+          }}>
             BATCH SURVIVAL RATE
           </p>
+          <div style={{ width: "100%", height: `${Math.max(survivalChartData.length * 60, 120)}px`, marginBottom: "28px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsBarChart
+                data={survivalChartData}
+                layout="vertical"
+                margin={{ top: 4, right: 20, left: 10, bottom: 4 }}
+              >
+                <CartesianGrid horizontal={false} stroke="#f0f0f0" />
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tickFormatter={v => `${v}%`}
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 12, fill: "#374151", fontWeight: 600 }}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                  tickLine={false}
+                  width={110}
+                />
+                <Tooltip
+                  formatter={v => [`${v}%`, "Survival rate"]}
+                  contentStyle={{ borderRadius: "10px", border: "1px solid #e5e7eb", fontSize: "12px" }}
+                />
+                <Bar dataKey="survival" fill="#16a34a" radius={[0, 6, 6, 0]} barSize={22} />
+              </RechartsBarChart>
+            </ResponsiveContainer>
+          </div>
 
-          {mortalityData.map((batch, i) => (
-            <div key={i} style={{ marginBottom: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <span style={{ fontSize: "13px", color: "#374151", fontWeight: "600" }}>{batch.batch_name}</span>
-                <span style={{ fontSize: "13px", color: "#22c55e", fontWeight: "700" }}>{batch.survivalRate}%</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ flex: 1, height: "12px", background: "#f3f4f6", borderRadius: "20px", overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", width: `${batch.survivalRate}%`,
-                    background: Number(batch.survivalRate) > 90
-                      ? "linear-gradient(135deg,#22c55e,#16a34a)"
-                      : Number(batch.survivalRate) > 75
-                      ? "linear-gradient(135deg,#f59e0b,#d97706)"
-                      : "linear-gradient(135deg,#ef4444,#dc2626)",
-                    borderRadius: "20px", transition: "width 0.5s ease"
-                  }} />
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: "16px", marginTop: "6px" }}>
-                <span style={{ fontSize: "12px", color: "#9ca3af" }}>
-                  {batch.aliveCount} alive
-                </span>
-                {batch.totalDeaths > 0 && (
-                  <span style={{ fontSize: "12px", color: "#ef4444" }}>
-                    {batch.totalDeaths} deaths
-                  </span>
-                )}
-              </div>
+          {/* DAILY DEATHS — LAST 14 DAYS */}
+          <p style={{
+            fontSize: "11px", color: "#9ca3af", fontWeight: "700",
+            textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
+          }}>
+            DAILY DEATHS (LAST 14 DAYS)
+          </p>
+          {dailyMortalityData.length === 0 || loading ? (
+            <div style={{
+              height: "220px", display: "flex", alignItems: "center",
+              justifyContent: "center", color: "#9ca3af", fontSize: "13px"
+            }}>
+              {loading ? "Loading chart..." : "No mortality logged in the last 14 days."}
             </div>
-          ))}
+          ) : (
+            <div style={{ width: "100%", height: "220px" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={dailyMortalityData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    axisLine={{ stroke: "#e5e7eb" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, deathsYMax]}
+                    ticks={deathsYTicks}
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={30}
+                  />
+                  <Tooltip content={<DailyDeathsTooltip />} />
+                  <Bar dataKey="deaths" name="Deaths" fill="#f87171" radius={[3, 3, 0, 0]} barSize={14} />
+                  <Line
+                    dataKey="deaths"
+                    name="Trend"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: "#ef4444", strokeWidth: 0 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ======================== BATCH COST SUMMARY ======================== */}
-      {batchCosts.length > 0 && (
-        <div style={{
-          background: "#fff", borderRadius: "24px", padding: "24px",
-          border: "1px solid rgba(226,232,240,0.8)",
-          boxShadow: "0 4px 20px rgba(15,23,42,0.05)", marginBottom: "18px"
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "18px" }}>📊</span>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
-                Batch Cost Summary
-              </h2>
-            </div>
-            <button
-              onClick={() => navigate("/my-farm")}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: "13px", color: "#6b7280", fontWeight: "600"
-              }}
-            >
-              View Farm
-            </button>
+      {/* ── NEW: SALES & PROFIT (LAST 14 DAYS OVERVIEW) — matches design reference ── */}
+      <div style={{
+        background: "#fff", borderRadius: "24px", padding: "24px",
+        border: "1px solid rgba(226,232,240,0.8)",
+        boxShadow: "0 4px 20px rgba(15,23,42,0.05)", marginBottom: "18px"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+          <div style={{
+            width: "36px", height: "36px", borderRadius: "10px",
+            background: "#f0fdf4", display: "flex",
+            alignItems: "center", justifyContent: "center"
+          }}>
+            <Wallet size={20} color="#16a34a" />
           </div>
+          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
+            Sales & Profit
+          </h2>
+        </div>
 
-          {batchCosts.map((batch, i) => (
-            <div key={i} style={{
-              padding: "16px", borderRadius: "14px",
-              border: "1px solid #f0f0f0", background: "#fafafa",
-              marginBottom: "12px"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                <div>
-                  <p style={{ margin: 0, fontWeight: "700", fontSize: "15px", color: "#111827" }}>
-                    {batch.batch_name}
-                  </p>
-                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>
-                    {batch.aliveCount} birds
-                  </p>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ margin: 0, fontWeight: "800", fontSize: "18px", color: "#111827" }}>
-                    KES {batch.total.toLocaleString()}
-                  </p>
-                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#22c55e", fontWeight: "600" }}>
-                    KES {batch.costPerBird}/bird
-                  </p>
-                </div>
-              </div>
-
-              {/* COST BAR */}
-              {Object.keys(batch.byCategory).length > 0 && (
-                <div>
-                  <div style={{ height: "8px", borderRadius: "20px", overflow: "hidden", display: "flex", marginBottom: "8px" }}>
-                    {Object.entries(batch.byCategory).map(([cat, amt], idx) => {
-                      const pct = batch.total > 0 ? (amt / batch.total) * 100 : 0;
-                      const colors = ["#f59e0b", "#22c55e", "#3b82f6", "#ef4444", "#8b5cf6", "#f97316", "#06b6d4", "#84cc16"];
-                      return (
-                        <div key={cat} style={{
-                          width: `${pct}%`, background: colors[idx % colors.length],
-                          height: "100%"
-                        }} />
-                      );
-                    })}
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    {Object.entries(batch.byCategory).map(([cat, amt], idx) => {
-                      const colors = ["#f59e0b", "#22c55e", "#3b82f6", "#ef4444", "#8b5cf6", "#f97316", "#06b6d4", "#84cc16"];
-                      return (
-                        <span key={cat} style={{
-                          fontSize: "11px", fontWeight: "600",
-                          padding: "3px 8px", borderRadius: "20px",
-                          background: colors[idx % colors.length] + "20",
-                          color: colors[idx % colors.length]
-                        }}>
-                          {cat}: KES {Number(amt).toLocaleString()}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {batch.total === 0 && (
-                <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>
-                  No expenses logged yet. Log expenses in My Farm to see cost analysis.
-                </p>
-              )}
+        {/* SUMMARY PILLS */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+          gap: "16px", marginBottom: "24px"
+        }}>
+          <div style={{
+            background: "#f0fdf4", border: "1px solid #dcfce7",
+            borderRadius: "16px", padding: "16px 18px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#16a34a" }}>
+              <DollarSign size={16} />
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Revenue</span>
             </div>
-          ))}
+            <div style={{ marginTop: "6px", fontSize: "24px", fontWeight: "800", color: "#16a34a" }}>
+              KES {periodTotals.revenue.toLocaleString()}
+            </div>
+          </div>
 
           <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            padding: "14px 16px", background: "#f9fafb",
-            borderRadius: "12px", borderTop: "none"
+            background: "#fef2f2", border: "1px solid #fecaca",
+            borderRadius: "16px", padding: "16px 18px"
           }}>
-            <span style={{ fontSize: "14px", color: "#6b7280" }}>Total across all active batches</span>
-            <span style={{ fontSize: "20px", fontWeight: "800", color: "#111827" }}>
-              KES {totalBatchCost.toLocaleString()}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#ef4444" }}>
+              <TrendingDown size={16} />
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Expenses</span>
+            </div>
+            <div style={{ marginTop: "6px", fontSize: "24px", fontWeight: "800", color: "#ef4444" }}>
+              KES {periodTotals.expenses.toLocaleString()}
+            </div>
+          </div>
+
+          <div style={{
+            background: periodTotals.profit >= 0 ? "#f0fdf4" : "#fef2f2",
+            border: `1px solid ${periodTotals.profit >= 0 ? "#dcfce7" : "#fecaca"}`,
+            borderRadius: "16px", padding: "16px 18px"
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
+            }}>
+              <TrendingUp size={16} />
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Profit</span>
+            </div>
+            <div style={{
+              marginTop: "6px", fontSize: "24px", fontWeight: "800",
+              color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
+            }}>
+              KES {periodTotals.profit.toLocaleString()}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* ======================== CONTENT GRID ======================== */}
+        {/* 14-DAY TREND CHART */}
+        <p style={{
+          fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+          textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px"
+        }}>
+          LAST 14 DAYS
+        </p>
+
+        {dailyFinanceData.length === 0 || loading ? (
+          <div style={{
+            height: "260px", display: "flex", alignItems: "center",
+            justifyContent: "center", color: "#9ca3af", fontSize: "13px"
+          }}>
+            {loading ? "Loading chart..." : "No activity in the last 14 days."}
+          </div>
+        ) : (
+          <div style={{ width: "100%", height: "260px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={dailyFinanceData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="#f0f0f0" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={[0, yAxisMax]}
+                  ticks={yTicks}
+                  tickFormatter={v => `$${v}`}
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={55}
+                />
+                <Tooltip content={<DailyFinanceTooltip />} />
+                <Bar dataKey="sales" name="Sales" fill="#22c55e" radius={[3, 3, 0, 0]} barSize={14} />
+                <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[3, 3, 0, 0]} barSize={14} />
+                <Line
+                  dataKey="profit"
+                  name="Profit"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#f97316", strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* LEGEND */}
+        <div style={{ display: "flex", gap: "20px", marginTop: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "12px", height: "12px", background: "#22c55e", borderRadius: "2px" }} />
+            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Sales</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "12px", height: "12px", background: "#ef4444", borderRadius: "2px" }} />
+            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Expenses</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "16px", height: "2px", background: "#f97316" }} />
+            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Profit</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CONTENT GRID ── */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "18px" }}>
 
         {/* PENDING TASKS */}
@@ -404,9 +656,14 @@ export default function Dashboard() {
           minHeight: "300px", border: "1px solid rgba(226,232,240,0.8)",
           boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <div style={{
+            display: "flex", justifyContent: "space-between",
+            alignItems: "center", marginBottom: "24px"
+          }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>Pending Tasks</h2>
+              <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
+                Pending Tasks
+              </h2>
               <p style={{ marginTop: "4px", color: "#9ca3af", fontSize: "13px" }}>
                 {stats.tasks} task{stats.tasks !== 1 ? "s" : ""} remaining
               </p>
@@ -424,23 +681,37 @@ export default function Dashboard() {
           </div>
 
           {recentTasks.length === 0 ? (
-            <div style={{ height: "180px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+            <div style={{
+              height: "180px", display: "flex", flexDirection: "column",
+              justifyContent: "center", alignItems: "center"
+            }}>
               <CheckCircle2 size={56} color="#22c55e" />
-              <h3 style={{ marginTop: "14px", marginBottom: "6px", fontSize: "16px", color: "#111827" }}>All tasks completed!</h3>
+              <h3 style={{ marginTop: "14px", marginBottom: "6px", fontSize: "16px", color: "#111827" }}>
+                All tasks completed!
+              </h3>
               <p style={{ color: "#9ca3af", fontSize: "14px" }}>Your farm is fully up to date.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {recentTasks.map((task) => (
+              {recentTasks.map(task => (
                 <div key={task.id} style={{
                   display: "flex", alignItems: "center", gap: "14px",
                   padding: "12px 14px", borderRadius: "14px",
                   background: "#f9fafb", border: "1px solid #f0f0f0"
                 }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", flexShrink: 0 }} />
+                  <div style={{
+                    width: "8px", height: "8px", borderRadius: "50%",
+                    background: task.priority === "high" ? "#ef4444"
+                      : task.priority === "medium" ? "#f59e0b" : "#22c55e",
+                    flexShrink: 0
+                  }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: "600", fontSize: "14px", color: "#111827" }}>{task.title}</div>
-                    <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>Due: {task.due_date}</div>
+                    <div style={{ fontWeight: "600", fontSize: "14px", color: "#111827" }}>
+                      {task.title}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                      Due: {task.due_date || "No due date"}
+                    </div>
                   </div>
                   <button
                     onClick={() => navigate("/tasks")}
@@ -483,30 +754,44 @@ export default function Dashboard() {
                     alignItems: "center", justifyContent: "center",
                     gap: "8px", cursor: "pointer", transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.08)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.08)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
                 >
                   {icon}
-                  <span style={{ fontSize: "12px", fontWeight: "600", color: "#374151" }}>{label}</span>
+                  <span style={{ fontSize: "12px", fontWeight: "600", color: "#374151" }}>
+                    {label}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* UPCOMING VACCINATIONS */}
+          {/* OVERDUE VACCINATIONS */}
           {overdueVaccines.length > 0 && (
             <div style={{
               background: "#fff", borderRadius: "24px", padding: "20px",
               border: "1px solid rgba(226,232,240,0.8)",
               boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                alignItems: "center", marginBottom: "14px"
+              }}>
                 <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#111827" }}>
                   Overdue Vaccinations
                 </h3>
                 <button
                   onClick={() => navigate("/my-farm")}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#6b7280", fontWeight: "600" }}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: "12px", color: "#6b7280", fontWeight: "600"
+                  }}
                 >
                   View All
                 </button>
@@ -520,13 +805,54 @@ export default function Dashboard() {
                   }}>
                     <Syringe size={14} color="#ef4444" />
                     <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#991b1b" }}>{v.vaccine_name}</p>
+                      <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#991b1b" }}>
+                        {v.vaccine_name}
+                      </p>
                       <p style={{ margin: 0, fontSize: "11px", color: "#ef4444" }}>
                         {v.farm_batches?.batch_name} · {v.scheduled_date}
                       </p>
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* UPCOMING VACCINATIONS (if no overdue) */}
+          {overdueVaccines.length === 0 && (
+            <div style={{
+              background: "#fff", borderRadius: "24px", padding: "20px",
+              border: "1px solid rgba(226,232,240,0.8)",
+              boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
+            }}>
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                alignItems: "center", marginBottom: "14px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Syringe size={16} color="#22c55e" />
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#111827" }}>
+                    Upcoming Vaccinations
+                  </h3>
+                </div>
+                <button
+                  onClick={() => navigate("/my-farm")}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: "12px", color: "#6b7280", fontWeight: "600"
+                  }}
+                >
+                  View All
+                </button>
+              </div>
+              <div style={{
+                textAlign: "center", padding: "20px",
+                background: "#f0fdf4", borderRadius: "12px"
+              }}>
+                <CheckCircle2 size={32} color="#22c55e" style={{ marginBottom: "8px" }} />
+                <p style={{ margin: 0, fontSize: "13px", color: "#16a34a", fontWeight: "600" }}>
+                  All vaccinations up to date!
+                </p>
               </div>
             </div>
           )}

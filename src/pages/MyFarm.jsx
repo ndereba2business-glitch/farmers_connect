@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   Egg, Plus, Syringe, Calendar, CheckCircle2,
   Clock, AlertTriangle, ChevronDown, ChevronUp,
-  WifiOff, X, Trash2, DollarSign, Skull
+  WifiOff, X, Trash2, DollarSign, Skull, ShoppingCart
 } from "lucide-react";
 
 const BATCH_TYPES = [
@@ -17,6 +17,22 @@ const BATCH_TYPES = [
 const EXPENSE_CATEGORIES = [
   "Feed", "Medicine", "Vaccination", "Equipment",
   "Labour", "Transport", "Utilities", "Other"
+];
+
+const SALE_ITEMS = [
+  "Live Birds", "Eggs", "Manure", "Feathers", "Other"
+];
+
+const SALE_UNITS = {
+  "Live Birds": ["Birds", "Kg"],
+  "Eggs": ["Trays", "Pieces", "Crates"],
+  "Manure": ["Bags", "Kg", "Tonnes"],
+  "Feathers": ["Kg", "Bags"],
+  "Other": ["Units", "Kg", "Pieces"]
+};
+
+const ACTIVITY_TYPES = [
+  "Egg Collection", "Weight Check", "Cleaning", "Other"
 ];
 
 const TYPE_COLORS = {
@@ -33,7 +49,6 @@ function generateVaccinationSchedule(hatchDate, batchType) {
     d.setDate(d.getDate() + days);
     return d.toISOString().split("T")[0];
   };
-
   const broilerSchedule = [
     { day_number: 1, vaccine_name: "Marek's Disease", method: "injection" },
     { day_number: 7, vaccine_name: "Newcastle Disease (ND)", method: "eye_drop" },
@@ -41,7 +56,6 @@ function generateVaccinationSchedule(hatchDate, batchType) {
     { day_number: 21, vaccine_name: "Newcastle Booster", method: "drinking_water" },
     { day_number: 28, vaccine_name: "Fowl Pox", method: "wing_stab" },
   ];
-
   const layerSchedule = [
     { day_number: 1, vaccine_name: "Marek's Disease", method: "injection" },
     { day_number: 7, vaccine_name: "Newcastle Disease (ND)", method: "eye_drop" },
@@ -51,7 +65,6 @@ function generateVaccinationSchedule(hatchDate, batchType) {
     { day_number: 42, vaccine_name: "Infectious Bronchitis", method: "spray" },
     { day_number: 120, vaccine_name: "Newcastle + IB Booster", method: "drinking_water" },
   ];
-
   const schedule = batchType === "layer" ? layerSchedule : broilerSchedule;
   return schedule.map(item => ({
     ...item,
@@ -88,13 +101,13 @@ export default function MyFarm() {
   });
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    const up = () => setIsOnline(true);
+    const down = () => setIsOnline(false);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", up);
+      window.removeEventListener("offline", down);
     };
   }, []);
 
@@ -119,7 +132,6 @@ export default function MyFarm() {
     e.preventDefault();
     if (!form.batch_name || !form.batch_type || !form.hatch_date || !form.quantity) return;
     setSaving(true);
-
     const { data: newBatch, error } = await supabase
       .from("farm_batches")
       .insert([{
@@ -135,18 +147,11 @@ export default function MyFarm() {
         status: "active"
       }])
       .select().single();
-
-    if (error) {
-      alert("Failed to add batch: " + error.message);
-      setSaving(false);
-      return;
-    }
-
+    if (error) { alert("Failed to add batch: " + error.message); setSaving(false); return; }
     const schedule = generateVaccinationSchedule(form.hatch_date, form.batch_type);
     await supabase.from("vaccination_tasks").insert(
       schedule.map(v => ({ ...v, batch_id: newBatch.id, user_email: userEmail }))
     );
-
     setForm({ batch_name: "", batch_type: "", breed: "", hatch_date: "", quantity: "", notes: "" });
     setSaving(false);
     setView("list");
@@ -166,6 +171,8 @@ export default function MyFarm() {
     await supabase.from("vaccination_tasks").delete().eq("batch_id", batchId);
     await supabase.from("mortality_logs").delete().eq("batch_id", batchId);
     await supabase.from("batch_expenses").delete().eq("batch_id", batchId);
+    await supabase.from("batch_sales").delete().eq("batch_id", batchId);
+    await supabase.from("batch_activities").delete().eq("batch_id", batchId);
     await supabase.from("farm_batches").delete().eq("id", batchId);
     fetchBatches();
   }
@@ -188,10 +195,11 @@ export default function MyFarm() {
           color: "#92400e", fontSize: "13px", marginBottom: "20px"
         }}>
           <WifiOff size={16} />
-          <span><strong>You're offline.</strong> Changes saved locally and will sync when reconnected.</span>
+          <span><strong>You're offline.</strong> Changes will sync when you reconnect.</span>
         </div>
       )}
 
+      {/* LIST VIEW */}
       {view === "list" && (
         <div>
           <div style={{
@@ -245,7 +253,7 @@ export default function MyFarm() {
           {loading && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {[1, 2].map(i => (
-                <div key={i} style={{ height: "180px", borderRadius: "20px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "200px", borderRadius: "20px", background: "#f3f4f6" }} />
               ))}
             </div>
           )}
@@ -322,6 +330,7 @@ export default function MyFarm() {
         </div>
       )}
 
+      {/* ADD BATCH FORM */}
       {view === "add" && (
         <div style={{ maxWidth: "680px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "28px" }}>
@@ -360,7 +369,6 @@ export default function MyFarm() {
                   required style={inputStyle}
                 />
               </div>
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
                 <div>
                   <label style={labelStyle}>Batch Type</label>
@@ -385,7 +393,6 @@ export default function MyFarm() {
                   />
                 </div>
               </div>
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
                 <div>
                   <label style={labelStyle}>Hatch Date</label>
@@ -405,8 +412,7 @@ export default function MyFarm() {
                   />
                 </div>
               </div>
-
-              <div style={{ marginBottom: "28px" }}>
+              <div style={{ marginBottom: "24px" }}>
                 <label style={labelStyle}>Notes (Optional)</label>
                 <textarea
                   placeholder="Any additional notes..."
@@ -415,19 +421,16 @@ export default function MyFarm() {
                   style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }}
                 />
               </div>
-
               <div style={{
                 background: "#f0fdf4", border: "1px solid #dcfce7",
                 borderRadius: "12px", padding: "14px 16px",
-                marginBottom: "24px", display: "flex",
-                alignItems: "flex-start", gap: "10px"
+                marginBottom: "24px", display: "flex", alignItems: "flex-start", gap: "10px"
               }}>
                 <Syringe size={16} color="#16a34a" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <p style={{ margin: 0, fontSize: "13px", color: "#16a34a", fontWeight: "500" }}>
                   A vaccination schedule will be auto-generated based on the hatch date and batch type.
                 </p>
               </div>
-
               <button
                 type="submit" disabled={saving}
                 style={{
@@ -448,17 +451,35 @@ export default function MyFarm() {
   );
 }
 
-// ======================== BATCH CARD ========================
+// ══════════════════════════════════════════════════
+// BATCH CARD
+// ══════════════════════════════════════════════════
 function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkComplete, userEmail, onRefresh }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expandedVacc, setExpandedVacc] = useState(false);
+  const [expandedSales, setExpandedSales] = useState(false);
   const [showMortality, setShowMortality] = useState(false);
   const [showExpense, setShowExpense] = useState(false);
-  const [mortalityForm, setMortalityForm] = useState({ count: "", date: new Date().toISOString().split("T")[0], notes: "" });
-  const [expenseForm, setExpenseForm] = useState({ category: "Feed", amount: "", date: new Date().toISOString().split("T")[0], notes: "" });
-  const [savingMortality, setSavingMortality] = useState(false);
-  const [savingExpense, setSavingExpense] = useState(false);
+  const [showSale, setShowSale] = useState(false);
+  const [salesList, setSalesList] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [activityType, setActivityType] = useState("Egg Collection");
 
   const today = new Date().toISOString().split("T")[0];
+
+  const [mortalityForm, setMortalityForm] = useState({ count: "", date: today, notes: "" });
+  const [expenseForm, setExpenseForm] = useState({ category: "Feed", amount: "", date: today, notes: "" });
+  const [saleForm, setSaleForm] = useState({
+    what_sold: "Live Birds", unit: "Birds",
+    quantity: "", price_per_unit: "",
+    date: today, buyer: "", notes: ""
+  });
+  const [activityForm, setActivityForm] = useState({ quantity: "", unit: "", notes: "" });
+
+  const [savingMortality, setSavingMortality] = useState(false);
+  const [savingExpense, setSavingExpense] = useState(false);
+  const [savingSale, setSavingSale] = useState(false);
+  const [savingActivity, setSavingActivity] = useState(false);
+
   const ageInDays = Math.floor((new Date() - new Date(batch.hatch_date)) / (1000 * 60 * 60 * 24));
   const completed = vaccinations.filter(v => v.completed).length;
   const total = vaccinations.length;
@@ -468,26 +489,55 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
   const typeColor = TYPE_COLORS[batch.batch_type] || { bg: "#f3f4f6", color: "#6b7280" };
   const typeLabel = BATCH_TYPES.find(t => t.value === batch.batch_type)?.label || batch.batch_type;
 
+  // Load sales and expenses for this batch
+  useEffect(() => {
+    loadSalesAndExpenses();
+  }, [batch.id]);
+
+  async function loadSalesAndExpenses() {
+    const [{ data: salesData, error: salesError }, { data: expData, error: expError }] = await Promise.all([
+      supabase.from("batch_sales").select("*").eq("batch_id", batch.id).order("sale_date", { ascending: false }),
+      supabase.from("batch_expenses").select("*").eq("batch_id", batch.id).order("expense_date", { ascending: false })
+    ]);
+    if (salesError) console.error("Error loading sales:", salesError.message);
+    if (expError) console.error("Error loading expenses:", expError.message);
+    setSalesList(salesData || []);
+    setExpenses(expData || []);
+  }
+
+  const totalRevenue = salesList.reduce((s, sale) => s + Number(sale.total_amount || 0), 0);
+  const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const netPL = totalRevenue - totalExpenses;
+
+  async function getCurrentUserId() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+      alert("You must be logged in to do this. Please log in again.");
+      return null;
+    }
+    return data.user.id;
+  }
+
   async function handleLogMortality(e) {
     e.preventDefault();
     if (!mortalityForm.count) return;
     setSavingMortality(true);
-
-    await supabase.from("mortality_logs").insert([{
-      batch_id: batch.id,
-      user_email: userEmail,
+    const { error } = await supabase.from("mortality_logs").insert([{
+      batch_id: batch.id, user_email: userEmail,
       date: mortalityForm.date,
       count: Number(mortalityForm.count),
       notes: mortalityForm.notes
     }]);
-
-    // Update current_count in farm_batches
+    if (error) {
+      alert("Failed to log mortality: " + error.message);
+      setSavingMortality(false);
+      return;
+    }
     const newCount = Math.max(0, (batch.current_count || batch.quantity) - Number(mortalityForm.count));
     const newMortality = (batch.mortality || 0) + Number(mortalityForm.count);
     await supabase.from("farm_batches")
       .update({ current_count: newCount, mortality: newMortality })
       .eq("id", batch.id);
-
     setMortalityForm({ count: "", date: today, notes: "" });
     setSavingMortality(false);
     setShowMortality(false);
@@ -498,21 +548,86 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
     e.preventDefault();
     if (!expenseForm.amount) return;
     setSavingExpense(true);
+    const userId = await getCurrentUserId();
+    if (!userId) { setSavingExpense(false); return; }
 
-    await supabase.from("batch_expenses").insert([{
+    const { error } = await supabase.from("batch_expenses").insert([{
       batch_id: batch.id,
-      user_email: userEmail,
+      user_id: userId,
       category: expenseForm.category,
       amount: Number(expenseForm.amount),
-      date: expenseForm.date,
+      expense_date: expenseForm.date,
       notes: expenseForm.notes
     }]);
+
+    if (error) {
+      alert("Failed to save expense: " + error.message);
+      setSavingExpense(false);
+      return;
+    }
 
     setExpenseForm({ category: "Feed", amount: "", date: today, notes: "" });
     setSavingExpense(false);
     setShowExpense(false);
+    loadSalesAndExpenses();
     onRefresh();
   }
+
+  async function handleLogActivity(e) {
+    e.preventDefault();
+    setSavingActivity(true);
+    await supabase.from("batch_activities").insert([{
+      batch_id: batch.id, user_email: userEmail,
+      activity_type: activityType,
+      quantity: activityForm.quantity ? Number(activityForm.quantity) : null,
+      unit: activityForm.unit,
+      notes: activityForm.notes,
+      date: today
+    }]);
+    setActivityForm({ quantity: "", unit: "", notes: "" });
+    setSavingActivity(false);
+  }
+
+  async function handleRecordSale(e) {
+    e.preventDefault();
+    if (!saleForm.quantity || !saleForm.price_per_unit) return;
+    setSavingSale(true);
+    const userId = await getCurrentUserId();
+    if (!userId) { setSavingSale(false); return; }
+
+    const total_amount = Number(saleForm.quantity) * Number(saleForm.price_per_unit);
+
+    const { error } = await supabase.from("batch_sales").insert([{
+      batch_id: batch.id,
+      user_id: userId,
+      what_sold: saleForm.what_sold,
+      unit: saleForm.unit,
+      quantity: Number(saleForm.quantity),
+      price_per_unit: Number(saleForm.price_per_unit),
+      total_amount,
+      sale_date: saleForm.date,
+      buyer_name: saleForm.buyer,
+      notes: saleForm.notes
+    }]);
+
+    if (error) {
+      alert("Failed to save sale: " + error.message);
+      setSavingSale(false);
+      return;
+    }
+
+    setSaleForm({
+      what_sold: "Live Birds", unit: "Birds",
+      quantity: "", price_per_unit: "",
+      date: today, buyer: "", notes: ""
+    });
+    setSavingSale(false);
+    setShowSale(false);
+    loadSalesAndExpenses();
+    onRefresh();
+  }
+
+  const currentUnits = SALE_UNITS[saleForm.what_sold] || ["Units"];
 
   return (
     <div style={{
@@ -521,13 +636,17 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       boxShadow: "0 4px 16px rgba(0,0,0,0.04)", overflow: "hidden"
     }}>
       <div style={{ padding: "20px 24px" }}>
+
         {/* TOP ROW */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          alignItems: "flex-start", marginBottom: "16px"
+        }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
             <div style={{
               width: "44px", height: "44px", borderRadius: "14px",
-              background: "#edf9f1", display: "flex", alignItems: "center",
-              justifyContent: "center", flexShrink: 0
+              background: "#edf9f1", display: "flex",
+              alignItems: "center", justifyContent: "center", flexShrink: 0
             }}>
               <Egg size={22} color="#22c55e" />
             </div>
@@ -614,15 +733,14 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         )}
 
         {/* ACTION BUTTONS */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
           <button
-            onClick={() => { setShowMortality(!showMortality); setShowExpense(false); }}
+            onClick={() => { setShowMortality(!showMortality); setShowExpense(false); setShowSale(false); }}
             style={{
               flex: 1, padding: "9px 14px",
               background: showMortality ? "#fef2f2" : "#f9fafb",
               border: `1px solid ${showMortality ? "#fecaca" : "#e5e7eb"}`,
-              borderRadius: "10px", cursor: "pointer",
-              fontWeight: "600", fontSize: "13px",
+              borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
               color: showMortality ? "#ef4444" : "#374151",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
@@ -630,13 +748,12 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <Skull size={14} /> Log Mortality
           </button>
           <button
-            onClick={() => { setShowExpense(!showExpense); setShowMortality(false); }}
+            onClick={() => { setShowExpense(!showExpense); setShowMortality(false); setShowSale(false); }}
             style={{
               flex: 1, padding: "9px 14px",
               background: showExpense ? "#fffbeb" : "#f9fafb",
               border: `1px solid ${showExpense ? "#fde68a" : "#e5e7eb"}`,
-              borderRadius: "10px", cursor: "pointer",
-              fontWeight: "600", fontSize: "13px",
+              borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
               color: showExpense ? "#d97706" : "#374151",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
@@ -663,8 +780,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {showMortality && (
           <form onSubmit={handleLogMortality} style={{
             marginTop: "14px", padding: "16px",
-            background: "#fef2f2", borderRadius: "12px",
-            border: "1px solid #fecaca"
+            background: "#fef2f2", borderRadius: "12px", border: "1px solid #fecaca"
           }}>
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#ef4444" }}>
               🪦 Log Mortality
@@ -672,38 +788,36 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#7f1d1d" }}>Number of Deaths</label>
-                <input
-                  type="number" min="1" placeholder="e.g. 3"
+                <input type="number" min="1" placeholder="e.g. 3"
                   value={mortalityForm.count}
                   onChange={e => setMortalityForm({ ...mortalityForm, count: e.target.value })}
-                  required style={inputStyle}
-                />
+                  required style={inputStyle} />
               </div>
               <div>
                 <label style={{ ...labelStyle, color: "#7f1d1d" }}>Date</label>
-                <input
-                  type="date" value={mortalityForm.date}
+                <input type="date" value={mortalityForm.date}
                   onChange={e => setMortalityForm({ ...mortalityForm, date: e.target.value })}
-                  style={inputStyle}
-                />
+                  style={inputStyle} />
               </div>
             </div>
-            <input
-              placeholder="Notes e.g. suspected disease"
+            <input placeholder="Notes e.g. suspected disease"
               value={mortalityForm.notes}
               onChange={e => setMortalityForm({ ...mortalityForm, notes: e.target.value })}
-              style={{ ...inputStyle, marginBottom: "10px" }}
-            />
-            <button
-              type="submit" disabled={savingMortality}
-              style={{
+              style={{ ...inputStyle, marginBottom: "10px" }} />
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button type="submit" disabled={savingMortality} style={{
                 padding: "9px 20px", background: "#ef4444",
                 color: "#fff", border: "none", borderRadius: "8px",
                 fontWeight: "700", fontSize: "13px", cursor: "pointer"
-              }}
-            >
-              {savingMortality ? "Saving..." : "Save Mortality Log"}
-            </button>
+              }}>
+                {savingMortality ? "Saving..." : "Save"}
+              </button>
+              <button type="button" onClick={() => setShowMortality(false)} style={{
+                padding: "9px 16px", background: "#fff",
+                border: "1px solid #e5e7eb", borderRadius: "8px",
+                cursor: "pointer", fontSize: "13px", color: "#374151"
+              }}>Cancel</button>
+            </div>
           </form>
         )}
 
@@ -711,8 +825,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {showExpense && (
           <form onSubmit={handleLogExpense} style={{
             marginTop: "14px", padding: "16px",
-            background: "#fffbeb", borderRadius: "12px",
-            border: "1px solid #fde68a"
+            background: "#fffbeb", borderRadius: "12px", border: "1px solid #fde68a"
           }}>
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#d97706" }}>
               💰 Log Expense
@@ -720,63 +833,300 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Category</label>
-                <select
-                  value={expenseForm.category}
+                <select value={expenseForm.category}
                   onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                  style={{ ...inputStyle, appearance: "none" }}
-                >
-                  {EXPENSE_CATEGORIES.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  style={{ ...inputStyle, appearance: "none" }}>
+                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Amount (KES)</label>
-                <input
-                  type="number" placeholder="e.g. 5000"
+                <input type="number" placeholder="e.g. 5000"
                   value={expenseForm.amount}
                   onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  required style={inputStyle}
-                />
+                  required style={inputStyle} />
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Date</label>
-                <input
-                  type="date" value={expenseForm.date}
+                <input type="date" value={expenseForm.date}
                   onChange={e => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  style={inputStyle}
-                />
+                  style={inputStyle} />
               </div>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Notes (Optional)</label>
-                <input
-                  placeholder="e.g. Unga feeds 50kg"
+                <input placeholder="e.g. Unga feeds 50kg"
                   value={expenseForm.notes}
                   onChange={e => setExpenseForm({ ...expenseForm, notes: e.target.value })}
-                  style={inputStyle}
-                />
+                  style={inputStyle} />
               </div>
             </div>
-            <button
-              type="submit" disabled={savingExpense}
-              style={{
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button type="submit" disabled={savingExpense} style={{
                 padding: "9px 20px", background: "#d97706",
                 color: "#fff", border: "none", borderRadius: "8px",
                 fontWeight: "700", fontSize: "13px", cursor: "pointer"
+              }}>
+                {savingExpense ? "Saving..." : "Save"}
+              </button>
+              <button type="button" onClick={() => setShowExpense(false)} style={{
+                padding: "9px 16px", background: "#fff",
+                border: "1px solid #e5e7eb", borderRadius: "8px",
+                cursor: "pointer", fontSize: "13px", color: "#374151"
+              }}>Cancel</button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      {/* ── LOG DAILY ACTIVITY ── */}
+      <div style={{ borderTop: "1px solid #f3f4f6", padding: "16px 24px" }}>
+        <h4 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: "700", color: "#6b7280" }}>
+          Log Daily Activity
+        </h4>
+        {/* ACTIVITY TYPE TABS */}
+        <div style={{
+          display: "flex", background: "#f3f4f6",
+          borderRadius: "10px", padding: "3px",
+          marginBottom: "12px", gap: "2px"
+        }}>
+          {ACTIVITY_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => setActivityType(type)}
+              style={{
+                flex: 1, padding: "7px 8px",
+                borderRadius: "8px", border: "none", cursor: "pointer",
+                fontWeight: "600", fontSize: "12px",
+                background: activityType === type ? "#fff" : "transparent",
+                color: activityType === type ? "#111827" : "#9ca3af",
+                boxShadow: activityType === type ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                transition: "all 0.15s"
               }}
             >
-              {savingExpense ? "Saving..." : "Save Expense"}
+              {type}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+          <input
+            placeholder="Quantity (e.g. 5)"
+            type="number"
+            value={activityForm.quantity}
+            onChange={e => setActivityForm({ ...activityForm, quantity: e.target.value })}
+            style={inputStyle}
+          />
+          <input
+            placeholder="Unit (kg, trays...)"
+            value={activityForm.unit}
+            onChange={e => setActivityForm({ ...activityForm, unit: e.target.value })}
+            style={inputStyle}
+          />
+        </div>
+        <textarea
+          placeholder="Notes (optional)"
+          value={activityForm.notes}
+          onChange={e => setActivityForm({ ...activityForm, notes: e.target.value })}
+          style={{ ...inputStyle, minHeight: "70px", resize: "vertical", marginBottom: "10px" }}
+        />
+        <button
+          onClick={handleLogActivity}
+          disabled={savingActivity}
+          style={{
+            width: "100%", padding: "12px",
+            background: "linear-gradient(135deg,#22c55e,#16a34a)",
+            color: "#fff", border: "none", borderRadius: "10px",
+            fontWeight: "700", fontSize: "14px", cursor: "pointer"
+          }}
+        >
+          {savingActivity ? "Logging..." : "Log Activity"}
+        </button>
+      </div>
+
+      {/* ── RECORD A SALE ── */}
+      <div style={{ borderTop: "1px solid #f3f4f6" }}>
+        <div
+          style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "14px 24px", cursor: "pointer"
+          }}
+          onClick={() => setShowSale(!showSale)}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <ShoppingCart size={16} color="#374151" />
+            <span style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+              Record a Sale
+            </span>
+          </div>
+          <button style={{
+            width: "28px", height: "28px", borderRadius: "50%",
+            border: "1px solid #e5e7eb", background: "#fff",
+            cursor: "pointer", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            fontSize: "18px", color: "#374151", fontWeight: "300"
+          }}>
+            {showSale ? "×" : "+"}
+          </button>
+        </div>
+
+        {showSale && (
+          <form onSubmit={handleRecordSale} style={{ padding: "0 24px 20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+              <div>
+                <label style={labelStyle}>What was sold?</label>
+                <select
+                  value={saleForm.what_sold}
+                  onChange={e => setSaleForm({
+                    ...saleForm, what_sold: e.target.value,
+                    unit: SALE_UNITS[e.target.value]?.[0] || "Units"
+                  })}
+                  style={{ ...inputStyle, appearance: "none" }}
+                >
+                  {SALE_ITEMS.map(item => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Unit</label>
+                <select
+                  value={saleForm.unit}
+                  onChange={e => setSaleForm({ ...saleForm, unit: e.target.value })}
+                  style={{ ...inputStyle, appearance: "none" }}
+                >
+                  {currentUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+              <div>
+                <label style={labelStyle}>Quantity</label>
+                <input type="number" placeholder="e.g. 50"
+                  value={saleForm.quantity}
+                  onChange={e => setSaleForm({ ...saleForm, quantity: e.target.value })}
+                  required style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Price per unit (KES)</label>
+                <input type="number" placeholder="e.g. 500"
+                  value={saleForm.price_per_unit}
+                  onChange={e => setSaleForm({ ...saleForm, price_per_unit: e.target.value })}
+                  required style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+              <div>
+                <label style={labelStyle}>Date</label>
+                <input type="date" value={saleForm.date}
+                  onChange={e => setSaleForm({ ...saleForm, date: e.target.value })}
+                  style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Buyer (optional)</label>
+                <input placeholder="Buyer name"
+                  value={saleForm.buyer}
+                  onChange={e => setSaleForm({ ...saleForm, buyer: e.target.value })}
+                  style={inputStyle} />
+              </div>
+            </div>
+            <textarea placeholder="Notes (optional)"
+              value={saleForm.notes}
+              onChange={e => setSaleForm({ ...saleForm, notes: e.target.value })}
+              style={{ ...inputStyle, minHeight: "70px", resize: "vertical", marginBottom: "12px" }} />
+            <button type="submit" disabled={savingSale} style={{
+              width: "100%", padding: "13px",
+              background: "linear-gradient(135deg,#22c55e,#16a34a)",
+              color: "#fff", border: "none", borderRadius: "10px",
+              fontWeight: "700", fontSize: "14px", cursor: "pointer"
+            }}>
+              {savingSale ? "Saving..." : "Save Sale"}
             </button>
           </form>
         )}
       </div>
 
-      {/* VACCINATION SCHEDULE TOGGLE */}
+      {/* ── BATCH P&L ── */}
+      <div style={{ borderTop: "1px solid #f3f4f6" }}>
+        <div
+          style={{
+            display: "flex", justifyContent: "space-between",
+            alignItems: "center", padding: "14px 24px",
+            cursor: "pointer"
+          }}
+          onClick={() => setExpandedSales(!expandedSales)}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              width: "36px", height: "36px", borderRadius: "50%",
+              background: netPL >= 0 ? "#f0fdf4" : "#fef2f2",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              {netPL >= 0
+                ? <span style={{ fontSize: "14px" }}>↗</span>
+                : <span style={{ fontSize: "14px", color: "#ef4444" }}>↘</span>}
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#6b7280" }}>
+                Batch P&L
+              </p>
+              <p style={{
+                margin: 0, fontSize: "18px", fontWeight: "800",
+                color: netPL >= 0 ? "#16a34a" : "#ef4444"
+              }}>
+                {netPL >= 0 ? "+" : ""}KES {netPL.toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#22c55e" }}>
+              Revenue: KES {totalRevenue.toLocaleString()}
+            </p>
+            <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#ef4444" }}>
+              Expenses: KES {totalExpenses.toLocaleString()}
+            </p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+              {salesList.length} sale{salesList.length !== 1 ? "s" : ""} recorded
+            </p>
+          </div>
+          <ChevronDown size={16} color="#9ca3af"
+            style={{ transform: expandedSales ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+        </div>
+
+        {expandedSales && salesList.length > 0 && (
+          <div style={{ padding: "0 24px 16px" }}>
+            <p style={{
+              fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+            }}>
+              Sales History
+            </p>
+            {salesList.map(sale => (
+              <div key={sale.id} style={{
+                display: "flex", justifyContent: "space-between",
+                alignItems: "center", padding: "10px 12px",
+                background: "#f9fafb", borderRadius: "10px",
+                marginBottom: "6px"
+              }}>
+                <div>
+                  <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "#111827" }}>
+                    {sale.what_sold} — {sale.quantity} {sale.unit}
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#9ca3af" }}>
+                    {sale.sale_date}{sale.buyer_name ? ` · ${sale.buyer_name}` : ""}
+                  </p>
+                </div>
+                <p style={{ margin: 0, fontWeight: "700", fontSize: "14px", color: "#22c55e" }}>
+                  +KES {Number(sale.total_amount).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── VACCINATION SCHEDULE ── */}
       <div style={{ borderTop: "1px solid #f3f4f6" }}>
         <button
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => setExpandedVacc(!expandedVacc)}
           style={{
             width: "100%", padding: "14px 24px",
             display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -785,12 +1135,12 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Syringe size={16} /> Vaccination Schedule
+            <Syringe size={16} /> Vaccination Schedule ({total} vaccines)
           </span>
-          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {expandedVacc ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
-        {expanded && (
+        {expandedVacc && (
           <div style={{ padding: "0 24px 20px" }}>
             {vaccinations.length === 0 ? (
               <p style={{ textAlign: "center", color: "#9ca3af", fontSize: "13px", padding: "16px 0" }}>
