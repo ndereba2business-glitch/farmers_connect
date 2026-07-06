@@ -67,121 +67,61 @@ export default function Layout() {
     .charAt(0).toUpperCase();
 
   return (
-    <div style={{
-      display: "flex",
-      background: "#faf9f6",
-      minHeight: "100vh",
-      fontFamily: "'Segoe UI', sans-serif"
-    }}>
+    <div className="flex bg-[#faf9f6] min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white">
 
-      {/* ====== OVERLAY (shown whenever sidebar is open) ====== */}
+      {/* ====== MOBILE BACKDROP OVERLAY ====== */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 98,
-            backdropFilter: "blur(2px)",
-            WebkitBackdropFilter: "blur(2px)",
-          }}
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"
         />
       )}
 
-      {/* ====== SIDEBAR — hidden off-screen, slides in when open ====== */}
-      <aside style={{
-        width: "270px",
-        background: "linear-gradient(180deg,#031510 0%,#061d16 55%,#03120d 100%)",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        padding: "22px 18px",
-        display: "flex",
-        flexDirection: "column",
-        borderRight: "1px solid rgba(255,255,255,0.04)",
-        overflowY: "auto",
-        zIndex: 100,
-        /* KEY CHANGE: always translate off-screen, only slide in when open */
-        transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
-        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        boxShadow: sidebarOpen ? "4px 0 32px rgba(0,0,0,0.4)" : "none",
-      }}>
+      {/* ====== RESPONSIVE SIDEBAR ====== */}
+      {/* Off-screen drawer on mobile/tablet (-translate-x-full) | Stationary dock on desktop (lg:translate-x-0 lg:relative) */}
+      <aside className={`
+        fixed top-0 bottom-0 left-0 z-50 w-[270px] p-[22px_18px] flex flex-col 
+        bg-gradient-to-b from-[#031510] via-[#061d16] to-[#03120d] 
+        border-r border-white/[0.04] overflow-y-auto transition-transform duration-300 ease-in-out
+        lg:translate-x-0 lg:relative lg:z-0
+        ${sidebarOpen ? "translate-x-0 shadow-[4px_0_32px_rgba(0,0,0,0.4)]" : "-translate-x-full shadow-none"}
+      `}>
 
-        {/* HEADER ROW: Brand + Close Button */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "28px",
-        }}>
-          {/* BRAND */}
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", paddingLeft: "6px" }}>
-            <div style={{
-              width: "48px", height: "48px", borderRadius: "16px",
-              background: "linear-gradient(135deg,#22c55e,#16a34a)",
-              display: "flex", alignItems: "center",
-              justifyContent: "center", fontSize: "24px",
-              boxShadow: "0 10px 25px rgba(34,197,94,0.35)", flexShrink: 0
-            }}>
+        {/* HEADER ROW */}
+        <div className="flex items-center justify-between mb-7">
+          <div className="flex items-center gap-3.5 pl-1.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center text-2xl shadow-[0_10px_25px_rgba(34,197,94,0.35)] shrink-0">
               🐔
             </div>
             <div>
-              <div style={{ color: "white", fontSize: "17px", fontWeight: "800", letterSpacing: "-0.4px" }}>
+              <div className="text-white text-[17px] font-extrabold tracking-tight leading-none">
                 Farmers
               </div>
-              <div style={{ color: "#22c55e", fontSize: "16px", fontWeight: "700", marginTop: "1px" }}>
+              <div className="text-[#22c55e] text-e[16px] font-bold mt-1 leading-none">
                 Connect
               </div>
             </div>
           </div>
 
-          {/* CLOSE BUTTON */}
+          {/* CLOSE BUTTON - Hidden completely on laptop/desktop layouts */}
           <button
             onClick={() => setSidebarOpen(false)}
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
-              width: "36px", height: "36px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer",
-              color: "rgba(255,255,255,0.6)",
-              transition: "all 0.2s",
-              flexShrink: 0,
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "rgba(239,68,68,0.15)";
-              e.currentTarget.style.color = "#ef4444";
-              e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-              e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-            }}
+            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all duration-200 shrink-0"
+            aria-label="Close menu"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* ROLE BADGE */}
-        <div style={{ paddingLeft: "6px", marginBottom: "16px" }}>
-          <span style={{
-            display: "inline-block",
-            background: "rgba(34,197,94,0.12)",
-            color: "#22c55e", fontSize: "11px", fontWeight: "600",
-            padding: "4px 12px", borderRadius: "20px",
-            textTransform: "capitalize", letterSpacing: "0.05em",
-            border: "1px solid rgba(34,197,94,0.2)"
-          }}>
+        <div className="pl-1.5 mb-4">
+          <span className="inline-block bg-emerald-500/10 text-[#22c55e] text-[11px] font-semibold px-3 py-1 rounded-full capitalize tracking-wider border border-emerald-500/20">
             {role || "farmer"}
           </span>
         </div>
 
-        {/* NAVIGATION */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
+        {/* NAVIGATION LINKS */}
+        <div className="flex flex-col gap-1 flex-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.path === "/"
@@ -193,56 +133,41 @@ export default function Layout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                style={{ textDecoration: "none" }}
+                className="no-underline group"
               >
-                <div style={{
-                  height: "54px", borderRadius: "18px", padding: "0 18px",
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  transition: "all 0.2s ease",
-                  background: active ? "linear-gradient(135deg,#2cc56f,#18a957)" : "transparent",
-                  color: active ? "white" : "#9aa4a0",
-                  boxShadow: active ? "0 14px 35px rgba(34,197,94,0.22)" : "none"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                    <Icon size={20} />
-                    <span style={{ fontSize: "15px", fontWeight: active ? "700" : "500" }}>
+                <div className={`
+                  h-[54px] rounded-[18px] px-[18px] flex items-center justify-between transition-all duration-200 ease-in-out
+                  ${active 
+                    ? "bg-gradient-to-r from-[#2cc56f] to-[#18a957] text-white shadow-[0_14px_35px_rgba(34,197,94,0.22)]" 
+                    : "text-[#9aa4a0] hover:bg-white/[0.03] hover:text-white"}
+                `}>
+                  <div className="flex items-center gap-3.5">
+                    <Icon size={20} className={`transition-colors duration-200 ${active ? "text-white" : "text-[#9aa4a0] group-hover:text-white"}`} />
+                    <span className={`text-[15px] ${active ? "font-700 text-white" : "font-500"}`}>
                       {item.name}
                     </span>
                   </div>
-                  {active && <ChevronRight size={16} />}
+                  {active && <ChevronRight size={16} className="text-white" />}
                 </div>
               </Link>
             );
           })}
         </div>
 
-        {/* USER CARD + LOGOUT */}
-        <div style={{ marginTop: "20px" }}>
-          <div style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: "22px", padding: "14px 16px", marginBottom: "8px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{
-                width: "44px", height: "44px", borderRadius: "50%",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "white", fontWeight: "700", fontSize: "16px", flexShrink: 0
-              }}>
+        {/* USER PROFILE CARD + DISCONNECT FIELD */}
+        <div className="mt-5">
+          <div className="bg-white/[0.04] border border-white/[0.06] rounded-[22px] p-3.5 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center text-white font-bold text-base shrink-0 overflow-hidden">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="avatar"
-                    style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                 ) : initials}
               </div>
-              <div style={{ overflow: "hidden" }}>
-                <div style={{
-                  color: "white", fontWeight: "600", fontSize: "13px",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
-                }}>
+              <div className="overflow-hidden">
+                <div className="text-white font-semibold text-sm truncate">
                   {profile?.full_name || "Farmer"}
                 </div>
-                <div style={{ color: "#8a9490", fontSize: "11px", marginTop: "2px" }}>
+                <div className="text-[#8a9490] text-[11px] truncate mt-0.5">
                   {userEmail}
                 </div>
               </div>
@@ -251,21 +176,7 @@ export default function Layout() {
 
           <button
             onClick={handleLogout}
-            style={{
-              width: "100%", display: "flex", alignItems: "center",
-              gap: "10px", padding: "12px 18px", borderRadius: "14px",
-              border: "none", background: "transparent",
-              color: "rgba(255,255,255,0.4)", cursor: "pointer",
-              fontSize: "14px", fontWeight: "500", transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(239,68,68,0.1)";
-              e.currentTarget.style.color = "#ef4444";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "rgba(255,255,255,0.4)";
-            }}
+            className="w-full flex items-center gap-2.5 px-[18px] py-3 rounded-xl border-none bg-transparent text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200 font-medium text-sm text-left cursor-pointer"
           >
             <LogOut size={16} />
             Sign Out
@@ -273,59 +184,36 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* ====== MAIN AREA — always takes full width since sidebar is overlaid ====== */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%" }}>
+      {/* ====== VIEWPORT APP WRAPPER ====== */}
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
 
-        {/* TOP BAR */}
-        <header style={{
-          height: "64px",
-          background: "#fff",
-          borderBottom: "1px solid #e9eef2",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 20px",
-          position: "sticky",
-          top: 0,
-          zIndex: 99,
-        }}>
-          {/* HAMBURGER MENU ICON — always visible */}
+        {/* TOP COMPACT NAVIGATION HEADER */}
+        <header className="h-16 bg-white border-b border-[#e9eef2] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 shrink-0">
+          
+          {/* HAMBURGER TRIGGER - Hidden automatically on desktop layouts */}
           <button
             onClick={() => setSidebarOpen(true)}
-            style={{
-              background: "none",
-              border: "1px solid #e5e7eb",
-              borderRadius: "10px",
-              cursor: "pointer",
-              padding: "8px 10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#374151",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "#f3f4f6";
-              e.currentTarget.style.borderColor = "#d1d5db";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "none";
-              e.currentTarget.style.borderColor = "#e5e7eb";
-            }}
+            className="lg:hidden flex items-center justify-center p-2 rounded-xl bg-none border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
             aria-label="Open menu"
           >
             <Menu size={20} />
           </button>
 
-          {/* RIGHT SIDE */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Right-aligned spacing balancer if no text brand element is present on desktop header line */}
+          <div className="hidden lg:block" />
+
+          {/* ALERTS AND COMMUNICATIONS MODULE */}
+          <div className="flex items-center gap-3">
             <NotificationsBell userEmail={userEmail} />
           </div>
         </header>
 
-        {/* PAGE CONTENT */}
-        <main style={{ flex: 1, padding: "28px", overflowY: "auto", background: "#faf9f6" }}>
-          <Outlet />
+        {/* ====== CORE APPLICATION VIEWS OUTPUT ====== */}
+        {/* Responsive padding: small screens get compact safe-padding (p-4), desktop monitors expand up (lg:p-8) */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-[#faf9f6]">
+          <div className="max-w-7xl mx-auto w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

@@ -1,0 +1,118 @@
+/*
+  FARMERS CONNECT — RESPONSIVE FOUNDATION
+  =========================================
+  This is the one global stylesheet for the whole app. It does two jobs:
+
+  1. A small, safe reset (box-sizing, tap sizing, scroll behavior) that
+     cannot visually change anything on desktop, but prevents a whole
+     category of "why is there a sidewards scrollbar" bugs on mobile.
+
+  2. A shared breakpoint system + reusable utility classes that every
+     page's own CSS file can build on, so we're not reinventing the same
+     media query five times per page.
+
+  BREAKPOINTS USED THROUGHOUT THE APP (documented here since plain CSS
+  has no variables inside @media conditions without a build-time plugin
+  we don't have configured):
+
+    <= 480px    Mobile phones
+    481–767px   Large phones
+    768–1024px  Tablets
+    1025–1440px Laptops (today's desktop design — this is the baseline)
+    >= 1441px   Large desktop monitors
+
+  Desktop (1025px+) is the existing, already-approved design. Every
+  media query added across the app targets max-width: 1024px and below,
+  so nothing changes for anyone on a laptop or larger screen.
+*/
+
+/* ---------- Safe global reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden; /* safety net: catches any stray element wider than the viewport */
+}
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Comfortable tap targets on touch devices without changing desktop */
+@media (max-width: 1024px) {
+  button, a, input[type="checkbox"], input[type="radio"] {
+    -webkit-tap-highlight-color: rgba(34, 197, 94, 0.15);
+  }
+}
+
+/* ---------- Large desktop containment (1441px+) ---------- */
+/* Keeps content readable on ultrawide monitors instead of stretching
+   edge-to-edge. Applied via .fc-page-container, opt-in per page so it
+   never fights a page that intentionally wants full width. */
+.fc-page-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------- Shared responsive utility classes ---------- */
+
+/* Two-column layouts that should collapse to one column below tablet */
+.fc-grid-2 {
+  display: grid;
+  gap: 18px;
+}
+@media (max-width: 1024px) {
+  .fc-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Form grids that are 2 columns on tablet+ and stack on phones */
+.fc-form-grid-2 {
+  display: grid;
+}
+@media (max-width: 480px) {
+  .fc-form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Horizontal scroll wrapper for tables/wide content instead of breaking page layout */
+.fc-scroll-x {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.fc-scroll-x table {
+  min-width: 640px;
+}
+
+/* Page header rows (title + action button) that should wrap/stack on phones */
+.fc-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+@media (max-width: 480px) {
+  .fc-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Responsive page title — scales down on phones instead of a fixed 36px etc. */
+.fc-page-title {
+  font-size: clamp(22px, 5vw, 36px);
+}
