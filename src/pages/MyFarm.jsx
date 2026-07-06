@@ -202,12 +202,11 @@ export default function MyFarm() {
       {/* LIST VIEW */}
       {view === "list" && (
         <div>
-          <div style={{
-            display: "flex", justifyContent: "space-between",
+          <div className="fc-page-header" style={{
             alignItems: "flex-start", marginBottom: "24px"
           }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: "36px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+              <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
                 My Farm
               </h1>
               <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -369,7 +368,7 @@ export default function MyFarm() {
                   required style={inputStyle}
                 />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+              <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
                 <div>
                   <label style={labelStyle}>Batch Type</label>
                   <select
@@ -393,7 +392,7 @@ export default function MyFarm() {
                   />
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+              <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
                 <div>
                   <label style={labelStyle}>Hatch Date</label>
                   <input
@@ -640,7 +639,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {/* TOP ROW */}
         <div style={{
           display: "flex", justifyContent: "space-between",
-          alignItems: "flex-start", marginBottom: "16px"
+          alignItems: "flex-start", marginBottom: "16px",
+          flexWrap: "wrap", gap: "12px"
         }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
             <div style={{
@@ -785,7 +785,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#ef4444" }}>
               🪦 Log Mortality
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#7f1d1d" }}>Number of Deaths</label>
                 <input type="number" min="1" placeholder="e.g. 3"
@@ -830,7 +830,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#d97706" }}>
               💰 Log Expense
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Category</label>
                 <select value={expenseForm.category}
@@ -847,7 +847,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                   required style={inputStyle} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
                 <label style={{ ...labelStyle, color: "#78350f" }}>Date</label>
                 <input type="date" value={expenseForm.date}
@@ -909,7 +909,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             </button>
           ))}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+        <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
           <input
             placeholder="Quantity (e.g. 5)"
             type="number"
@@ -972,7 +972,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
 
         {showSale && (
           <form onSubmit={handleRecordSale} style={{ padding: "0 24px 20px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <label style={labelStyle}>What was sold?</label>
                 <select
@@ -997,7 +997,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 </select>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <label style={labelStyle}>Quantity</label>
                 <input type="number" placeholder="e.g. 50"
@@ -1013,7 +1013,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                   required style={inputStyle} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+            <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <label style={labelStyle}>Date</label>
                 <input type="date" value={saleForm.date}
