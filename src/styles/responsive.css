@@ -29,6 +29,34 @@ html, body, #root {
   height: 100%;
 }
 
+/* ===== FLUID TYPOGRAPHY SCALE ===== */
+/* clamp(min, preferred, max) — scales continuously with viewport width,
+   no breakpoint "jumps," works on any screen size automatically */
+:root {
+  --fs-display: clamp(24px, 7vw, 36px);   /* page titles e.g. "Dashboard" */
+  --fs-section: clamp(17px, 4.5vw, 20px); /* section headers e.g. "Sales & Profit" */
+  --fs-h3: clamp(14px, 3.5vw, 15px);      /* card sub-headers */
+  --fs-stat: clamp(24px, 7vw, 34px);      /* big stat numbers */
+  --fs-pill: clamp(19px, 5vw, 24px);      /* revenue/expense/profit numbers */
+  --fs-body: clamp(13px, 3.2vw, 14px);    /* task titles, general body */
+  --fs-greeting: clamp(13px, 3.2vw, 16px);
+  --fs-label: clamp(11px, 2.8vw, 13px);   /* stat card labels */
+  --fs-upper: clamp(10px, 2.5vw, 11px);   /* uppercase tiny labels */
+  --fs-small: clamp(11px, 2.6vw, 12px);
+  --fs-tiny: clamp(10px, 2.2vw, 11px);
+  --fs-btn: clamp(13px, 3vw, 14px);
+  --fs-nav: clamp(13px, 3vw, 15px);
+}
+
+/* ===== ANDROID GPU COMPOSITING GLITCH FIX =====
+   Multiple blurred box-shadows stacked during scroll cause visual
+   corruption on some Android Chrome / GPU combos. Forcing each
+   shadowed element onto its own compositing layer prevents it. */
+[style*="box-shadow"] {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 
 /* ---------- Safe global reset ---------- */
 *, *::before, *::after {
@@ -118,5 +146,5 @@ img, svg, video {
 
 /* Responsive page title — scales down on phones instead of a fixed 36px etc. */
 .fc-page-title {
-  font-size: clamp(22px, 5vw, 36px);
+  font-size: var(--fs-display);
 }

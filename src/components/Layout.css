@@ -172,7 +172,7 @@
 }
 
 .fc-nav-label {
-  font-size: 15px;
+  font-size: var(--fs-nav, 15px);
   font-weight: 500;
 }
 .fc-nav-link--active .fc-nav-label {

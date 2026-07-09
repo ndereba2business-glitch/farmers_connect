@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
+import "./Dashboard.css";
 import {
   Egg, Syringe, ShoppingBag, Users, ArrowUpRight,
   Plus, MessageCircle, CheckCircle2,
@@ -20,9 +21,9 @@ function DailyFinanceTooltip({ active, payload, label }) {
       background: "white", borderRadius: "10px", padding: "10px 14px",
       border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
-      <p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#111827" }}>{label}</p>
+      <p style={{ margin: 0, fontSize: "var(--fs-small, 12px)", fontWeight: "700", color: "#111827" }}>{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ margin: "4px 0 0", fontSize: "12px", color: p.color, fontWeight: "600" }}>
+        <p key={i} style={{ margin: "4px 0 0", fontSize: "var(--fs-small, 12px)", color: p.color, fontWeight: "600" }}>
           {p.name}: KES {Number(p.value).toLocaleString()}
         </p>
       ))}
@@ -38,9 +39,9 @@ function DailyDeathsTooltip({ active, payload, label }) {
       background: "white", borderRadius: "10px", padding: "10px 14px",
       border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
-      <p style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#1e293b" }}>{label}</p>
+      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "700", color: "#1e293b" }}>{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ margin: "4px 0 0", fontSize: "12px", color: "#ef4444", fontWeight: "600" }}>
+        <p key={i} style={{ margin: "4px 0 0", fontSize: "var(--fs-small, 12px)", color: "#ef4444", fontWeight: "600" }}>
           {p.name} : {p.value}
         </p>
       ))}
@@ -66,11 +67,9 @@ export default function Dashboard() {
     totalIncome: 0, totalExpenses: 0, profit: 0
   });
 
-  // ── NEW: 14-day Sales & Profit trend ──
   const [dailyFinanceData, setDailyFinanceData] = useState([]);
   const [periodTotals, setPeriodTotals] = useState({ revenue: 0, expenses: 0, profit: 0 });
 
-  // ── NEW: 14-day Daily Deaths trend ──
   const [dailyMortalityData, setDailyMortalityData] = useState([]);
 
   useEffect(() => {
@@ -81,9 +80,6 @@ export default function Dashboard() {
     setLoading(true);
     const today = new Date().toISOString().split("T")[0];
 
-    // batch_expenses and batch_sales are keyed by user_id (UUID), not user_email —
-    // see MyFarm.jsx's getCurrentUserId(). Fetch it here so those two queries
-    // actually match rows instead of silently returning nothing.
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError) console.error("Dashboard: failed to get current user —", authError.message);
     const userId = authData?.user?.id || null;
@@ -132,7 +128,6 @@ export default function Dashboard() {
 
     setOverdueVaccines(vaccineData || []);
 
-    // ── MORTALITY DATA ──
     const mortality = (batchData || []).map(batch => {
       const logs = (mortalityLogs || []).filter(m => m.batch_id === batch.id);
       const totalDeaths = logs.reduce((s, m) => s + Number(m.count), 0);
@@ -145,7 +140,6 @@ export default function Dashboard() {
     });
     setMortalityData(mortality);
 
-    // ── FINANCE DATA ──
     const income = (financeRecords || [])
       .filter(r => r.type === "income")
       .reduce((s, r) => s + Number(r.amount), 0);
@@ -154,7 +148,6 @@ export default function Dashboard() {
       .reduce((s, r) => s + Number(r.amount), 0);
     setFinanceData({ totalIncome: income, totalExpenses: expenses, profit: income - expenses });
 
-    // ── NEW: LAST 14 DAYS SALES vs EXPENSES vs PROFIT ──
     const dayList = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
@@ -198,7 +191,6 @@ export default function Dashboard() {
       profit: periodRevenue - periodExpenses
     });
 
-    // ── NEW: LAST 14 DAYS DAILY DEATHS ──
     const deathsByDate = {};
     (mortalityLogs || []).forEach(log => {
       if (!log.date) return;
@@ -217,7 +209,6 @@ export default function Dashboard() {
     });
     setDailyMortalityData(dailyDeaths);
 
-    // ── STATS ──
     setStats({
       batches: batches || 0,
       vaccines: (vaccineData || []).length,
@@ -248,7 +239,6 @@ export default function Dashboard() {
   const greeting = greetingHour < 12 ? "Good morning"
     : greetingHour < 17 ? "Good afternoon" : "Good evening";
 
-  // Y-axis ceiling for the 14-day chart, rounded up to the nearest 1500
   const dailyMax = Math.max(
     ...dailyFinanceData.map(d => Math.max(d.sales, d.expenses)),
     1
@@ -257,13 +247,11 @@ export default function Dashboard() {
   const yTicks = [];
   for (let t = 0; t <= yAxisMax; t += yAxisMax / 4) yTicks.push(Math.round(t));
 
-  // Horizontal survival-rate bars (Mortality & Survival section)
   const survivalChartData = mortalityData.map(b => ({
     name: b.batch_name,
     survival: Number(b.survivalRate)
   }));
 
-  // Y-axis ceiling/ticks for the daily deaths chart
   const deathsMax = Math.max(...dailyMortalityData.map(d => d.deaths), 1);
   const deathsYMax = Math.max(Math.ceil(deathsMax / 4) * 4, 4);
   const deathsYTicks = [];
@@ -280,19 +268,19 @@ export default function Dashboard() {
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "12px 16px", borderRadius: "12px",
             background: "#fef2f2", border: "1px solid #fecaca",
-            marginBottom: "10px", gap: "12px"
+            marginBottom: "10px", gap: "12px", flexWrap: "wrap"
           }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1, minWidth: "220px" }}>
               <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: "2px" }} />
               <div>
-                <span style={{ fontSize: "14px", color: "#991b1b", fontWeight: "700" }}>
+                <span style={{ fontSize: "var(--fs-body, 14px)", color: "#991b1b", fontWeight: "700" }}>
                   {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length} vaccination
                   {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length > 1 ? "s are" : " is"} overdue!{" "}
                 </span>
-                <span style={{ fontSize: "14px", color: "#7f1d1d" }}>
+                <span style={{ fontSize: "var(--fs-body, 14px)", color: "#7f1d1d" }}>
                   Go to your farm to mark them done.
                 </span>
-                <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "2px" }}>
+                <div style={{ fontSize: "var(--fs-small, 12px)", color: "#ef4444", marginTop: "2px" }}>
                   💉 {vaccine.vaccine_name}
                   {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
                   {" "}· Due: {vaccine.scheduled_date}
@@ -305,7 +293,7 @@ export default function Dashboard() {
                 style={{
                   padding: "6px 14px", background: "none",
                   border: "1px solid #fca5a5", borderRadius: "8px",
-                  color: "#ef4444", fontWeight: "600", fontSize: "12px", cursor: "pointer"
+                  color: "#ef4444", fontWeight: "600", fontSize: "var(--fs-tiny, 12px)", cursor: "pointer"
                 }}
               >
                 View Farm
@@ -327,13 +315,14 @@ export default function Dashboard() {
       {/* ── HEADER ── */}
       <div style={{
         display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "28px"
+        alignItems: "center", marginBottom: "28px",
+        flexWrap: "wrap", gap: "16px"
       }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "36px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 36px)", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
             Dashboard
           </h1>
-          <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "16px" }}>
+          <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "var(--fs-greeting, 16px)" }}>
             {greeting}, {profile?.full_name || "Farmer"} 👋 Welcome back to Farmers Connect
           </p>
         </div>
@@ -344,7 +333,7 @@ export default function Dashboard() {
             borderRadius: "14px",
             background: "linear-gradient(135deg,#22c55e,#16a34a)",
             color: "white", fontWeight: "700", cursor: "pointer",
-            fontSize: "14px", boxShadow: "0 8px 24px rgba(34,197,94,0.3)",
+            fontSize: "var(--fs-btn, 14px)", boxShadow: "0 8px 24px rgba(34,197,94,0.3)",
             display: "flex", alignItems: "center", gap: "8px"
           }}
         >
@@ -390,10 +379,10 @@ export default function Dashboard() {
                 <ArrowUpRight size={18} color="#d1d5db" />
               </div>
               <div style={{ marginTop: "20px" }}>
-                <div style={{ fontSize: "34px", fontWeight: "800", color: "#111827" }}>
+                <div style={{ fontSize: "var(--fs-stat, 34px)", fontWeight: "800", color: "#111827" }}>
                   {loading ? "—" : item.value}
                 </div>
-                <div style={{ marginTop: "4px", color: "#6b7280", fontSize: "14px", fontWeight: "500" }}>
+                <div style={{ marginTop: "4px", color: "#6b7280", fontSize: "var(--fs-label, 14px)", fontWeight: "500" }}>
                   {item.title}
                 </div>
               </div>
@@ -411,14 +400,13 @@ export default function Dashboard() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
             <TrendingDown size={20} color="#ef4444" />
-            <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
+            <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
               Mortality & Survival
             </h2>
           </div>
 
-          {/* BATCH SURVIVAL RATE — HORIZONTAL BAR CHART */}
           <p style={{
-            fontSize: "11px", color: "#9ca3af", fontWeight: "700",
+            fontSize: "var(--fs-upper, 11px)", color: "#9ca3af", fontWeight: "700",
             textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
           }}>
             BATCH SURVIVAL RATE
@@ -457,9 +445,8 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* DAILY DEATHS — LAST 14 DAYS */}
           <p style={{
-            fontSize: "11px", color: "#9ca3af", fontWeight: "700",
+            fontSize: "var(--fs-upper, 11px)", color: "#9ca3af", fontWeight: "700",
             textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
           }}>
             DAILY DEATHS (LAST 14 DAYS)
@@ -467,7 +454,7 @@ export default function Dashboard() {
           {dailyMortalityData.length === 0 || loading ? (
             <div style={{
               height: "220px", display: "flex", alignItems: "center",
-              justifyContent: "center", color: "#9ca3af", fontSize: "13px"
+              justifyContent: "center", color: "#9ca3af", fontSize: "var(--fs-small, 13px)"
             }}>
               {loading ? "Loading chart..." : "No mortality logged in the last 14 days."}
             </div>
@@ -507,7 +494,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── NEW: SALES & PROFIT (LAST 14 DAYS OVERVIEW) — matches design reference ── */}
+      {/* ── SALES & PROFIT (LAST 14 DAYS OVERVIEW) ── */}
       <div style={{
         background: "#fff", borderRadius: "24px", padding: "24px",
         border: "1px solid rgba(226,232,240,0.8)",
@@ -521,12 +508,11 @@ export default function Dashboard() {
           }}>
             <Wallet size={20} color="#16a34a" />
           </div>
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
+          <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
             Sales & Profit
           </h2>
         </div>
 
-        {/* SUMMARY PILLS */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
@@ -538,9 +524,9 @@ export default function Dashboard() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#16a34a" }}>
               <DollarSign size={16} />
-              <span style={{ fontSize: "13px", fontWeight: "600" }}>Revenue</span>
+              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Revenue</span>
             </div>
-            <div style={{ marginTop: "6px", fontSize: "24px", fontWeight: "800", color: "#16a34a" }}>
+            <div style={{ marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800", color: "#16a34a" }}>
               KES {periodTotals.revenue.toLocaleString()}
             </div>
           </div>
@@ -551,9 +537,9 @@ export default function Dashboard() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#ef4444" }}>
               <TrendingDown size={16} />
-              <span style={{ fontSize: "13px", fontWeight: "600" }}>Expenses</span>
+              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Expenses</span>
             </div>
-            <div style={{ marginTop: "6px", fontSize: "24px", fontWeight: "800", color: "#ef4444" }}>
+            <div style={{ marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800", color: "#ef4444" }}>
               KES {periodTotals.expenses.toLocaleString()}
             </div>
           </div>
@@ -568,10 +554,10 @@ export default function Dashboard() {
               color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
             }}>
               <TrendingUp size={16} />
-              <span style={{ fontSize: "13px", fontWeight: "600" }}>Profit</span>
+              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Profit</span>
             </div>
             <div style={{
-              marginTop: "6px", fontSize: "24px", fontWeight: "800",
+              marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800",
               color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
             }}>
               KES {periodTotals.profit.toLocaleString()}
@@ -579,9 +565,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 14-DAY TREND CHART */}
         <p style={{
-          fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+          fontSize: "var(--fs-upper, 11px)", fontWeight: "700", color: "#9ca3af",
           textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px"
         }}>
           LAST 14 DAYS
@@ -590,7 +575,7 @@ export default function Dashboard() {
         {dailyFinanceData.length === 0 || loading ? (
           <div style={{
             height: "260px", display: "flex", alignItems: "center",
-            justifyContent: "center", color: "#9ca3af", fontSize: "13px"
+            justifyContent: "center", color: "#9ca3af", fontSize: "var(--fs-small, 13px)"
           }}>
             {loading ? "Loading chart..." : "No activity in the last 14 days."}
           </div>
@@ -630,25 +615,30 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* LEGEND */}
         <div style={{ display: "flex", gap: "20px", marginTop: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "12px", height: "12px", background: "#22c55e", borderRadius: "2px" }} />
-            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Sales</span>
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Sales</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "12px", height: "12px", background: "#ef4444", borderRadius: "2px" }} />
-            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Expenses</span>
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Expenses</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "16px", height: "2px", background: "#f97316" }} />
-            <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>Profit</span>
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Profit</span>
           </div>
         </div>
       </div>
 
       {/* ── CONTENT GRID ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "18px" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "2fr 1fr",
+        gap: "18px"
+      }}
+      className="fc-dashboard-grid"
+      >
 
         {/* PENDING TASKS */}
         <div style={{
@@ -658,13 +648,13 @@ export default function Dashboard() {
         }}>
           <div style={{
             display: "flex", justifyContent: "space-between",
-            alignItems: "center", marginBottom: "24px"
+            alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "10px"
           }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#111827" }}>
+              <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
                 Pending Tasks
               </h2>
-              <p style={{ marginTop: "4px", color: "#9ca3af", fontSize: "13px" }}>
+              <p style={{ marginTop: "4px", color: "#9ca3af", fontSize: "var(--fs-small, 13px)" }}>
                 {stats.tasks} task{stats.tasks !== 1 ? "s" : ""} remaining
               </p>
             </div>
@@ -673,7 +663,7 @@ export default function Dashboard() {
               style={{
                 border: "none", background: "#f4f7fb", borderRadius: "12px",
                 padding: "8px 16px", fontWeight: "600", cursor: "pointer",
-                fontSize: "13px", color: "#374151"
+                fontSize: "var(--fs-small, 13px)", color: "#374151"
               }}
             >
               View All
@@ -686,10 +676,10 @@ export default function Dashboard() {
               justifyContent: "center", alignItems: "center"
             }}>
               <CheckCircle2 size={56} color="#22c55e" />
-              <h3 style={{ marginTop: "14px", marginBottom: "6px", fontSize: "16px", color: "#111827" }}>
+              <h3 style={{ marginTop: "14px", marginBottom: "6px", fontSize: "var(--fs-h3, 16px)", color: "#111827" }}>
                 All tasks completed!
               </h3>
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>Your farm is fully up to date.</p>
+              <p style={{ color: "#9ca3af", fontSize: "var(--fs-body, 14px)" }}>Your farm is fully up to date.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -705,11 +695,11 @@ export default function Dashboard() {
                       : task.priority === "medium" ? "#f59e0b" : "#22c55e",
                     flexShrink: 0
                   }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: "600", fontSize: "14px", color: "#111827" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: "600", fontSize: "var(--fs-body, 14px)", color: "#111827" }}>
                       {task.title}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
+                    <div style={{ fontSize: "var(--fs-tiny, 12px)", color: "#9ca3af", marginTop: "2px" }}>
                       Due: {task.due_date || "No due date"}
                     </div>
                   </div>
@@ -718,7 +708,7 @@ export default function Dashboard() {
                     style={{
                       padding: "4px 10px", borderRadius: "6px",
                       border: "1px solid #e5e7eb", background: "white",
-                      fontSize: "11px", cursor: "pointer", fontWeight: "600", color: "#374151"
+                      fontSize: "var(--fs-tiny, 11px)", cursor: "pointer", fontWeight: "600", color: "#374151"
                     }}
                   >
                     View
@@ -738,7 +728,7 @@ export default function Dashboard() {
             border: "1px solid rgba(226,232,240,0.8)",
             boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
           }}>
-            <h2 style={{ marginTop: 0, marginBottom: "18px", fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+            <h2 style={{ marginTop: 0, marginBottom: "18px", fontSize: "var(--fs-h3, 18px)", fontWeight: "700", color: "#111827" }}>
               Quick Actions
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
@@ -764,7 +754,7 @@ export default function Dashboard() {
                   }}
                 >
                   {icon}
-                  <span style={{ fontSize: "12px", fontWeight: "600", color: "#374151" }}>
+                  <span style={{ fontSize: "var(--fs-tiny, 12px)", fontWeight: "600", color: "#374151" }}>
                     {label}
                   </span>
                 </button>
@@ -783,14 +773,14 @@ export default function Dashboard() {
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", marginBottom: "14px"
               }}>
-                <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#111827" }}>
+                <h3 style={{ margin: 0, fontSize: "var(--fs-h3, 15px)", fontWeight: "700", color: "#111827" }}>
                   Overdue Vaccinations
                 </h3>
                 <button
                   onClick={() => navigate("/my-farm")}
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "12px", color: "#6b7280", fontWeight: "600"
+                    fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "600"
                   }}
                 >
                   View All
@@ -804,11 +794,11 @@ export default function Dashboard() {
                     display: "flex", alignItems: "center", gap: "10px"
                   }}>
                     <Syringe size={14} color="#ef4444" />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#991b1b" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "600", color: "#991b1b" }}>
                         {v.vaccine_name}
                       </p>
-                      <p style={{ margin: 0, fontSize: "11px", color: "#ef4444" }}>
+                      <p style={{ margin: 0, fontSize: "var(--fs-tiny, 11px)", color: "#ef4444" }}>
                         {v.farm_batches?.batch_name} · {v.scheduled_date}
                       </p>
                     </div>
@@ -831,7 +821,7 @@ export default function Dashboard() {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <Syringe size={16} color="#22c55e" />
-                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#111827" }}>
+                  <h3 style={{ margin: 0, fontSize: "var(--fs-h3, 15px)", fontWeight: "700", color: "#111827" }}>
                     Upcoming Vaccinations
                   </h3>
                 </div>
@@ -839,7 +829,7 @@ export default function Dashboard() {
                   onClick={() => navigate("/my-farm")}
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "12px", color: "#6b7280", fontWeight: "600"
+                    fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "600"
                   }}
                 >
                   View All
@@ -850,7 +840,7 @@ export default function Dashboard() {
                 background: "#f0fdf4", borderRadius: "12px"
               }}>
                 <CheckCircle2 size={32} color="#22c55e" style={{ marginBottom: "8px" }} />
-                <p style={{ margin: 0, fontSize: "13px", color: "#16a34a", fontWeight: "600" }}>
+                <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", color: "#16a34a", fontWeight: "600" }}>
                   All vaccinations up to date!
                 </p>
               </div>
