@@ -1,0 +1,363 @@
+/* ===== Layout shell ===== */
+.fc-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #faf9f6;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Mobile backdrop ===== */
+.fc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+
+/* ===== Sidebar ===== */
+.fc-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  width: 270px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #031510, #061d16, #03120d);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  overflow-y: auto;
+  transform: translateX(-100%);
+  box-shadow: none;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.fc-sidebar--open {
+  transform: translateX(0);
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== Sidebar header ===== */
+.fc-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.fc-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 6px;
+}
+
+.fc-logo-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(to bottom right, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+  flex-shrink: 0;
+}
+
+.fc-logo-line1 {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.fc-logo-line2 {
+  color: #22c55e;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.fc-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.fc-close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ===== Role badge ===== */
+.fc-role-badge-wrap {
+  padding-left: 6px;
+  margin-bottom: 16px;
+}
+
+.fc-role-badge {
+  display: inline-block;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-transform: capitalize;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* ===== Nav ===== */
+.fc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.fc-nav-link-wrap {
+  text-decoration: none;
+}
+
+.fc-nav-link {
+  height: 54px;
+  border-radius: 18px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #9aa4a0;
+  transition: all 0.2s ease-in-out;
+}
+.fc-nav-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+}
+
+.fc-nav-link--active {
+  background: linear-gradient(to right, #2cc56f, #18a957);
+  color: #fff;
+  box-shadow: 0 14px 35px rgba(34, 197, 94, 0.22);
+}
+.fc-nav-link--active:hover {
+  background: linear-gradient(to right, #2cc56f, #18a957);
+}
+
+.fc-nav-link-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fc-nav-icon {
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.fc-nav-label {
+  font-size: 15px;
+  font-weight: 500;
+}
+.fc-nav-link--active .fc-nav-label {
+  font-weight: 700;
+}
+
+.fc-nav-chevron {
+  color: #fff;
+}
+
+/* ===== Sidebar footer / user card ===== */
+.fc-sidebar-footer {
+  margin-top: 20px;
+}
+
+.fc-user-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 22px;
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fc-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.fc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fc-user-info {
+  overflow: hidden;
+}
+
+.fc-user-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-user-email {
+  color: #8a9490;
+  font-size: 11px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-signout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.fc-signout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* ===== App wrapper (right side) ===== */
+.fc-app-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ===== Top bar ===== */
+.fc-topbar {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid #e9eef2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  flex-shrink: 0;
+}
+
+.fc-hamburger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 12px;
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.fc-hamburger-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.fc-topbar-spacer {
+  display: none;
+}
+
+.fc-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ===== Main content ===== */
+.fc-main {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #faf9f6;
+}
+
+.fc-main-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== Desktop breakpoint (Tailwind lg = 1024px) ===== */
+@media (min-width: 1024px) {
+  .fc-sidebar {
+    position: relative;
+    transform: none;
+    z-index: 0;
+    box-shadow: none;
+  }
+  .fc-backdrop {
+    display: none;
+  }
+  .fc-close-btn {
+    display: none;
+  }
+  .fc-hamburger-btn {
+    display: none;
+  }
+  .fc-topbar-spacer {
+    display: block;
+  }
+  .fc-main {
+    padding: 32px;
+  }
+}
+
+@media (min-width: 640px) {
+  .fc-topbar {
+    padding: 0 24px;
+  }
+  .fc-main {
+    padding: 24px;
+  }
+}
