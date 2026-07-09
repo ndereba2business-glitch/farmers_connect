@@ -25,6 +25,10 @@
   media query added across the app targets max-width: 1024px and below,
   so nothing changes for anyone on a laptop or larger screen.
 */
+html, body, #root {
+  height: 100%;
+}
+
 
 /* ---------- Safe global reset ---------- */
 *, *::before, *::after {

@@ -330,12 +330,21 @@
 
 /* ===== Desktop breakpoint (Tailwind lg = 1024px) ===== */
 @media (min-width: 1024px) {
+  .fc-layout {
+    height: 100vh;
+    overflow: hidden; /* the outer shell itself never scrolls */
+  }
+
   .fc-sidebar {
     position: relative;
     transform: none;
     z-index: 0;
     box-shadow: none;
+    height: 100vh;        /* pinned to full viewport height */
+    overflow-y: auto;      /* sidebar scrolls internally, on its own */
+    flex-shrink: 0;
   }
+
   .fc-backdrop {
     display: none;
   }
@@ -350,6 +359,15 @@
   }
   .fc-main {
     padding: 32px;
+  }
+
+  .fc-app-wrapper {
+    height: 100vh;
+    overflow: hidden;   /* wrapper itself doesn't scroll... */
+  }
+
+  .fc-main {
+    overflow-y: auto;    /* ...only the content area inside it does */
   }
 }
 
