@@ -5,6 +5,7 @@ import {
   Search, Plus, MapPin, ShoppingBag,
   ChevronDown, X, ShoppingCart
 } from "lucide-react";
+import "./Marketplace.css";
 
 const CATEGORIES = [
   { value: "all", label: "All Categories" },
@@ -414,7 +415,7 @@ function handleContactSeller(product) {
 
           {/* LOADING SKELETONS */}
           {loading && (
-            <div style={{
+            <div className="marketplace-grid" style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
               gap: "20px"
@@ -475,7 +476,7 @@ function handleContactSeller(product) {
 
           {/* PRODUCT GRID */}
           {!loading && filtered.length > 0 && (
-            <div style={{
+            <div className="marketplace-grid" style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
               gap: "20px"

@@ -1,0 +1,14 @@
+/* Marketplace.css - responsive grid override only */
+
+@media (max-width: 640px) {
+  .marketplace-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .marketplace-grid {
+    gap: 8px !important;
+  }
+}
