@@ -33,7 +33,7 @@ import FeedCalculator from "./pages/FeedCalculator";
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import './App.css';
+
 
 
 function AppRoutes() {

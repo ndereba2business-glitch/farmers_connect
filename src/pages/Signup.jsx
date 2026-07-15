@@ -146,15 +146,20 @@ export default function Signup() {
       // =========================
       // CREATE PROFILE
       // =========================
+      // IMPORTANT: identity must come from data.user (what Supabase
+      // actually stored — e.g. the normalized "+254..." phone), never
+      // from local form state. AuthContext looks profiles up using
+      // data.user.email || data.user.phone, so this must match exactly
+      // or the profile becomes unreachable after login.
       const userId =
         data?.user?.id;
 
-      const userEmail =
+      const userIdentity =
         data?.user?.email ||
-        email ||
-        phone;
+        data?.user?.phone ||
+        null;
 
-      if (userId) {
+      if (userId && userIdentity) {
 
         await supabase
           .from(
@@ -163,7 +168,7 @@ export default function Signup() {
           .insert([
             {
               user_email:
-                userEmail,
+                userIdentity,
 
               full_name:
                 fullName,
