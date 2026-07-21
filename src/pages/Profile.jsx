@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
   Edit2, Save, LogOut, Camera, Trash2,
-  MapPin, Phone, ShoppingBag, Star, Loader2
+  MapPin, Phone, ShoppingBag, Star, Loader2, PlayCircle
 } from "lucide-react";
 
 const COUNTRY_CODES = [
@@ -33,13 +33,14 @@ const labelStyle = {
 };
 
 export default function Profile() {
-  const { user, userEmail, logout } = useAuth();
+  const { user, userEmail, logout, replayOnboarding } = useAuth();
   const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [replayingTour, setReplayingTour] = useState(false);
   const [activeTab, setActiveTab] = useState("listings");
   const [myListings, setMyListings] = useState([]);
   const [profileData, setProfileData] = useState({
@@ -93,7 +94,7 @@ export default function Profile() {
   // ========================
   // SAVE PROFILE
   // ========================
-async function handleSave() {
+  async function handleSave() {
     if (!userEmail) return;
     setSaving(true);
 
@@ -194,6 +195,15 @@ async function handleSave() {
   async function handleLogout() {
     await logout();
     navigate("/login");
+  }
+
+  // ========================
+  // REPLAY ONBOARDING TOUR
+  // ========================
+  async function handleReplayTour() {
+    setReplayingTour(true);
+    await replayOnboarding();
+    setReplayingTour(false);
   }
 
   // ========================
@@ -326,7 +336,7 @@ async function handleSave() {
               </div>
             </div>
 
-            {/* EDIT + LOGOUT BUTTONS */}
+            {/* EDIT + REPLAY TOUR + LOGOUT BUTTONS */}
             <div style={{
               display: "flex", gap: "8px",
               paddingTop: "44px", flexWrap: "wrap"
@@ -343,6 +353,21 @@ async function handleSave() {
               >
                 <Edit2 size={14} />
                 {editing ? "Cancel" : "Edit"}
+              </button>
+              <button
+                onClick={handleReplayTour}
+                disabled={replayingTour}
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "8px 16px", borderRadius: "10px",
+                  border: "1.5px solid #dcfce7", background: "#f0fdf4",
+                  cursor: replayingTour ? "not-allowed" : "pointer",
+                  fontWeight: "600", fontSize: "13px", color: "#16a34a",
+                  opacity: replayingTour ? 0.7 : 1
+                }}
+              >
+                <PlayCircle size={14} />
+                {replayingTour ? "Loading..." : "Replay Tour"}
               </button>
               <button
                 onClick={handleLogout}
