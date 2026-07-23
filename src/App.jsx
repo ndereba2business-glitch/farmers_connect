@@ -37,7 +37,6 @@ import VetPlaceholderPage from "./vet/pages/VetPlaceholderPage";
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import './App.css';
 
 
 function AppRoutes() {
