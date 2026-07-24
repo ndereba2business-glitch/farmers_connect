@@ -154,12 +154,12 @@ export default function VetDashboard() {
   ];
 
   const QUICK_ACTIONS = [
-    { icon: Pill, label: "Create Prescription", action: () => comingSoon("Prescriptions") },
-    { icon: Stethoscope, label: "Record Diagnosis", action: () => comingSoon("Diagnosis records") },
-    { icon: Syringe, label: "Add Vaccination Record", action: () => comingSoon("Vaccination records") },
-    { icon: Calendar, label: "Schedule Visit", action: () => setShowScheduleForm(true) },
-    { icon: Beaker, label: "Upload Lab Results", action: () => comingSoon("Lab result uploads") },
-    { icon: Send, label: "Message Farmer", action: () => comingSoon("Vet-to-farmer messaging") },
+    { icon: Pill, label: "Create Prescription", action: () => comingSoon("Prescriptions"), bg: "#f0fdf4", iconColor: "#22c55e" },
+    { icon: Stethoscope, label: "Record Diagnosis", action: () => comingSoon("Diagnosis records"), bg: "#eff6ff", iconColor: "#3b82f6" },
+    { icon: Syringe, label: "Add Vaccination Record", action: () => comingSoon("Vaccination records"), bg: "#f5f3ff", iconColor: "#8b5cf6" },
+    { icon: Calendar, label: "Schedule Visit", action: () => setShowScheduleForm(true), bg: "#fff7e6", iconColor: "#f59e0b" },
+    { icon: Beaker, label: "Upload Lab Results", action: () => comingSoon("Lab result uploads"), bg: "#fef2f2", iconColor: "#ef4444" },
+    { icon: Send, label: "Message Farmer", action: () => comingSoon("Vet-to-farmer messaging"), bg: "#eff6ff", iconColor: "#3b82f6" },
   ];
 
   const hour = new Date().getHours();
@@ -405,17 +405,25 @@ export default function VetDashboard() {
           Quick Actions
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
-          {QUICK_ACTIONS.map(({ icon: Icon, label, action }) => (
+          {QUICK_ACTIONS.map(({ icon: Icon, label, action, bg, iconColor }) => (
             <button
               key={label}
               onClick={action}
               style={{
                 display: "flex", alignItems: "center", gap: "10px", padding: "16px",
-                borderRadius: "16px", border: "1px solid #e5e7eb", background: "#f9fafb",
-                cursor: "pointer", fontWeight: "600", fontSize: "13px", color: "#374151", textAlign: "left"
+                borderRadius: "16px", border: "1px solid #e5e7eb", background: bg || "#fff",
+                cursor: "pointer", fontWeight: "600", fontSize: "13px", color: "#374151", textAlign: "left", transition: "all 0.15s",
               }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.06)"}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
             >
-              <Icon size={18} color="#16a34a" /> {label}
+              <div style={{
+                width: "38px", height: "38px", borderRadius: "12px", background: bg,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+              }}>
+                <Icon size={18} color={iconColor} />
+              </div>
+              {label}
             </button>
           ))}
         </div>
