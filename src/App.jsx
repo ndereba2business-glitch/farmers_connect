@@ -31,7 +31,7 @@ import FeedCalculator from "./pages/FeedCalculator";
 
 // VET WORKSPACE
 import VetLayout from "./vet/layout/VetLayout";
-import VetDashboard from "./vet/pages/VetDashboard";
+import VetDashboard from "./pages/VetDashboard";
 import VetPlaceholderPage from "./vet/pages/VetPlaceholderPage";
 
 // COMPONENTS
