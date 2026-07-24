@@ -8,7 +8,7 @@ import {
   Users, MessageCircle, Shield, Wallet,
   BarChart3, ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
-  Package, Calculator, Menu, X, Calendar
+  Package, Calculator, Menu, X, Calendar, AlertTriangle
 } from "lucide-react";
 import "./Layout.css";
 
@@ -31,7 +31,8 @@ const VET_NAV = [
   { name: "Vet Dashboard", path: "/vet", icon: Stethoscope },
   { name: "Appointments", path: "/appointments", icon: Calendar },
   { name: "Community", path: "/community", icon: Users },
-  { name: "Profile", path: "/profile", icon: UserCircle },
+  { name: "Profile", path: "/profile", icon: UserCircle },,
+  { name: "Emergency Requests", path: "/emergency-requests", icon: AlertTriangle },
 ];
 
 const SUPPLIER_NAV = [

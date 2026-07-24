@@ -34,6 +34,7 @@ import FeedCalculator from "./pages/FeedCalculator";
 import VetLayout from "./vet/layout/VetLayout";
 import VetDashboard from "./pages/VetDashboard";
 import VetPlaceholderPage from "./vet/pages/VetPlaceholderPage";
+import { useNavigate } from "react-router-dom";
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";

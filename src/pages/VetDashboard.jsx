@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -21,6 +22,7 @@ const URGENCY_COLORS = {
 
 export default function VetDashboard() {
   const { userEmail, profile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [emergencies, setEmergencies] = useState([]);
@@ -315,14 +317,14 @@ export default function VetDashboard() {
                           </button>
                         )}
                         <button
-                          onClick={() => updateAppointmentStatus(appt.id, "rescheduled")}
+                          onClick={() => navigate("/appointments")}
                           style={{
                             padding: "8px 16px", background: "#fff", color: "#374151",
                             border: "1px solid #e5e7eb", borderRadius: "8px",
                             fontWeight: "600", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
                         >
-                          Reschedule
+                          Manage
                         </button>
                       </div>
                     </div>
