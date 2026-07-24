@@ -20,6 +20,7 @@ import Wallet from "./pages/Wallet";
 import SupplierOrders from "./pages/SupplierOrders";
 import CluckyAI from "./pages/CluckyAI";
 import MyFarm from "./pages/MyFarm";
+import Appointments from "./pages/Appointments";
 import Profile from "./pages/Profile";
 import FarmGallery from "./pages/FarmGallery";
 import VerificationRequests from "./pages/VerificationRequests";
@@ -160,9 +161,7 @@ function AppRoutes() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<VetDashboard />} />
-        <Route path="appointments" element={
-          <VetPlaceholderPage title="Appointments" description="Manage your farmer visit schedule." />
-        } />
+        <Route path="appointments" element={<Appointments />} />
         <Route path="emergency" element={
           <VetPlaceholderPage title="Emergency Requests" description="Urgent cases needing your response." />
         } />

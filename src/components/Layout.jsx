@@ -8,7 +8,7 @@ import {
   Users, MessageCircle, Shield, Wallet,
   BarChart3, ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
-  Package, Calculator, Menu, X
+  Package, Calculator, Menu, X, Calendar
 } from "lucide-react";
 import "./Layout.css";
 
@@ -29,6 +29,7 @@ const FARMER_NAV = [
 
 const VET_NAV = [
   { name: "Vet Dashboard", path: "/vet", icon: Stethoscope },
+  { name: "Appointments", path: "/appointments", icon: Calendar },
   { name: "Community", path: "/community", icon: Users },
   { name: "Profile", path: "/profile", icon: UserCircle },
 ];
