@@ -1,0 +1,23 @@
+/* ===== DASHBOARD RESPONSIVE COMPANION STYLES ===== */
+
+/* Main content grid: Pending Tasks (2fr) + right column (1fr) on desktop,
+   stacks to a single column on tablet/mobile so nothing gets crushed */
+.fc-dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 768px) {
+  .fc-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card padding tightens slightly on small phones so content isn't
+   fighting the viewport edges for space */
+@media (max-width: 480px) {
+  .fc-dashboard-card {
+    padding: 16px !important;
+  }
+}
