@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
-  MessageCircle, X, Syringe, Pill, Beaker, Send, Clock
+  MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList
 } from "lucide-react";
 
 const inputStyle = {
@@ -20,12 +20,20 @@ const URGENCY_COLORS = {
   high: { bg: "#fff7ed", color: "#ea580c" },
 };
 
+const PROFILE_BANNER_META = {
+  missing: { bg: "#fffbeb", border: "#fde68a", color: "#92400e", text: "You haven't set up your vet profile yet. Complete it so farmers can find and book you." },
+  pending: { bg: "#eff6ff", border: "#bfdbfe", color: "#1e40af", text: "Your vet profile is pending admin review. You'll be listed to farmers once verified." },
+  rejected: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet profile was rejected. Update your details and resubmit." },
+  suspended: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet account is suspended. Contact support to appeal." },
+};
+
 export default function VetDashboard() {
-  const { userEmail, profile } = useAuth();
+  const { userEmail, profile, user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [emergencies, setEmergencies] = useState([]);
+  const [vetProfileStatus, setVetProfileStatus] = useState(null);
   const [stats, setStats] = useState({
     todayVisits: 0, emergencies: 0, pendingReports: 0,
     totalFarmers: 0, monthlyEarnings: 0, unreadMessages: 0
@@ -51,7 +59,8 @@ export default function VetDashboard() {
       { data: todayAppts, error: apptError },
       { data: allAppts },
       { data: emergencyData, error: emError },
-      { count: pendingCount }
+      { count: pendingCount },
+      { data: vetProfileData, error: vetProfileError }
     ] = await Promise.all([
       supabase.from("vet_appointments").select("*")
         .eq("vet_email", userEmail).eq("appointment_date", today)
@@ -62,14 +71,19 @@ export default function VetDashboard() {
         .eq("is_emergency", true).eq("status", "pending")
         .order("created_at", { ascending: false }),
       supabase.from("vet_questions").select("*", { count: "exact", head: true })
-        .eq("is_emergency", false).eq("status", "pending")
+        .eq("is_emergency", false).eq("status", "pending"),
+      user?.id
+        ? supabase.from("vet_profiles").select("verification_status").eq("user_id", user.id).maybeSingle()
+        : Promise.resolve({ data: null, error: null })
     ]);
 
     if (apptError) console.error("VetDashboard: failed to load today's appointments —", apptError.message);
     if (emError) console.error("VetDashboard: failed to load emergencies —", emError.message);
+    if (vetProfileError) console.error("VetDashboard: failed to load vet profile —", vetProfileError.message);
 
     setAppointments(todayAppts || []);
     setEmergencies(emergencyData || []);
+    setVetProfileStatus(vetProfileData?.verification_status || "missing");
 
     const uniqueFarmers = new Set((allAppts || []).map(a => a.farmer_email).filter(Boolean));
     const monthlyEarnings = (allAppts || [])
@@ -167,6 +181,10 @@ export default function VetDashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  const profileBanner = vetProfileStatus && vetProfileStatus !== "verified"
+    ? (PROFILE_BANNER_META[vetProfileStatus] || PROFILE_BANNER_META.missing)
+    : null;
+
   return (
     <div>
       {/* HEADER */}
@@ -180,6 +198,34 @@ export default function VetDashboard() {
           </p>
         </div>
       </div>
+
+      {/* VET PROFILE COMPLETION BANNER */}
+      {!loading && profileBanner && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "14px", flexWrap: "wrap",
+          padding: "14px 18px", borderRadius: "14px",
+          background: profileBanner.bg, border: `1px solid ${profileBanner.border}`,
+          marginBottom: "20px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <ClipboardList size={18} color={profileBanner.color} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: "13px", fontWeight: "600", color: profileBanner.color }}>
+              {profileBanner.text}
+            </span>
+          </div>
+          <button
+            onClick={() => navigate("/vet-profile")}
+            style={{
+              padding: "8px 16px", background: "#fff", border: `1px solid ${profileBanner.border}`,
+              borderRadius: "8px", fontWeight: "700", fontSize: "12px", color: profileBanner.color,
+              cursor: "pointer", whiteSpace: "nowrap"
+            }}
+          >
+            {vetProfileStatus === "missing" ? "Set Up Profile" : "Update Profile"}
+          </button>
+        </div>
+      )}
 
       {/* WELCOME BANNER */}
       <div style={{
