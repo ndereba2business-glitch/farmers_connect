@@ -1,14 +1,13 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
-import OnboardingTour from "./OnboardingTour";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
   Users, MessageCircle, Shield, Wallet,
   BarChart3, ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
-  Package, Calculator, Menu, X, Calendar, AlertTriangle
+  Package, Calculator, Menu, X
 } from "lucide-react";
 import "./Layout.css";
 
@@ -29,10 +28,9 @@ const FARMER_NAV = [
 
 const VET_NAV = [
   { name: "Vet Dashboard", path: "/vet", icon: Stethoscope },
-  { name: "Appointments", path: "/appointments", icon: Calendar },
+  { name: "My Vet Profile", path: "/vet-profile", icon: ClipboardList },
   { name: "Community", path: "/community", icon: Users },
-  { name: "Profile", path: "/profile", icon: UserCircle },,
-  { name: "Emergency Requests", path: "/emergency-requests", icon: AlertTriangle },
+  { name: "Profile", path: "/profile", icon: UserCircle },
 ];
 
 const SUPPLIER_NAV = [
@@ -55,17 +53,6 @@ export default function Layout() {
   const navigate = useNavigate();
   const { user, role, userEmail, profile, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showTour, setShowTour] = useState(false);
-
-  // Show the onboarding tour once per user, driven by the DB flag
-  // on farmer_profiles rather than localStorage, so it follows the
-  // user across devices. Only farmers get the guided tour for now —
-  // vet/supplier/admin tours are a separate future addition.
-  useEffect(() => {
-    if (role === "farmer" && profile && profile.has_seen_onboarding === false) {
-      setShowTour(true);
-    }
-  }, [profile, role]);
 
   async function handleLogout() {
     await logout();
@@ -83,9 +70,6 @@ export default function Layout() {
 
   return (
     <div className="fc-layout">
-
-      {/* ONBOARDING TOUR */}
-      <OnboardingTour open={showTour} onClose={() => setShowTour(false)} />
 
       {/* MOBILE BACKDROP OVERLAY */}
       {sidebarOpen && (
