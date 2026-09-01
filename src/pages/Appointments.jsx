@@ -29,7 +29,7 @@ const EMPTY_FORM = {
 };
 
 export default function Appointments() {
-  const { userEmail } = useAuth();
+  const { userEmail, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -47,14 +47,27 @@ export default function Appointments() {
 
   useEffect(() => {
     if (userEmail) loadAppointments();
-  }, [userEmail]);
+  }, [userEmail, user?.id]);
 
   async function loadAppointments() {
     setLoading(true);
+
+    // A vet needs to see: appointments already assigned to them (by id or
+    // legacy email), plus the open claim pool — unassigned requests that are
+    // either not targeted at a specific vet, or specifically targeted at them.
+    const orParts = [
+      `vet_email.eq.${userEmail}`,
+      `and(vet_id.is.null,vet_email.is.null,requested_vet_id.is.null)`,
+    ];
+    if (user?.id) {
+      orParts.push(`vet_id.eq.${user.id}`);
+      orParts.push(`and(vet_id.is.null,vet_email.is.null,requested_vet_id.eq.${user.id})`);
+    }
+
     const { data, error } = await supabase
       .from("vet_appointments")
       .select("*")
-      .or(`vet_email.eq.${userEmail},vet_email.is.null`)
+      .or(orParts.join(","))
       .order("appointment_date", { ascending: true })
       .order("appointment_time", { ascending: true });
 
@@ -67,12 +80,15 @@ export default function Appointments() {
     setLoading(false);
   }
 
+  const isMine = (a) =>
+    (user?.id && a.vet_id === user.id) || a.vet_email === userEmail;
+
   const upcoming = appointments.filter(a =>
-    a.vet_email === userEmail && ["pending", "accepted"].includes(a.status)
+    isMine(a) && ["pending", "accepted"].includes(a.status)
   );
-  const unassigned = appointments.filter(a => a.vet_email === null);
-  const completed = appointments.filter(a => a.vet_email === userEmail && a.status === "completed");
-  const cancelled = appointments.filter(a => a.vet_email === userEmail && a.status === "cancelled");
+  const unassigned = appointments.filter(a => !a.vet_id && !a.vet_email);
+  const completed = appointments.filter(a => isMine(a) && a.status === "completed");
+  const cancelled = appointments.filter(a => isMine(a) && a.status === "cancelled");
 
   const TABS = [
     { key: "upcoming", label: "Upcoming", count: upcoming.length },
@@ -88,15 +104,24 @@ export default function Appointments() {
     cancelled;
 
   async function claimAppointment(id) {
+    if (!user?.id) {
+      alert("You must be logged in to claim an appointment.");
+      return;
+    }
     const { error } = await supabase.from("vet_appointments")
-      .update({ vet_email: userEmail }).eq("id", id);
+      .update({ vet_id: user.id, vet_email: userEmail }).eq("id", id);
     if (error) { alert("Failed to claim: " + error.message); return; }
     loadAppointments();
   }
 
   async function acceptAppointment(id) {
     const { error } = await supabase.from("vet_appointments")
-      .update({ status: "accepted" }).eq("id", id);
+      .update({
+        status: "accepted",
+        ...(user?.id ? { vet_id: user.id } : {}),
+        vet_email: userEmail
+      })
+      .eq("id", id);
     if (error) { alert("Failed to accept: " + error.message); return; }
     loadAppointments();
   }
@@ -164,6 +189,7 @@ export default function Appointments() {
     if (!newForm.farm_name || !newForm.appointment_date) return;
     setSaving(true);
     const { error } = await supabase.from("vet_appointments").insert([{
+      vet_id: user?.id || null,
       vet_email: userEmail,
       farm_name: newForm.farm_name,
       county: newForm.county,
@@ -172,7 +198,8 @@ export default function Appointments() {
       appointment_time: newForm.appointment_time,
       reason: newForm.reason,
       urgency: newForm.urgency,
-      status: "pending"
+      status: "pending",
+      source: "direct"
     }]);
     setSaving(false);
     if (error) { alert("Failed to create appointment: " + error.message); return; }
@@ -278,7 +305,7 @@ export default function Appointments() {
                         fontSize: "11px", fontWeight: "700", padding: "2px 8px",
                         borderRadius: "20px", background: "#eff6ff", color: "#3b82f6"
                       }}>
-                        Unclaimed
+                        {appt.requested_vet_id ? "Requested — You" : "Unclaimed"}
                       </span>
                     )}
                     {activeTab === "upcoming" && (
