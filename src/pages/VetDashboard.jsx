@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
-  MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList
+  MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList, CalendarPlus
 } from "lucide-react";
 
 const inputStyle = {
@@ -12,6 +12,11 @@ const inputStyle = {
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
   background: "#fff", color: "#111827"
+};
+
+const labelStyle = {
+  display: "block", fontSize: "12px", fontWeight: "600",
+  color: "#6b7280", marginBottom: "5px"
 };
 
 const URGENCY_COLORS = {
@@ -25,6 +30,11 @@ const PROFILE_BANNER_META = {
   pending: { bg: "#eff6ff", border: "#bfdbfe", color: "#1e40af", text: "Your vet profile is pending admin review. You'll be listed to farmers once verified." },
   rejected: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet profile was rejected. Update your details and resubmit." },
   suspended: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet account is suspended. Contact support to appeal." },
+};
+
+const EMPTY_ESCALATE_FORM = {
+  farm_name: "", county: "", bird_count: "",
+  appointment_date: "", appointment_time: "", urgency: "high", reason: ""
 };
 
 export default function VetDashboard() {
@@ -44,6 +54,12 @@ export default function VetDashboard() {
     farm_name: "", county: "", bird_count: "",
     appointment_date: "", appointment_time: "", reason: "", urgency: "medium"
   });
+
+  // ── ESCALATE QUESTION → VISIT ──
+  const [escalateTarget, setEscalateTarget] = useState(null);
+  const [escalateForm, setEscalateForm] = useState(EMPTY_ESCALATE_FORM);
+  const [escalateSaving, setEscalateSaving] = useState(false);
+  const [escalateError, setEscalateError] = useState("");
 
   useEffect(() => {
     if (userEmail) loadDashboard();
@@ -126,12 +142,85 @@ export default function VetDashboard() {
     loadDashboard();
   }
 
+  // ── OPEN ESCALATE MODAL ──
+  function openEscalate(question) {
+    setEscalateError("");
+    setEscalateForm({
+      ...EMPTY_ESCALATE_FORM,
+      appointment_date: new Date().toISOString().split("T")[0],
+      urgency: question.is_emergency ? "high" : "medium",
+      reason: question.question || ""
+    });
+    setEscalateTarget(question);
+  }
+
+  // ── SAVE ESCALATE → CREATE APPOINTMENT + LINK BACK ──
+  async function handleEscalateSave(e) {
+    e.preventDefault();
+    setEscalateError("");
+
+    if (!escalateForm.farm_name || !escalateForm.appointment_date) {
+      setEscalateError("Farm name and date are required.");
+      return;
+    }
+
+    setEscalateSaving(true);
+
+    const { data: newAppt, error: apptError } = await supabase
+      .from("vet_appointments")
+      .insert([{
+        vet_id: user?.id || null,
+        vet_email: userEmail,
+        farmer_id: escalateTarget.farmer_id || null,
+        farmer_email: escalateTarget.user_email,
+        farm_name: escalateForm.farm_name,
+        county: escalateForm.county,
+        bird_count: escalateForm.bird_count ? Number(escalateForm.bird_count) : null,
+        appointment_date: escalateForm.appointment_date,
+        appointment_time: escalateForm.appointment_time,
+        reason: escalateForm.reason,
+        urgency: escalateForm.urgency,
+        status: "pending",
+        source: "escalated_question"
+      }])
+      .select()
+      .single();
+
+    if (apptError) {
+      setEscalateError("Failed to create visit: " + apptError.message);
+      setEscalateSaving(false);
+      return;
+    }
+
+    const { error: linkError } = await supabase
+      .from("vet_questions")
+      .update({
+        escalated_appointment_id: newAppt.id,
+        status: "escalated",
+        assigned_vet: userEmail,
+        responded_at: new Date().toISOString()
+      })
+      .eq("id", escalateTarget.id);
+
+    setEscalateSaving(false);
+
+    if (linkError) {
+      // The visit was created successfully — this is a non-fatal follow-up
+      // write failing, not a rollback situation. Surface it, don't block.
+      alert("Visit created, but couldn't link it back to the original question: " + linkError.message);
+    }
+
+    setEscalateTarget(null);
+    loadDashboard();
+  }
+
   async function handleScheduleVisit(e) {
     e.preventDefault();
     if (!scheduleForm.farm_name || !scheduleForm.appointment_date) return;
     setSaving(true);
 
     const { error } = await supabase.from("vet_appointments").insert([{
+      vet_id: user?.id || null,
       vet_email: userEmail,
       farm_name: scheduleForm.farm_name,
       county: scheduleForm.county,
@@ -140,7 +229,8 @@ export default function VetDashboard() {
       appointment_time: scheduleForm.appointment_time,
       reason: scheduleForm.reason,
       urgency: scheduleForm.urgency,
-      status: "pending"
+      status: "pending",
+      source: "direct"
     }]);
 
     setSaving(false);
@@ -335,6 +425,14 @@ export default function VetDashboard() {
                           }}>
                             {appt.status}
                           </span>
+                          {appt.source === "escalated_question" && (
+                            <span style={{
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px",
+                              background: "#fef2f2", color: "#ef4444"
+                            }}>
+                              🚨 From Emergency
+                            </span>
+                          )}
                         </div>
                         <div style={{ fontSize: "12px", color: "#9ca3af", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                           {appt.appointment_time && (
@@ -428,15 +526,27 @@ export default function VetDashboard() {
                   <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#7f1d1d" }}>
                     {em.question}
                   </p>
-                  <button
-                    onClick={() => respondToEmergency(em)}
-                    style={{
-                      width: "100%", padding: "8px", background: "#ef4444", color: "#fff",
-                      border: "none", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
-                    }}
-                  >
-                    Respond
-                  </button>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => respondToEmergency(em)}
+                      style={{
+                        flex: 1, padding: "8px", background: "#ef4444", color: "#fff",
+                        border: "none", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
+                      }}
+                    >
+                      Respond
+                    </button>
+                    <button
+                      onClick={() => openEscalate(em)}
+                      style={{
+                        flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+                        padding: "8px", background: "#fff", color: "#ef4444",
+                        border: "1px solid #ef4444", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
+                      }}
+                    >
+                      <CalendarPlus size={13} /> Escalate to Visit
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -560,6 +670,134 @@ export default function VetDashboard() {
                 }}
               >
                 {saving ? "Saving..." : "Schedule Visit"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ESCALATE TO VISIT MODAL */}
+      {escalateTarget && (
+        <div
+          onClick={() => setEscalateTarget(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px"
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px", padding: "28px",
+              maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "800", color: "#111827" }}>
+                Escalate to Visit
+              </h2>
+              <button onClick={() => setEscalateTarget(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={18} color="#9ca3af" />
+              </button>
+            </div>
+            <p style={{ margin: "0 0 18px", fontSize: "12px", color: "#9ca3af" }}>
+              From: {escalateTarget.user_email}
+            </p>
+
+            <form onSubmit={handleEscalateSave}>
+              <div style={{ marginBottom: "12px" }}>
+                <label style={labelStyle}>Farm Name</label>
+                <input
+                  placeholder="Farm name"
+                  value={escalateForm.farm_name}
+                  onChange={e => setEscalateForm({ ...escalateForm, farm_name: e.target.value })}
+                  required
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                <div>
+                  <label style={labelStyle}>County</label>
+                  <input
+                    placeholder="County"
+                    value={escalateForm.county}
+                    onChange={e => setEscalateForm({ ...escalateForm, county: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Bird Count</label>
+                  <input
+                    type="number" placeholder="Bird count"
+                    value={escalateForm.bird_count}
+                    onChange={e => setEscalateForm({ ...escalateForm, bird_count: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+                <div>
+                  <label style={labelStyle}>Visit Date</label>
+                  <input
+                    type="date"
+                    value={escalateForm.appointment_date}
+                    onChange={e => setEscalateForm({ ...escalateForm, appointment_date: e.target.value })}
+                    required
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Visit Time</label>
+                  <input
+                    type="time"
+                    value={escalateForm.appointment_time}
+                    onChange={e => setEscalateForm({ ...escalateForm, appointment_time: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              <div style={{ marginBottom: "12px" }}>
+                <label style={labelStyle}>Urgency</label>
+                <select
+                  value={escalateForm.urgency}
+                  onChange={e => setEscalateForm({ ...escalateForm, urgency: e.target.value })}
+                  style={{ ...inputStyle, appearance: "none" }}
+                >
+                  <option value="low">Low urgency</option>
+                  <option value="medium">Medium urgency</option>
+                  <option value="high">High urgency</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>Reason (from the original question)</label>
+                <textarea
+                  value={escalateForm.reason}
+                  onChange={e => setEscalateForm({ ...escalateForm, reason: e.target.value })}
+                  style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
+                />
+              </div>
+
+              {escalateError && (
+                <div style={{
+                  background: "#fef2f2", border: "1px solid #fecaca",
+                  color: "#dc2626", padding: "10px 14px",
+                  borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
+                }}>
+                  ⚠️ {escalateError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={escalateSaving}
+                style={{
+                  width: "100%", padding: "13px",
+                  background: escalateSaving ? "#fca5a5" : "#ef4444",
+                  color: "#fff", border: "none", borderRadius: "12px",
+                  fontWeight: "700", fontSize: "14px", cursor: escalateSaving ? "not-allowed" : "pointer"
+                }}
+              >
+                {escalateSaving ? "Creating visit..." : "Create Visit & Link Question"}
               </button>
             </form>
           </div>
