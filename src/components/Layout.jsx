@@ -28,6 +28,7 @@ const FARMER_NAV = [
 
 const VET_NAV = [
   { name: "Vet Dashboard", path: "/vet", icon: Stethoscope },
+  { name: "My Farmers", path: "/vet/farmers", icon: Users },
   { name: "My Vet Profile", path: "/vet-profile", icon: ClipboardList },
   { name: "Community", path: "/community", icon: Users },
   { name: "Profile", path: "/profile", icon: UserCircle },

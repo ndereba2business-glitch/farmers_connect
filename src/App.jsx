@@ -30,6 +30,7 @@ import CommunityChat from "./pages/CommunityChat";
 import Finance from "./pages/Finance";
 import Tasks from "./pages/Tasks";
 import FeedCalculator from "./pages/FeedCalculator";
+import MyFarmers from "./pages/MyFarmers";
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -196,6 +197,15 @@ function AppRoutes() {
             element={
               <ProtectedRoute allowedRoles={["vet"]}>
                 <VetProfileSetup />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/vet/farmers"
+            element={
+              <ProtectedRoute allowedRoles={["vet"]}>
+                <MyFarmers />
               </ProtectedRoute>
             }
           />
