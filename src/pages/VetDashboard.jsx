@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
   MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
-  CalendarPlus, Search
+  CalendarPlus, Search, CheckCircle2
 } from "lucide-react";
 
 const inputStyle = {
@@ -43,16 +43,29 @@ const EMPTY_SCHEDULE_FORM = {
   appointment_date: "", appointment_time: "", reason: "", urgency: "medium"
 };
 
+// NEW — Phase 2.1: relative-time helper for the recent activity feed
+function timeAgo(timestamp) {
+  if (!timestamp) return "";
+  const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
 export default function VetDashboard() {
   const { userEmail, profile, user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(""); // NEW — Phase 2.1 visible error surface
   const [appointments, setAppointments] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]); // NEW — Phase 2.1 recent activity feed
   const [emergencies, setEmergencies] = useState([]);
   const [vetProfileStatus, setVetProfileStatus] = useState(null);
   const [stats, setStats] = useState({
     todayVisits: 0, emergencies: 0, pendingReports: 0,
-    totalFarmers: 0, monthlyEarnings: 0, unreadMessages: 0
+    totalFarmers: 0, monthlyEarnings: 0, unreadMessages: 0,
+    upcomingVisits: 0, pendingRequests: 0, completedVisits: 0 // NEW
   });
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,9 +73,6 @@ export default function VetDashboard() {
   const [scheduleError, setScheduleError] = useState("");
 
   // ── FARMER PICKER FOR SCHEDULE VISIT ──
-  // Root cause of the "Total Farmers" undercount: vet-initiated visits had
-  // no way to attach a farmer_email, so they were invisible to any stat or
-  // page that groups appointments by farmer_email (Total Farmers, My Farmers).
   const [farmerQuery, setFarmerQuery] = useState("");
   const [farmerResults, setFarmerResults] = useState([]);
   const [farmerSearching, setFarmerSearching] = useState(false);
@@ -110,16 +120,27 @@ export default function VetDashboard() {
     const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
       .toISOString().split("T")[0];
 
+    // NEW — Phase 2.1: bounded upcoming-visits window (today + next 7 days)
+    const upcomingCutoffDate = new Date();
+    upcomingCutoffDate.setDate(upcomingCutoffDate.getDate() + 7);
+    const upcomingCutoff = upcomingCutoffDate.toISOString().split("T")[0];
+
     const [
-      { data: todayAppts, error: apptError },
+      { data: upcomingAppts, error: apptError },
       { data: allAppts },
       { data: emergencyData, error: emError },
       { count: pendingCount },
-      { data: vetProfileData, error: vetProfileError }
+      { data: vetProfileData, error: vetProfileError },
+      { data: recentActivityData, error: recentActivityError } // NEW
     ] = await Promise.all([
       supabase.from("vet_appointments").select("*")
-        .eq("vet_email", userEmail).eq("appointment_date", today)
-        .order("appointment_time", { ascending: true }),
+        .eq("vet_email", userEmail)
+        .gte("appointment_date", today)
+        .lte("appointment_date", upcomingCutoff)
+        .in("status", ["pending", "accepted"])
+        .order("appointment_date", { ascending: true })
+        .order("appointment_time", { ascending: true })
+        .limit(15),
       supabase.from("vet_appointments").select("farmer_email, fee, status, appointment_date")
         .eq("vet_email", userEmail),
       supabase.from("vet_questions").select("*")
@@ -129,14 +150,24 @@ export default function VetDashboard() {
         .eq("is_emergency", false).eq("status", "pending"),
       user?.id
         ? supabase.from("vet_profiles").select("verification_status").eq("user_id", user.id).maybeSingle()
-        : Promise.resolve({ data: null, error: null })
+        : Promise.resolve({ data: null, error: null }),
+      // NEW — Phase 2.1: recent activity feed, last 5 appointment events for this vet
+      supabase.from("vet_appointments").select("id, farm_name, status, appointment_date, created_at")
+        .eq("vet_email", userEmail)
+        .order("created_at", { ascending: false })
+        .limit(5)
     ]);
 
-    if (apptError) console.error("VetDashboard: failed to load today's appointments —", apptError.message);
+    if (apptError) console.error("VetDashboard: failed to load upcoming appointments —", apptError.message);
     if (emError) console.error("VetDashboard: failed to load emergencies —", emError.message);
     if (vetProfileError) console.error("VetDashboard: failed to load vet profile —", vetProfileError.message);
+    if (recentActivityError) console.error("VetDashboard: failed to load recent activity —", recentActivityError.message);
 
-    setAppointments(todayAppts || []);
+    // NEW — Phase 2.1: surface load failures visibly instead of only logging
+    setLoadError(apptError || emError ? "Some dashboard data couldn't load. Check your connection and retry." : "");
+
+    setAppointments(upcomingAppts || []);
+    setRecentActivity(recentActivityData || []); // NEW
     setEmergencies(emergencyData || []);
     setVetProfileStatus(vetProfileData?.verification_status || "missing");
 
@@ -145,13 +176,22 @@ export default function VetDashboard() {
       .filter(a => a.status === "completed" && a.appointment_date >= monthStart)
       .reduce((sum, a) => sum + Number(a.fee || 0), 0);
 
+    // NEW — Phase 2.1 dashboard stats
+    const pendingRequests = (allAppts || []).filter(a => a.status === "pending").length;
+    const completedVisits = (allAppts || []).filter(a => a.status === "completed").length;
+    const upcomingVisitsCount = (upcomingAppts || []).length;
+    const todayVisitsCount = (upcomingAppts || []).filter(a => a.appointment_date === today).length;
+
     setStats({
-      todayVisits: (todayAppts || []).length,
+      todayVisits: todayVisitsCount,
       emergencies: (emergencyData || []).length,
       pendingReports: pendingCount || 0,
       totalFarmers: uniqueFarmers.size,
       monthlyEarnings,
-      unreadMessages: 0 // no vet-farmer messaging system yet — see roadmap note below
+      unreadMessages: 0, // no vet-farmer messaging system yet — see roadmap note below
+      upcomingVisits: upcomingVisitsCount, // NEW
+      pendingRequests, // NEW
+      completedVisits // NEW
     });
 
     setLoading(false);
@@ -244,8 +284,6 @@ export default function VetDashboard() {
     setEscalateSaving(false);
 
     if (linkError) {
-      // The visit was created successfully — this is a non-fatal follow-up
-      // write failing, not a rollback situation. Surface it, don't block.
       alert("Visit created, but couldn't link it back to the original question: " + linkError.message);
     }
 
@@ -303,16 +341,23 @@ export default function VetDashboard() {
     alert(`${feature} isn't built yet — it needs its own backend. On the roadmap.`);
   }
 
+  // UPDATED — Phase 2.1: consolidated to 6 glanceable cards (dropped the
+  // always-zero "Unread Messages" placeholder; merged "Pending Reports"
+  // into "Pending Requests" since both mean "things awaiting your action")
   const STAT_CARDS = [
-    { label: "Today's Visits", value: stats.todayVisits, icon: Calendar, color: "#edf9f1", iconColor: "#22c55e" },
-    { label: "Emergencies", value: stats.emergencies, icon: AlertTriangle, color: "#fef2f2", iconColor: "#ef4444" },
-    { label: "Pending Reports", value: stats.pendingReports, icon: FileText, color: "#fff7e6", iconColor: "#f59e0b" },
     { label: "Total Farmers", value: stats.totalFarmers, icon: Users, color: "#edf5ff", iconColor: "#3b82f6" },
+    { label: "Upcoming Visits", value: stats.upcomingVisits, icon: CalendarPlus, color: "#edf9f1", iconColor: "#22c55e" },
+    { label: "Pending Requests", value: stats.pendingRequests + stats.pendingReports, icon: ClipboardList, color: "#fff7e6", iconColor: "#f59e0b" },
+    { label: "Completed Visits", value: stats.completedVisits, icon: CheckCircle2, color: "#ecfdf5", iconColor: "#059669" },
+    { label: "Emergencies", value: stats.emergencies, icon: AlertTriangle, color: "#fef2f2", iconColor: "#ef4444" },
     { label: "Monthly Earnings", value: `KES ${stats.monthlyEarnings.toLocaleString()}`, icon: Wallet, color: "#f3f0ff", iconColor: "#8b5cf6" },
-    { label: "Unread Messages", value: stats.unreadMessages, icon: MessageCircle, color: "#fff0eb", iconColor: "#f97316" },
   ];
 
   const QUICK_ACTIONS = [
+    // NEW — Phase 2.1 additions
+    { icon: Users, label: "View Farmers", action: () => comingSoon("Farmers list — tell me the intended route and I'll wire this up"), bg: "#edf5ff", iconColor: "#3b82f6" },
+    { icon: ClipboardList, label: "Manage Requests", action: () => navigate("/appointments"), bg: "#f0fdf4", iconColor: "#16a34a" },
+    // existing
     { icon: Pill, label: "Create Prescription", action: () => comingSoon("Prescriptions"), bg: "#f0fdf4", iconColor: "#22c55e" },
     { icon: Stethoscope, label: "Record Diagnosis", action: () => comingSoon("Diagnosis records"), bg: "#eff6ff", iconColor: "#3b82f6" },
     { icon: Syringe, label: "Add Vaccination Record", action: () => comingSoon("Vaccination records"), bg: "#f5f3ff", iconColor: "#8b5cf6" },
@@ -323,6 +368,7 @@ export default function VetDashboard() {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const todayStr = new Date().toISOString().split("T")[0]; // NEW — "Today" tag in upcoming list
 
   const profileBanner = vetProfileStatus && vetProfileStatus !== "verified"
     ? (PROFILE_BANNER_META[vetProfileStatus] || PROFILE_BANNER_META.missing)
@@ -341,6 +387,29 @@ export default function VetDashboard() {
           </p>
         </div>
       </div>
+
+      {/* LOAD ERROR BANNER — NEW (Phase 2.1) */}
+      {!loading && loadError && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "10px",
+          padding: "12px 16px", borderRadius: "12px",
+          background: "#fef2f2", border: "1px solid #fecaca",
+          color: "#991b1b", fontSize: "13px", marginBottom: "20px"
+        }}>
+          <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+          <span>{loadError}</span>
+          <button
+            onClick={loadDashboard}
+            style={{
+              marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+              borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
+              color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* VET PROFILE COMPLETION BANNER */}
       {!loading && profileBanner && (
@@ -427,15 +496,20 @@ export default function VetDashboard() {
       {/* MAIN GRID */}
       <div className="fc-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "18px" }}>
 
-        {/* TODAY'S APPOINTMENTS */}
+        {/* UPCOMING APPOINTMENTS */}
         <div style={{
           background: "#fff", borderRadius: "24px", padding: "24px",
           border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
-              Today's Appointments
-            </h2>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+                Upcoming Appointments
+              </h2>
+              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+                Next 7 days
+              </p>
+            </div>
             <span style={{ fontSize: "13px", color: "#22c55e", fontWeight: "600" }}>
               {appointments.length} scheduled
             </span>
@@ -446,7 +520,7 @@ export default function VetDashboard() {
           ) : appointments.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <Calendar size={40} color="#e5e7eb" style={{ marginBottom: "10px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>No appointments scheduled for today.</p>
+              <p style={{ color: "#9ca3af", fontSize: "14px" }}>No appointments scheduled in the next 7 days.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -478,6 +552,14 @@ export default function VetDashboard() {
                           }}>
                             {appt.status}
                           </span>
+                          {appt.appointment_date === todayStr && (
+                            <span style={{
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px",
+                              background: "#dbeafe", color: "#1d4ed8"
+                            }}>
+                              Today
+                            </span>
+                          )}
                           {appt.source === "escalated_question" && (
                             <span style={{
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px",
@@ -606,6 +688,58 @@ export default function VetDashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* RECENT ACTIVITY — NEW (Phase 2.1) */}
+      <div style={{
+        background: "#fff", borderRadius: "24px", padding: "24px",
+        border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginTop: "18px"
+      }}>
+        <h2 style={{ margin: "0 0 16px", fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+          Recent Activity
+        </h2>
+
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} style={{ height: "44px", borderRadius: "10px", background: "#f3f4f6" }} />
+            ))}
+          </div>
+        ) : recentActivity.length === 0 ? (
+          <p style={{ margin: 0, color: "#9ca3af", fontSize: "14px" }}>
+            No recent activity yet — new bookings and status changes will show up here.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {recentActivity.map(item => (
+              <div key={item.id} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "10px 14px", borderRadius: "10px", background: "#f9fafb"
+              }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: "600", fontSize: "13px", color: "#111827" }}>
+                    {item.farm_name || "Untitled visit"}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#9ca3af" }}>
+                    {item.appointment_date} · {timeAgo(item.created_at)}
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px",
+                  background: item.status === "completed" ? "#dcfce7"
+                    : item.status === "accepted" ? "#dbeafe"
+                    : "#fef3c7",
+                  color: item.status === "completed" ? "#16a34a"
+                    : item.status === "accepted" ? "#1d4ed8"
+                    : "#d97706",
+                  textTransform: "capitalize", flexShrink: 0
+                }}>
+                  {item.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* QUICK ACTIONS */}
