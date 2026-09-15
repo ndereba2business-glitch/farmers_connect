@@ -1,43 +1,88 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 
-// PAGES
-import Dashboard from "./pages/Dashboard";
-import Bookings from "./pages/Bookings";
-import VetDashboard from "./pages/VetDashboard";
-import VetProfileSetup from "./pages/VetProfileSetup";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Suppliers from "./pages/Suppliers";
-import Marketplace from "./pages/Marketplace";
-import Orders from "./pages/Orders";
-import Analytics from "./pages/Analytics";
-import ChatSupport from "./pages/ChatSupport";
-import VetVerification from "./pages/VetVerification";
-import SupplierVerification from "./pages/SupplierVerification";
-import AdminDashboard from "./pages/AdminDashboard";
-import RevenueDashboard from "./pages/RevenueDashboard";
-import Wallet from "./pages/Wallet";
-import SupplierOrders from "./pages/SupplierOrders";
-import CluckyAI from "./pages/CluckyAI";
-import MyFarm from "./pages/MyFarm";
-import Profile from "./pages/Profile";
-import FarmGallery from "./pages/FarmGallery";
-import VerificationRequests from "./pages/VerificationRequests";
-import Community from "./pages/Community";
-import CommunityChat from "./pages/CommunityChat";
-import Finance from "./pages/Finance";
-import Tasks from "./pages/Tasks";
-import FeedCalculator from "./pages/FeedCalculator";
-import MyFarmers from "./pages/MyFarmers";
-import Appointments from "./pages/Appointments";
+// PAGES — lazy-loaded so each route ships its own chunk instead of one
+// multi-megabyte bundle for the whole app.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Bookings = lazy(() => import("./pages/Bookings"));
+const VetDashboard = lazy(() => import("./pages/VetDashboard"));
+const VetProfileSetup = lazy(() => import("./pages/VetProfileSetup"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Suppliers = lazy(() => import("./pages/Suppliers"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const ChatSupport = lazy(() => import("./pages/ChatSupport"));
+const VetVerification = lazy(() => import("./pages/VetVerification"));
+const SupplierVerification = lazy(() => import("./pages/SupplierVerification"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
+const Wallet = lazy(() => import("./pages/Wallet"));
+const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
+const CluckyAI = lazy(() => import("./pages/CluckyAI"));
+const MyFarm = lazy(() => import("./pages/MyFarm"));
+const Profile = lazy(() => import("./pages/Profile"));
+const FarmGallery = lazy(() => import("./pages/FarmGallery"));
+const VerificationRequests = lazy(() => import("./pages/VerificationRequests"));
+const Community = lazy(() => import("./pages/Community"));
+const CommunityChat = lazy(() => import("./pages/CommunityChat"));
+const Finance = lazy(() => import("./pages/Finance"));
+const Tasks = lazy(() => import("./pages/Tasks"));
+const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
+const MyFarmers = lazy(() => import("./pages/MyFarmers"));
+const Appointments = lazy(() => import("./pages/Appointments"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import './App.css';
 
+function LoadingScreen({ label }) {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        background: "#f0fdf4",
+        gap: "12px"
+      }}
+    >
+      <div
+        style={{
+          width: "40px",
+          height: "40px",
+          border: "4px solid #dcfce7",
+          borderTop: "4px solid #15803d",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite"
+        }}
+      />
+
+      <p
+        style={{
+          color: "#666",
+          fontSize: "14px"
+        }}
+      >
+        {label}
+      </p>
+
+      <style>
+        {`
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+}
 
 function AppRoutes() {
   const { user, userEmail, loading } = useAuth();
@@ -46,57 +91,16 @@ function AppRoutes() {
   // LOADING SCREEN
   // =========================
   if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          background: "#f0fdf4",
-          gap: "12px"
-        }}
-      >
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            border: "4px solid #dcfce7",
-            borderTop: "4px solid #15803d",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite"
-          }}
-        />
-
-        <p
-          style={{
-            color: "#666",
-            fontSize: "14px"
-          }}
-        >
-          Loading Farmers Connect...
-        </p>
-
-        <style>
-          {`
-            @keyframes spin {
-              to {
-                transform: rotate(360deg);
-              }
-            }
-          `}
-        </style>
-      </div>
-    );
+    return <LoadingScreen label="Loading Farmers Connect..." />;
   }
 
   return (
     <>
       {/* TOP NOTIFICATION BAR */}
-      
+
 
       {/* ROUTES */}
+      <Suspense fallback={<LoadingScreen label="Loading..." />}>
       <Routes>
 
         {/* =========================
@@ -264,6 +268,7 @@ function AppRoutes() {
         />
 
       </Routes>
+      </Suspense>
     </>
   );
 }
