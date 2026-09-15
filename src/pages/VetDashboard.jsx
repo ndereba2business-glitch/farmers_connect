@@ -355,7 +355,7 @@ export default function VetDashboard() {
 
   const QUICK_ACTIONS = [
     // NEW — Phase 2.1 additions
-    { icon: Users, label: "View Farmers", action: () => comingSoon("Farmers list — tell me the intended route and I'll wire this up"), bg: "#edf5ff", iconColor: "#3b82f6" },
+    { icon: Users, label: "View Farmers", action: () => navigate("/vet/farmers"),bg: "#edf5ff", iconColor: "#3b82f6" },
     { icon: ClipboardList, label: "Manage Requests", action: () => navigate("/appointments"), bg: "#f0fdf4", iconColor: "#16a34a" },
     // existing
     { icon: Pill, label: "Create Prescription", action: () => comingSoon("Prescriptions"), bg: "#f0fdf4", iconColor: "#22c55e" },
