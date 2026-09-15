@@ -31,6 +31,7 @@ import Finance from "./pages/Finance";
 import Tasks from "./pages/Tasks";
 import FeedCalculator from "./pages/FeedCalculator";
 import MyFarmers from "./pages/MyFarmers";
+import Appointments from "./pages/Appointments";
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -206,6 +207,15 @@ function AppRoutes() {
             element={
               <ProtectedRoute allowedRoles={["vet"]}>
                 <MyFarmers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/appointments"
+            element={
+              <ProtectedRoute allowedRoles={["vet"]}>
+                <Appointments />
               </ProtectedRoute>
             }
           />

@@ -2,8 +2,28 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
-  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle
+  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye
 } from "lucide-react";
+
+// Only these transitions are allowed — once a visit is completed or
+// cancelled it's terminal, and pending must go through accept/cancel/complete.
+const STATUS_TRANSITIONS = {
+  pending: ["accepted", "cancelled", "completed"],
+  accepted: ["completed", "cancelled"],
+  completed: [],
+  cancelled: [],
+};
+
+function canTransition(currentStatus, targetStatus) {
+  return (STATUS_TRANSITIONS[currentStatus] || []).includes(targetStatus);
+}
+
+// Statuses a row must currently be in for `targetStatus` to be a legal move —
+// passed to Supabase as an .in() filter so a concurrent update (another vet
+// claiming it, a farmer cancelling it) can't be silently overwritten.
+function sourceStatusesFor(targetStatus) {
+  return Object.keys(STATUS_TRANSITIONS).filter(s => STATUS_TRANSITIONS[s].includes(targetStatus));
+}
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
@@ -42,6 +62,8 @@ export default function Appointments() {
 
   const [completeTarget, setCompleteTarget] = useState(null);
   const [feeInput, setFeeInput] = useState("");
+
+  const [detailsTarget, setDetailsTarget] = useState(null);
 
   const [saving, setSaving] = useState(false);
 
@@ -86,7 +108,9 @@ export default function Appointments() {
   const upcoming = appointments.filter(a =>
     isMine(a) && ["pending", "accepted"].includes(a.status)
   );
-  const unassigned = appointments.filter(a => !a.vet_id && !a.vet_email);
+  // Only still-pending requests are claimable — a request the farmer already
+  // cancelled shouldn't show up as available to pick up.
+  const unassigned = appointments.filter(a => !a.vet_id && !a.vet_email && a.status === "pending");
   const completed = appointments.filter(a => isMine(a) && a.status === "completed");
   const cancelled = appointments.filter(a => isMine(a) && a.status === "cancelled");
 
@@ -103,38 +127,75 @@ export default function Appointments() {
     activeTab === "completed" ? completed :
     cancelled;
 
-  async function claimAppointment(id) {
+  async function claimAppointment(appt) {
     if (!user?.id) {
       alert("You must be logged in to claim an appointment.");
       return;
     }
-    const { error } = await supabase.from("vet_appointments")
-      .update({ vet_id: user.id, vet_email: userEmail }).eq("id", id);
+    if (appt.status !== "pending") {
+      alert("This request is no longer available to claim.");
+      loadAppointments();
+      return;
+    }
+    const { data, error } = await supabase.from("vet_appointments")
+      .update({ vet_id: user.id, vet_email: userEmail })
+      .eq("id", appt.id)
+      .is("vet_id", null)
+      .is("vet_email", null)
+      .select();
     if (error) { alert("Failed to claim: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("Another vet already claimed this request.");
+    }
     loadAppointments();
   }
 
-  async function acceptAppointment(id) {
-    const { error } = await supabase.from("vet_appointments")
+  async function acceptAppointment(appt) {
+    if (!canTransition(appt.status, "accepted")) {
+      alert(`Can't accept an appointment that's already ${appt.status}.`);
+      loadAppointments();
+      return;
+    }
+    const { data, error } = await supabase.from("vet_appointments")
       .update({
         status: "accepted",
         ...(user?.id ? { vet_id: user.id } : {}),
         vet_email: userEmail
       })
-      .eq("id", id);
+      .eq("id", appt.id)
+      .in("status", sourceStatusesFor("accepted"))
+      .select();
     if (error) { alert("Failed to accept: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and can no longer be accepted.");
+    }
     loadAppointments();
   }
 
-  async function cancelAppointment(id) {
+  async function cancelAppointment(appt) {
+    if (!canTransition(appt.status, "cancelled")) {
+      alert(`Can't cancel an appointment that's already ${appt.status}.`);
+      loadAppointments();
+      return;
+    }
     if (!window.confirm("Cancel this appointment?")) return;
-    const { error } = await supabase.from("vet_appointments")
-      .update({ status: "cancelled" }).eq("id", id);
+    const { data, error } = await supabase.from("vet_appointments")
+      .update({ status: "cancelled" })
+      .eq("id", appt.id)
+      .in("status", sourceStatusesFor("cancelled"))
+      .select();
     if (error) { alert("Failed to cancel: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and can no longer be cancelled.");
+    }
     loadAppointments();
   }
 
   function openEdit(appt) {
+    if (!["pending", "accepted"].includes(appt.status)) {
+      alert(`Can't reschedule an appointment that's already ${appt.status}.`);
+      return;
+    }
     setEditForm({
       farm_name: appt.farm_name || "",
       county: appt.county || "",
@@ -150,7 +211,7 @@ export default function Appointments() {
   async function handleEditSave(e) {
     e.preventDefault();
     setSaving(true);
-    const { error } = await supabase.from("vet_appointments").update({
+    const { data, error } = await supabase.from("vet_appointments").update({
       farm_name: editForm.farm_name,
       county: editForm.county,
       bird_count: editForm.bird_count ? Number(editForm.bird_count) : null,
@@ -158,14 +219,24 @@ export default function Appointments() {
       appointment_time: editForm.appointment_time,
       reason: editForm.reason,
       urgency: editForm.urgency
-    }).eq("id", editTarget.id);
+    })
+      .eq("id", editTarget.id)
+      .in("status", ["pending", "accepted"])
+      .select();
     setSaving(false);
     if (error) { alert("Failed to save changes: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and can no longer be rescheduled.");
+    }
     setEditTarget(null);
     loadAppointments();
   }
 
   function openComplete(appt) {
+    if (!canTransition(appt.status, "completed")) {
+      alert(`Can't mark an appointment complete when it's already ${appt.status}.`);
+      return;
+    }
     setFeeInput("");
     setCompleteTarget(appt);
   }
@@ -173,13 +244,19 @@ export default function Appointments() {
   async function handleCompleteSave(e) {
     e.preventDefault();
     setSaving(true);
-    const { error } = await supabase.from("vet_appointments").update({
+    const { data, error } = await supabase.from("vet_appointments").update({
       status: "completed",
       fee: feeInput ? Number(feeInput) : 0,
       completed_at: new Date().toISOString()
-    }).eq("id", completeTarget.id);
+    })
+      .eq("id", completeTarget.id)
+      .in("status", sourceStatusesFor("completed"))
+      .select();
     setSaving(false);
     if (error) { alert("Failed to mark complete: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and can no longer be marked complete.");
+    }
     setCompleteTarget(null);
     loadAppointments();
   }
@@ -343,15 +420,19 @@ export default function Appointments() {
 
                 {/* ACTIONS */}
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button onClick={() => setDetailsTarget(appt)} style={btnGhost}>
+                    <Eye size={13} style={{ marginRight: "5px", verticalAlign: "-2px" }} />
+                    Details
+                  </button>
                   {activeTab === "unassigned" && (
-                    <button onClick={() => claimAppointment(appt.id)} style={btnPrimary}>
+                    <button onClick={() => claimAppointment(appt)} style={btnPrimary}>
                       Claim
                     </button>
                   )}
                   {activeTab === "upcoming" && (
                     <>
                       {appt.status !== "accepted" && (
-                        <button onClick={() => acceptAppointment(appt.id)} style={btnPrimary}>
+                        <button onClick={() => acceptAppointment(appt)} style={btnPrimary}>
                           Accept
                         </button>
                       )}
@@ -361,7 +442,7 @@ export default function Appointments() {
                       <button onClick={() => openEdit(appt)} style={btnGhost}>
                         Reschedule
                       </button>
-                      <button onClick={() => cancelAppointment(appt.id)} style={btnDanger}>
+                      <button onClick={() => cancelAppointment(appt)} style={btnDanger}>
                         Cancel
                       </button>
                     </>
@@ -411,6 +492,33 @@ export default function Appointments() {
           </form>
         </Modal>
       )}
+
+      {/* APPOINTMENT DETAILS MODAL */}
+      {detailsTarget && (
+        <Modal title="Appointment Details" onClose={() => setDetailsTarget(null)}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <DetailRow label="Farm" value={detailsTarget.farm_name} />
+            <DetailRow label="Farmer" value={detailsTarget.farmer_email} />
+            <DetailRow label="County" value={detailsTarget.county} />
+            <DetailRow label="Bird Count" value={detailsTarget.bird_count} />
+            <DetailRow label="Date" value={detailsTarget.appointment_date} />
+            <DetailRow label="Time" value={detailsTarget.appointment_time} />
+            <DetailRow label="Urgency" value={detailsTarget.urgency} capitalize />
+            <DetailRow label="Status" value={detailsTarget.status} capitalize />
+            <DetailRow label="Reason" value={detailsTarget.reason} />
+            {detailsTarget.status === "completed" && (
+              <DetailRow label="Fee Charged" value={`KES ${Number(detailsTarget.fee || 0).toLocaleString()}`} />
+            )}
+            <DetailRow label="Source" value={detailsTarget.source} capitalize />
+            {detailsTarget.created_at && (
+              <DetailRow label="Requested On" value={new Date(detailsTarget.created_at).toLocaleString()} />
+            )}
+            {detailsTarget.completed_at && (
+              <DetailRow label="Completed On" value={new Date(detailsTarget.completed_at).toLocaleString()} />
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -439,6 +547,21 @@ function Modal({ title, onClose, children }) {
         </div>
         {children}
       </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, capitalize }) {
+  if (value === null || value === undefined || value === "") return null;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
+      <span style={{ fontSize: "12px", fontWeight: "600", color: "#6b7280" }}>{label}</span>
+      <span style={{
+        fontSize: "13px", fontWeight: "600", color: "#111827",
+        textAlign: "right", textTransform: capitalize ? "capitalize" : "none", wordBreak: "break-word"
+      }}>
+        {value}
+      </span>
     </div>
   );
 }

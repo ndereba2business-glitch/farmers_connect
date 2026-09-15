@@ -230,14 +230,19 @@ export default function Bookings() {
   // ── CANCEL A PENDING/ACCEPTED REQUEST ──
   async function cancelMyBooking(id) {
     if (!window.confirm("Cancel this visit request?")) return;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("vet_appointments")
       .update({ status: "cancelled" })
-      .eq("id", id);
+      .eq("id", id)
+      .in("status", ["pending", "accepted"])
+      .select();
 
     if (error) {
       alert("Failed to cancel: " + error.message);
       return;
+    }
+    if (!data || data.length === 0) {
+      alert("This request can no longer be cancelled — its status already changed.");
     }
     loadMyBookings();
   }

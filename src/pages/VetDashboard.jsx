@@ -198,10 +198,19 @@ export default function VetDashboard() {
   }
 
   async function updateAppointmentStatus(id, status) {
-    const { error } = await supabase.from("vet_appointments").update({ status }).eq("id", id);
+    // Only pending -> accepted flows through here today — guard the source
+    // status so a stale card can't push a cancelled/completed visit backwards.
+    const { data, error } = await supabase.from("vet_appointments")
+      .update({ status })
+      .eq("id", id)
+      .in("status", ["pending"])
+      .select();
     if (error) {
       alert("Failed to update appointment: " + error.message);
       return;
+    }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and could not be updated.");
     }
     loadDashboard();
   }
