@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban
 } from "lucide-react";
+import { VisitReportFields } from "../components/VisitReportModal";
 
 // Only these transitions are allowed — once a visit is completed, cancelled
 // or rejected it's terminal. Rejection only applies to a still-pending
@@ -65,6 +66,12 @@ const EMPTY_FORM = {
   appointment_date: "", appointment_time: "", reason: "", urgency: "medium"
 };
 
+const EMPTY_VISIT_FORM = {
+  symptoms: "", diagnosis: "", treatment: "", vet_notes: "", fee: ""
+};
+
+const EMPTY_MEDICATION = { name: "", dosage: "", instructions: "" };
+
 export default function Appointments() {
   const { userEmail, user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -78,9 +85,12 @@ export default function Appointments() {
   const [editForm, setEditForm] = useState(EMPTY_FORM);
 
   const [completeTarget, setCompleteTarget] = useState(null);
-  const [feeInput, setFeeInput] = useState("");
+  const [visitForm, setVisitForm] = useState(EMPTY_VISIT_FORM);
+  const [medications, setMedications] = useState([]);
 
   const [detailsTarget, setDetailsTarget] = useState(null);
+  const [visitRecord, setVisitRecord] = useState(null);
+  const [loadingVisitRecord, setLoadingVisitRecord] = useState(false);
 
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -288,30 +298,91 @@ export default function Appointments() {
     loadAppointments();
   }
 
+  async function openDetails(appt) {
+    setDetailsTarget(appt);
+    setVisitRecord(null);
+    if (appt.status !== "completed") return;
+    setLoadingVisitRecord(true);
+    const { data, error } = await supabase.from("visit_records")
+      .select("*")
+      .eq("appointment_id", appt.id)
+      .maybeSingle();
+    if (error) console.error("Appointments: failed to load visit record —", error.message);
+    setVisitRecord(data || null);
+    setLoadingVisitRecord(false);
+  }
+
   function openComplete(appt) {
     if (!canTransition(appt.status, "completed")) {
       alert(`Can't mark an appointment complete when it's already ${appt.status}.`);
       return;
     }
-    setFeeInput("");
+    setVisitForm(EMPTY_VISIT_FORM);
+    setMedications([]);
     setCompleteTarget(appt);
+  }
+
+  function addMedication() {
+    setMedications(m => [...m, { ...EMPTY_MEDICATION }]);
+  }
+
+  function updateMedication(index, field, value) {
+    setMedications(m => m.map((med, i) => i === index ? { ...med, [field]: value } : med));
+  }
+
+  function removeMedication(index) {
+    setMedications(m => m.filter((_, i) => i !== index));
   }
 
   async function handleCompleteSave(e) {
     e.preventDefault();
     setSaving(true);
+
+    // Completing a visit is two writes (appointment status + the clinical
+    // record) — the appointment update is guarded first since it's the one
+    // other vets/farmers race against; the visit record only matters once
+    // that's confirmed to have actually landed.
     const { data, error } = await supabase.from("vet_appointments").update({
       status: "completed",
-      fee: feeInput ? Number(feeInput) : 0,
+      fee: visitForm.fee ? Number(visitForm.fee) : 0,
       completed_at: new Date().toISOString()
     })
       .eq("id", completeTarget.id)
       .in("status", sourceStatusesFor("completed"))
       .select();
-    setSaving(false);
-    if (error) { alert("Failed to mark complete: " + error.message); return; }
+
+    if (error) { setSaving(false); alert("Failed to mark complete: " + error.message); return; }
     if (!data || data.length === 0) {
+      setSaving(false);
       alert("This appointment's status changed elsewhere and can no longer be marked complete.");
+      setCompleteTarget(null);
+      loadAppointments();
+      return;
+    }
+
+    const cleanMedications = medications
+      .filter(m => m.name.trim())
+      .map(m => ({ name: m.name.trim(), dosage: m.dosage.trim(), instructions: m.instructions.trim() }));
+
+    const { error: visitRecordError } = await supabase.from("visit_records").insert([{
+      appointment_id: completeTarget.id,
+      vet_id: user?.id || null,
+      vet_email: userEmail,
+      farmer_id: completeTarget.farmer_id || null,
+      farmer_email: completeTarget.farmer_email || null,
+      symptoms: visitForm.symptoms.trim() || null,
+      diagnosis: visitForm.diagnosis.trim() || null,
+      treatment: visitForm.treatment.trim() || null,
+      medications: cleanMedications,
+      vet_notes: visitForm.vet_notes.trim() || null,
+    }]);
+
+    setSaving(false);
+
+    if (visitRecordError) {
+      // The appointment is already marked completed at this point — surface
+      // this loudly rather than silently leaving a visit with no record.
+      alert("Visit marked complete, but the clinical record failed to save: " + visitRecordError.message);
     } else {
       notifyFarmer(completeTarget, "Visit completed", `Your visit for ${completeTarget.farm_name} on ${completeTarget.appointment_date} has been marked complete.`);
     }
@@ -486,7 +557,7 @@ export default function Appointments() {
 
                 {/* ACTIONS */}
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  <button onClick={() => setDetailsTarget(appt)} style={btnGhost}>
+                  <button onClick={() => openDetails(appt)} style={btnGhost}>
                     <Eye size={13} style={{ marginRight: "5px", verticalAlign: "-2px" }} />
                     Details
                   </button>
@@ -550,21 +621,102 @@ export default function Appointments() {
         </Modal>
       )}
 
-      {/* MARK COMPLETE MODAL */}
+      {/* COMPLETE VISIT MODAL — captures the clinical record (Phase 3.2) */}
       {completeTarget && (
-        <Modal title="Mark Visit Complete" onClose={() => setCompleteTarget(null)}>
+        <Modal title="Complete Visit" onClose={() => setCompleteTarget(null)}>
           <form onSubmit={handleCompleteSave}>
             <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "16px" }}>
               {completeTarget.farm_name} — {completeTarget.appointment_date}
             </p>
+
+            <label style={labelStyle}>Symptoms observed</label>
+            <textarea
+              placeholder="e.g. Lethargy, reduced feed intake, respiratory distress..."
+              value={visitForm.symptoms}
+              onChange={e => setVisitForm({ ...visitForm, symptoms: e.target.value })}
+              style={{ ...inputStyle, minHeight: "70px", resize: "vertical", marginBottom: "14px" }}
+            />
+
+            <label style={labelStyle}>Diagnosis</label>
+            <textarea
+              placeholder="e.g. Suspected Newcastle disease"
+              value={visitForm.diagnosis}
+              onChange={e => setVisitForm({ ...visitForm, diagnosis: e.target.value })}
+              style={{ ...inputStyle, minHeight: "60px", resize: "vertical", marginBottom: "14px" }}
+            />
+
+            <label style={labelStyle}>Treatment given</label>
+            <textarea
+              placeholder="e.g. Supportive care, isolated affected birds..."
+              value={visitForm.treatment}
+              onChange={e => setVisitForm({ ...visitForm, treatment: e.target.value })}
+              style={{ ...inputStyle, minHeight: "60px", resize: "vertical", marginBottom: "14px" }}
+            />
+
+            {/* MEDICATIONS */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Medications</label>
+              <button type="button" onClick={addMedication} style={{ ...btnGhost, padding: "5px 12px" }}>
+                <Plus size={12} style={{ marginRight: "4px", verticalAlign: "-2px" }} />
+                Add
+              </button>
+            </div>
+            {medications.length === 0 ? (
+              <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#9ca3af" }}>
+                None added yet.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
+                {medications.map((med, i) => (
+                  <div key={i} style={{
+                    border: "1px solid #e5e7eb", borderRadius: "10px", padding: "12px",
+                    display: "flex", flexDirection: "column", gap: "8px"
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: "#6b7280" }}>Medication {i + 1}</span>
+                      <button type="button" onClick={() => removeMedication(i)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                        <X size={14} color="#9ca3af" />
+                      </button>
+                    </div>
+                    <input
+                      placeholder="Name (e.g. Amoxicillin)"
+                      value={med.name}
+                      onChange={e => updateMedication(i, "name", e.target.value)}
+                      style={inputStyle}
+                    />
+                    <input
+                      placeholder="Dosage (e.g. 1g per 5L water)"
+                      value={med.dosage}
+                      onChange={e => updateMedication(i, "dosage", e.target.value)}
+                      style={inputStyle}
+                    />
+                    <input
+                      placeholder="Instructions (e.g. Twice daily for 5 days)"
+                      value={med.instructions}
+                      onChange={e => updateMedication(i, "instructions", e.target.value)}
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <label style={labelStyle}>Vet notes (optional)</label>
+            <textarea
+              placeholder="Anything else worth recording for future visits..."
+              value={visitForm.vet_notes}
+              onChange={e => setVisitForm({ ...visitForm, vet_notes: e.target.value })}
+              style={{ ...inputStyle, minHeight: "60px", resize: "vertical", marginBottom: "14px" }}
+            />
+
             <label style={labelStyle}>Fee Charged (KES)</label>
             <input
               type="number" placeholder="e.g. 2500"
-              value={feeInput}
-              onChange={e => setFeeInput(e.target.value)}
+              value={visitForm.fee}
+              onChange={e => setVisitForm({ ...visitForm, fee: e.target.value })}
               style={{ ...inputStyle, marginBottom: "18px" }}
             />
-            <SubmitButton saving={saving} label="Mark Complete" />
+            <SubmitButton saving={saving} label="Complete Visit" />
           </form>
         </Modal>
       )}
@@ -591,7 +743,7 @@ export default function Appointments() {
 
       {/* APPOINTMENT DETAILS MODAL */}
       {detailsTarget && (
-        <Modal title="Appointment Details" onClose={() => setDetailsTarget(null)}>
+        <Modal title="Appointment Details" onClose={() => { setDetailsTarget(null); setVisitRecord(null); }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <DetailRow label="Farm" value={detailsTarget.farm_name} />
             <DetailRow label="Farmer" value={detailsTarget.farmer_email} />
@@ -616,6 +768,19 @@ export default function Appointments() {
               <DetailRow label="Completed On" value={new Date(detailsTarget.completed_at).toLocaleString()} />
             )}
           </div>
+
+          {detailsTarget.status === "completed" && (
+            <div style={{ marginTop: "18px", paddingTop: "18px", borderTop: "1px solid #f0f0f0" }}>
+              <h3 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+                Visit Report
+              </h3>
+              {loadingVisitRecord ? (
+                <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+              ) : (
+                <VisitReportFields record={visitRecord} />
+              )}
+            </div>
+          )}
         </Modal>
       )}
     </div>
@@ -636,7 +801,10 @@ function Modal({ title, onClose, children }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: "#fff", borderRadius: "20px", padding: "28px", maxWidth: "480px", width: "100%" }}
+        style={{
+          background: "#fff", borderRadius: "20px", padding: "28px",
+          maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
+        }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>{title}</h2>
