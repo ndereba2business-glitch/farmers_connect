@@ -211,6 +211,16 @@ export default function VetDashboard() {
     }
     if (!data || data.length === 0) {
       alert("This appointment's status changed elsewhere and could not be updated.");
+    } else if (data[0].farmer_email) {
+      // Best-effort — reuses the same notifications table NotificationsBell reads.
+      const appt = data[0];
+      const { error: notifyError } = await supabase.from("notifications").insert([{
+        user_email: appt.farmer_email,
+        type: "vet",
+        title: "Visit request accepted",
+        message: `Your visit request for ${appt.farm_name} on ${appt.appointment_date} was accepted.`,
+      }]);
+      if (notifyError) console.error("VetDashboard: failed to notify farmer —", notifyError.message);
     }
     loadDashboard();
   }

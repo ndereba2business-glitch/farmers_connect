@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
-  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye
+  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban
 } from "lucide-react";
 
-// Only these transitions are allowed — once a visit is completed or
-// cancelled it's terminal, and pending must go through accept/cancel/complete.
+// Only these transitions are allowed — once a visit is completed, cancelled
+// or rejected it's terminal. Rejection only applies to a still-pending
+// request — once a vet has accepted it, declining means cancelling instead.
 const STATUS_TRANSITIONS = {
-  pending: ["accepted", "cancelled", "completed"],
+  pending: ["accepted", "cancelled", "completed", "rejected"],
   accepted: ["completed", "cancelled"],
   completed: [],
   cancelled: [],
+  rejected: [],
 };
 
 function canTransition(currentStatus, targetStatus) {
@@ -23,6 +25,21 @@ function canTransition(currentStatus, targetStatus) {
 // claiming it, a farmer cancelling it) can't be silently overwritten.
 function sourceStatusesFor(targetStatus) {
   return Object.keys(STATUS_TRANSITIONS).filter(s => STATUS_TRANSITIONS[s].includes(targetStatus));
+}
+
+// Best-effort status update for the farmer — reuses the existing
+// notifications table/NotificationsBell (src/components/NotificationsBell.jsx),
+// already wired up for every role. Never blocks or surfaces errors to the
+// vet: the appointment mutation already succeeded by the time this runs.
+async function notifyFarmer(appt, title, message) {
+  if (!appt.farmer_email) return;
+  const { error } = await supabase.from("notifications").insert([{
+    user_email: appt.farmer_email,
+    type: "vet",
+    title,
+    message,
+  }]);
+  if (error) console.error("Appointments: failed to notify farmer —", error.message);
 }
 
 const inputStyle = {
@@ -64,6 +81,9 @@ export default function Appointments() {
   const [feeInput, setFeeInput] = useState("");
 
   const [detailsTarget, setDetailsTarget] = useState(null);
+
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const [saving, setSaving] = useState(false);
 
@@ -113,19 +133,22 @@ export default function Appointments() {
   const unassigned = appointments.filter(a => !a.vet_id && !a.vet_email && a.status === "pending");
   const completed = appointments.filter(a => isMine(a) && a.status === "completed");
   const cancelled = appointments.filter(a => isMine(a) && a.status === "cancelled");
+  const rejected = appointments.filter(a => isMine(a) && a.status === "rejected");
 
   const TABS = [
     { key: "upcoming", label: "Upcoming", count: upcoming.length },
     { key: "unassigned", label: "Unassigned Requests", count: unassigned.length },
     { key: "completed", label: "Completed", count: completed.length },
     { key: "cancelled", label: "Cancelled", count: cancelled.length },
+    { key: "rejected", label: "Rejected", count: rejected.length },
   ];
 
   const displayList =
     activeTab === "upcoming" ? upcoming :
     activeTab === "unassigned" ? unassigned :
     activeTab === "completed" ? completed :
-    cancelled;
+    activeTab === "cancelled" ? cancelled :
+    rejected;
 
   async function claimAppointment(appt) {
     if (!user?.id) {
@@ -168,7 +191,38 @@ export default function Appointments() {
     if (error) { alert("Failed to accept: " + error.message); return; }
     if (!data || data.length === 0) {
       alert("This appointment's status changed elsewhere and can no longer be accepted.");
+    } else {
+      notifyFarmer(appt, "Visit request accepted", `Your visit request for ${appt.farm_name} on ${appt.appointment_date} was accepted.`);
     }
+    loadAppointments();
+  }
+
+  function openReject(appt) {
+    if (!canTransition(appt.status, "rejected")) {
+      alert(`Can't reject an appointment that's already ${appt.status}.`);
+      return;
+    }
+    setRejectReason("");
+    setRejectTarget(appt);
+  }
+
+  async function handleRejectSave(e) {
+    e.preventDefault();
+    if (!rejectReason.trim()) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("vet_appointments")
+      .update({ status: "rejected", rejection_reason: rejectReason.trim() })
+      .eq("id", rejectTarget.id)
+      .in("status", sourceStatusesFor("rejected"))
+      .select();
+    setSaving(false);
+    if (error) { alert("Failed to reject: " + error.message); return; }
+    if (!data || data.length === 0) {
+      alert("This appointment's status changed elsewhere and can no longer be rejected.");
+    } else {
+      notifyFarmer(rejectTarget, "Visit request declined", `Your visit request for ${rejectTarget.farm_name} on ${rejectTarget.appointment_date} was declined: ${rejectReason.trim()}`);
+    }
+    setRejectTarget(null);
     loadAppointments();
   }
 
@@ -187,6 +241,8 @@ export default function Appointments() {
     if (error) { alert("Failed to cancel: " + error.message); return; }
     if (!data || data.length === 0) {
       alert("This appointment's status changed elsewhere and can no longer be cancelled.");
+    } else {
+      notifyFarmer(appt, "Visit cancelled", `Your visit for ${appt.farm_name} on ${appt.appointment_date} was cancelled by the vet.`);
     }
     loadAppointments();
   }
@@ -256,6 +312,8 @@ export default function Appointments() {
     if (error) { alert("Failed to mark complete: " + error.message); return; }
     if (!data || data.length === 0) {
       alert("This appointment's status changed elsewhere and can no longer be marked complete.");
+    } else {
+      notifyFarmer(completeTarget, "Visit completed", `Your visit for ${completeTarget.farm_name} on ${completeTarget.appointment_date} has been marked complete.`);
     }
     setCompleteTarget(null);
     loadAppointments();
@@ -344,6 +402,8 @@ export default function Appointments() {
             <CheckCircle2 size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
           ) : activeTab === "cancelled" ? (
             <XCircle size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+          ) : activeTab === "rejected" ? (
+            <Ban size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
           ) : (
             <Calendar size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
           )}
@@ -352,6 +412,7 @@ export default function Appointments() {
             {activeTab === "unassigned" && "No unclaimed requests right now."}
             {activeTab === "completed" && "No completed visits yet."}
             {activeTab === "cancelled" && "No cancelled appointments."}
+            {activeTab === "rejected" && "No rejected requests."}
           </p>
         </div>
       ) : (
@@ -416,6 +477,11 @@ export default function Appointments() {
                   {appt.reason && (
                     <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#6b7280" }}>{appt.reason}</p>
                   )}
+                  {activeTab === "rejected" && appt.rejection_reason && (
+                    <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#991b1b", background: "#fef2f2", padding: "8px 12px", borderRadius: "8px" }}>
+                      <strong>Reason:</strong> {appt.rejection_reason}
+                    </p>
+                  )}
                 </div>
 
                 {/* ACTIONS */}
@@ -429,11 +495,21 @@ export default function Appointments() {
                       Claim
                     </button>
                   )}
+                  {activeTab === "unassigned" && appt.requested_vet_id && (
+                    <button onClick={() => openReject(appt)} style={btnDanger}>
+                      Reject
+                    </button>
+                  )}
                   {activeTab === "upcoming" && (
                     <>
                       {appt.status !== "accepted" && (
                         <button onClick={() => acceptAppointment(appt)} style={btnPrimary}>
                           Accept
+                        </button>
+                      )}
+                      {appt.status === "pending" && (
+                        <button onClick={() => openReject(appt)} style={btnDanger}>
+                          Reject
                         </button>
                       )}
                       <button onClick={() => openComplete(appt)} style={btnGhost}>
@@ -493,6 +569,26 @@ export default function Appointments() {
         </Modal>
       )}
 
+      {/* REJECT MODAL */}
+      {rejectTarget && (
+        <Modal title="Reject Visit Request" onClose={() => setRejectTarget(null)}>
+          <form onSubmit={handleRejectSave}>
+            <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "16px" }}>
+              {rejectTarget.farm_name} — {rejectTarget.appointment_date}
+            </p>
+            <label style={labelStyle}>Reason for rejecting (shown to the farmer)</label>
+            <textarea
+              placeholder="e.g. Outside my service area, fully booked that day..."
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              required
+              style={{ ...inputStyle, minHeight: "90px", resize: "vertical", marginBottom: "18px" }}
+            />
+            <SubmitButton saving={saving} label="Reject Request" />
+          </form>
+        </Modal>
+      )}
+
       {/* APPOINTMENT DETAILS MODAL */}
       {detailsTarget && (
         <Modal title="Appointment Details" onClose={() => setDetailsTarget(null)}>
@@ -506,6 +602,9 @@ export default function Appointments() {
             <DetailRow label="Urgency" value={detailsTarget.urgency} capitalize />
             <DetailRow label="Status" value={detailsTarget.status} capitalize />
             <DetailRow label="Reason" value={detailsTarget.reason} />
+            {detailsTarget.status === "rejected" && (
+              <DetailRow label="Rejection Reason" value={detailsTarget.rejection_reason} />
+            )}
             {detailsTarget.status === "completed" && (
               <DetailRow label="Fee Charged" value={`KES ${Number(detailsTarget.fee || 0).toLocaleString()}`} />
             )}

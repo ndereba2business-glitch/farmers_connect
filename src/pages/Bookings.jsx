@@ -263,7 +263,7 @@ export default function Bookings() {
       case "accepted": return { bg: "#dcfce7", color: "#16a34a", label: "Confirmed" };
       case "completed": return { bg: "#f0fdf4", color: "#16a34a", label: "Completed" };
       case "cancelled": return { bg: "#f3f4f6", color: "#9ca3af", label: "Cancelled" };
-      case "declined": return { bg: "#fef2f2", color: "#ef4444", label: "Declined" };
+      case "rejected": return { bg: "#fef2f2", color: "#ef4444", label: "Declined" };
       default: return { bg: "#fef3c7", color: "#d97706", label: "Pending" };
     }
   }
@@ -654,6 +654,14 @@ export default function Bookings() {
                         </div>
                         {b.reason && (
                           <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#6b7280" }}>{b.reason}</p>
+                        )}
+                        {b.status === "rejected" && b.rejection_reason && (
+                          <p style={{
+                            margin: "8px 0 0", fontSize: "13px", color: "#991b1b",
+                            background: "#fef2f2", padding: "8px 12px", borderRadius: "8px"
+                          }}>
+                            <strong>Vet's reason:</strong> {b.rejection_reason}
+                          </p>
                         )}
                       </div>
                       {canCancel && (
