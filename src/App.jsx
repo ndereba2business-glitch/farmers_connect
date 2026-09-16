@@ -34,6 +34,7 @@ const Tasks = lazy(() => import("./pages/Tasks"));
 const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
 const MyFarmers = lazy(() => import("./pages/MyFarmers"));
 const Appointments = lazy(() => import("./pages/Appointments"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -123,6 +124,18 @@ function AppRoutes() {
         />
 
         {/* =========================
+            ROOT
+            Logged out: public landing page (no redirect to /login).
+            Logged in: same Dashboard-behind-Layout as before, same URL.
+        ========================= */}
+        <Route
+          path="/"
+          element={user ? <Layout /> : <LandingPage />}
+        >
+          {user && <Route index element={<Dashboard />} />}
+        </Route>
+
+        {/* =========================
             PROTECTED ROUTES
         ========================= */}
 
@@ -133,9 +146,6 @@ function AppRoutes() {
               : <Navigate to="/login" replace />
           }
         >
-
-          {/* DASHBOARD */}
-          <Route path="/" element={<Dashboard />} />
 
           {/* FARM */}
           <Route path="/my-farm" element={<MyFarm />} />
