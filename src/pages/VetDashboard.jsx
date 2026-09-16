@@ -8,6 +8,10 @@ import {
   CalendarPlus, Search, CheckCircle2
 } from "lucide-react";
 
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
+}
+
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
@@ -279,6 +283,10 @@ export default function VetDashboard() {
       setEscalateError("Farm name and date are required.");
       return;
     }
+    if (escalateForm.appointment_date < todayISO()) {
+      setEscalateError("Visit date can't be in the past.");
+      return;
+    }
 
     setEscalateSaving(true);
 
@@ -342,6 +350,11 @@ export default function VetDashboard() {
     setScheduleError("");
 
     if (!scheduleForm.farm_name || !scheduleForm.appointment_date) return;
+
+    if (scheduleForm.appointment_date < todayISO()) {
+      setScheduleError("Visit date can't be in the past.");
+      return;
+    }
 
     if (!selectedFarmer) {
       setScheduleError("Select which farmer this visit is for.");
@@ -936,6 +949,7 @@ export default function VetDashboard() {
                   type="date"
                   value={scheduleForm.appointment_date}
                   onChange={e => setScheduleForm({ ...scheduleForm, appointment_date: e.target.value })}
+                  min={todayISO()}
                   required
                   style={inputStyle}
                 />
@@ -1055,6 +1069,7 @@ export default function VetDashboard() {
                     type="date"
                     value={escalateForm.appointment_date}
                     onChange={e => setEscalateForm({ ...escalateForm, appointment_date: e.target.value })}
+                    min={todayISO()}
                     required
                     style={inputStyle}
                   />

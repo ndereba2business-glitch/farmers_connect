@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
+}
+
 const QUESTION_CATEGORIES = [
   { label: "Disease Symptoms", emoji: "🦠" },
   { label: "Vaccination", emoji: "💉" },
@@ -209,6 +213,10 @@ export default function Bookings() {
 
     if (!bookingForm.farm_name || !bookingForm.appointment_date) {
       setBookingError("Farm name and date are required.");
+      return;
+    }
+    if (bookingForm.appointment_date < todayISO()) {
+      setBookingError("Preferred date can't be in the past.");
       return;
     }
     if (!user?.id) {
@@ -854,6 +862,7 @@ export default function Bookings() {
                     type="date"
                     value={bookingForm.appointment_date}
                     onChange={e => setBookingForm({ ...bookingForm, appointment_date: e.target.value })}
+                    min={todayISO()}
                     required
                     style={inputStyle}
                   />

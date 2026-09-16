@@ -6,6 +6,10 @@ import {
 } from "lucide-react";
 import { VisitReportFields } from "../components/VisitReportModal";
 
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
+}
+
 // Only these transitions are allowed — once a visit is completed, cancelled
 // or rejected it's terminal. Rejection only applies to a still-pending
 // request — once a vet has accepted it, declining means cancelling instead.
@@ -102,9 +106,11 @@ export default function Appointments() {
 
   const [showNewForm, setShowNewForm] = useState(false);
   const [newForm, setNewForm] = useState(EMPTY_FORM);
+  const [newFormError, setNewFormError] = useState("");
 
   const [editTarget, setEditTarget] = useState(null);
   const [editForm, setEditForm] = useState(EMPTY_FORM);
+  const [editFormError, setEditFormError] = useState("");
 
   const [completeTarget, setCompleteTarget] = useState(null);
   const [visitForm, setVisitForm] = useState(EMPTY_VISIT_FORM);
@@ -325,11 +331,17 @@ export default function Appointments() {
       reason: appt.reason || "",
       urgency: appt.urgency || "medium"
     });
+    setEditFormError("");
     setEditTarget(appt);
   }
 
   async function handleEditSave(e) {
     e.preventDefault();
+    setEditFormError("");
+    if (editForm.appointment_date < todayISO()) {
+      setEditFormError("Appointment date can't be in the past.");
+      return;
+    }
     setSaving(true);
     const { data, error } = await supabase.from("vet_appointments").update({
       farm_name: editForm.farm_name,
@@ -446,7 +458,15 @@ export default function Appointments() {
 
   async function handleNewAppointment(e) {
     e.preventDefault();
-    if (!newForm.farm_name || !newForm.appointment_date) return;
+    setNewFormError("");
+    if (!newForm.farm_name || !newForm.appointment_date) {
+      setNewFormError("Farm name and date are required.");
+      return;
+    }
+    if (newForm.appointment_date < todayISO()) {
+      setNewFormError("Appointment date can't be in the past.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("vet_appointments").insert([{
       vet_id: user?.id || null,
@@ -462,7 +482,7 @@ export default function Appointments() {
       source: "direct"
     }]);
     setSaving(false);
-    if (error) { alert("Failed to create appointment: " + error.message); return; }
+    if (error) { setNewFormError("Failed to create appointment: " + error.message); return; }
     setNewForm(EMPTY_FORM);
     setShowNewForm(false);
     loadAppointments();
@@ -481,7 +501,7 @@ export default function Appointments() {
           </p>
         </div>
         <button
-          onClick={() => setShowNewForm(true)}
+          onClick={() => { setNewFormError(""); setShowNewForm(true); }}
           style={{
             height: "44px", padding: "0 20px", border: "none", borderRadius: "12px",
             background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff",
@@ -660,6 +680,15 @@ export default function Appointments() {
         <Modal title="New Appointment" onClose={() => setShowNewForm(false)}>
           <form onSubmit={handleNewAppointment}>
             <AppointmentFields form={newForm} setForm={setNewForm} />
+            {newFormError && (
+              <div style={{
+                background: "#fef2f2", border: "1px solid #fecaca",
+                color: "#dc2626", padding: "10px 14px",
+                borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
+              }}>
+                ⚠️ {newFormError}
+              </div>
+            )}
             <SubmitButton saving={saving} label="Create Appointment" />
           </form>
         </Modal>
@@ -670,6 +699,15 @@ export default function Appointments() {
         <Modal title="Reschedule Appointment" onClose={() => setEditTarget(null)}>
           <form onSubmit={handleEditSave}>
             <AppointmentFields form={editForm} setForm={setEditForm} />
+            {editFormError && (
+              <div style={{
+                background: "#fef2f2", border: "1px solid #fecaca",
+                color: "#dc2626", padding: "10px 14px",
+                borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
+              }}>
+                ⚠️ {editFormError}
+              </div>
+            )}
             <SubmitButton saving={saving} label="Save Changes" />
           </form>
         </Modal>
@@ -916,6 +954,7 @@ function AppointmentFields({ form, setForm }) {
           type="date"
           value={form.appointment_date}
           onChange={e => setForm({ ...form, appointment_date: e.target.value })}
+          min={todayISO()}
           required
           style={inputStyle}
         />
