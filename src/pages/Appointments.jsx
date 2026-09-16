@@ -798,7 +798,7 @@ export default function Appointments() {
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "12px", fontWeight: "700", color: "#6b7280" }}>Medication {i + 1}</span>
-                      <button type="button" onClick={() => removeMedication(i)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                      <button type="button" onClick={() => removeMedication(i)} aria-label={`Remove medication ${i + 1}`} style={{ background: "none", border: "none", cursor: "pointer" }}>
                         <X size={14} color="#9ca3af" />
                       </button>
                     </div>
@@ -932,7 +932,7 @@ function Modal({ title, onClose, children }) {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>{title}</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
             <X size={18} />
           </button>
         </div>

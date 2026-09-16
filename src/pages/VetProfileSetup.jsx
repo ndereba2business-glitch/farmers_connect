@@ -427,6 +427,7 @@ export default function VetProfileSetup() {
                   <button
                     type="button"
                     onClick={() => removeBlockedDate(bd.id)}
+                    aria-label={`Unblock ${bd.blocked_date}`}
                     style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}
                   >
                     <Trash2 size={13} color="#9ca3af" />

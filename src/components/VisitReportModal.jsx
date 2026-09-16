@@ -92,7 +92,7 @@ export default function VisitReportModal({ appointment, record, loading, onClose
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Visit Report</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
             <X size={18} />
           </button>
         </div>

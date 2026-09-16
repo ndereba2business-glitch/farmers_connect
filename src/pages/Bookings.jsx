@@ -822,6 +822,7 @@ export default function Bookings() {
               </h2>
               <button
                 onClick={() => setShowBookingForm(false)}
+                aria-label="Close"
                 style={{ background: "none", border: "none", cursor: "pointer" }}
               >
                 <X size={20} color="#9ca3af" />
@@ -991,6 +992,7 @@ export default function Bookings() {
               </div>
               <button
                 onClick={() => setShowEmergency(false)}
+                aria-label="Close"
                 style={{ background: "none", border: "none", cursor: "pointer" }}
               >
                 <X size={20} color="#9ca3af" />

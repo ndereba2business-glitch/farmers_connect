@@ -850,7 +850,7 @@ export default function VetDashboard() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Schedule a Visit</h2>
-              <button onClick={closeScheduleForm} style={{ background: "none", border: "none", cursor: "pointer" }}>
+              <button onClick={closeScheduleForm} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
                 <X size={18} />
               </button>
             </div>
@@ -876,6 +876,7 @@ export default function VetDashboard() {
                     <button
                       type="button"
                       onClick={() => { setSelectedFarmer(null); setFarmerQuery(""); }}
+                      aria-label="Clear selected farmer"
                       style={{ background: "none", border: "none", cursor: "pointer" }}
                     >
                       <X size={16} color="#6b7280" />
@@ -1033,7 +1034,7 @@ export default function VetDashboard() {
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "800", color: "#111827" }}>
                 Escalate to Visit
               </h2>
-              <button onClick={() => setEscalateTarget(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+              <button onClick={() => setEscalateTarget(null)} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
                 <X size={18} color="#9ca3af" />
               </button>
             </div>

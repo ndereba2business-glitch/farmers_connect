@@ -332,7 +332,7 @@ export default function MyFarmers() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Visit History</h2>
-              <button onClick={() => setHistoryTarget(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+              <button onClick={() => setHistoryTarget(null)} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
                 <X size={18} />
               </button>
             </div>
