@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   Users, Search, Phone, MapPin, Calendar,
-  MessageSquare, Stethoscope, History, X, FileText
+  MessageSquare, Stethoscope, History, X, FileText,
+  Pill, Syringe, Beaker, ExternalLink
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
+
+const RECORD_TYPE_META = {
+  prescription: { icon: Pill, label: "Prescription", color: "#16a34a" },
+  diagnosis: { icon: Stethoscope, label: "Diagnosis", color: "#3b82f6" },
+  vaccination: { icon: Syringe, label: "Vaccination", color: "#8b5cf6" },
+  lab_result: { icon: Beaker, label: "Lab Result", color: "#ef4444" },
+};
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
@@ -23,6 +32,7 @@ const STATUS_COLORS = {
 
 export default function MyFarmers() {
   const { user } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [farmers, setFarmers] = useState([]);
   const [search, setSearch] = useState("");
@@ -31,6 +41,10 @@ export default function MyFarmers() {
   const [historyTarget, setHistoryTarget] = useState(null); // the farmer whose history is open
   const [historyList, setHistoryList] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // ── STANDALONE MEDICAL RECORDS (prescriptions/diagnoses/vaccinations/lab results) ──
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [loadingMedicalRecords, setLoadingMedicalRecords] = useState(false);
 
   const [reportTarget, setReportTarget] = useState(null); // the appointment whose report is open
   const [reportRecord, setReportRecord] = useState(null);
@@ -43,16 +57,41 @@ export default function MyFarmers() {
   async function openHistory(farmer) {
     setHistoryTarget(farmer);
     setLoadingHistory(true);
-    const { data, error } = await supabase
-      .from("vet_appointments")
-      .select("*")
-      .eq("vet_id", user.id)
-      .eq("farmer_email", farmer.email)
-      .eq("status", "completed")
-      .order("appointment_date", { ascending: false });
+    setLoadingMedicalRecords(true);
+
+    const [{ data, error }, { data: records, error: recordsError }] = await Promise.all([
+      supabase.from("vet_appointments")
+        .select("*")
+        .eq("vet_id", user.id)
+        .eq("farmer_email", farmer.email)
+        .eq("status", "completed")
+        .order("appointment_date", { ascending: false }),
+      supabase.from("vet_medical_records")
+        .select("*")
+        .eq("vet_id", user.id)
+        .eq("farmer_email", farmer.email)
+        .order("created_at", { ascending: false })
+    ]);
+
     if (error) console.error("MyFarmers: failed to load visit history —", error.message);
+    if (recordsError) console.error("MyFarmers: failed to load medical records —", recordsError.message);
+
     setHistoryList(data || []);
     setLoadingHistory(false);
+    setMedicalRecords(records || []);
+    setLoadingMedicalRecords(false);
+  }
+
+  async function viewLabResult(record) {
+    const { data, error } = await supabase.storage
+      .from("lab-results")
+      .createSignedUrl(record.file_path, 3600);
+    if (error || !data?.signedUrl) {
+      console.error("MyFarmers: failed to create signed URL —", error?.message);
+      toast.error("Failed to open file: " + (error?.message || "unknown error"));
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
   async function openReport(appt) {
@@ -373,6 +412,64 @@ export default function MyFarmers() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            <h3 style={{ margin: "22px 0 12px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+              Medical Records
+            </h3>
+            {loadingMedicalRecords ? (
+              <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+            ) : medicalRecords.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#9ca3af" }}>No prescriptions, diagnoses, vaccinations, or lab results logged yet.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {medicalRecords.map(record => {
+                  const meta = RECORD_TYPE_META[record.record_type] || RECORD_TYPE_META.diagnosis;
+                  const Icon = meta.icon;
+                  return (
+                    <div key={record.id} style={{
+                      border: "1px solid #e5e7eb", borderRadius: "12px", padding: "14px",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      flexWrap: "wrap", gap: "10px"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                        <Icon size={16} color={meta.color} style={{ marginTop: "2px", flexShrink: 0 }} />
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                            <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+                              {record.title}
+                            </p>
+                            <span style={{
+                              fontSize: "10px", fontWeight: "700", padding: "2px 8px",
+                              borderRadius: "20px", background: "#f3f4f6", color: meta.color
+                            }}>
+                              {meta.label}
+                            </span>
+                          </div>
+                          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+                            {formatDate(record.created_at)}
+                            {record.record_type === "vaccination" && record.next_due_date &&
+                              ` · Next due ${formatDate(record.next_due_date)}`}
+                          </p>
+                        </div>
+                      </div>
+                      {record.record_type === "lab_result" && (
+                        <button
+                          onClick={() => viewLabResult(record)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: "6px",
+                            padding: "7px 14px", background: "#fef2f2", color: "#ef4444",
+                            border: "1px solid #fecaca", borderRadius: "8px",
+                            fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
+                          }}
+                        >
+                          <ExternalLink size={13} /> View File
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
