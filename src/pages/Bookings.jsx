@@ -7,6 +7,7 @@ import {
   Calendar, Clock, CalendarPlus, CheckCircle2, XCircle, FileText
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
+import FarmerMessagesPanel from "../components/FarmerMessagesPanel";
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
@@ -312,6 +313,7 @@ export default function Bookings() {
     { key: "vets", label: "Vets", icon: "🩺" },
     { key: "ask", label: "Ask", icon: "💬" },
     { key: "bookings", label: "Bookings", icon: "📅" },
+    { key: "messages", label: "Messages", icon: "✉️" },
     { key: "suppliers", label: "Suppliers", icon: "🏪" },
   ];
 
@@ -784,6 +786,11 @@ export default function Bookings() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ====== MESSAGES TAB ====== */}
+      {activeTab === "messages" && (
+        <FarmerMessagesPanel />
       )}
 
       {/* ====== SUPPLIERS TAB ====== */}
