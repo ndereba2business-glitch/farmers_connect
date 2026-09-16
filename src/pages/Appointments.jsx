@@ -28,6 +28,28 @@ function sourceStatusesFor(targetStatus) {
   return Object.keys(STATUS_TRANSITIONS).filter(s => STATUS_TRANSITIONS[s].includes(targetStatus));
 }
 
+// Phase 4.2 — pre-check before accepting so a vet gets a clean message
+// instead of a raw constraint error; the DB's partial unique index on
+// (vet_id, appointment_date, appointment_time) where status='accepted' is
+// the authoritative backstop for the race two concurrent accepts create.
+// Appointments with no time set are skipped — without a time there's no
+// reliable way to tell two same-day visits actually conflict.
+async function hasConflictingAcceptedAppointment(vetId, appt) {
+  if (!vetId || !appt.appointment_time) return false;
+  const { data, error } = await supabase.from("vet_appointments")
+    .select("id")
+    .eq("vet_id", vetId)
+    .eq("appointment_date", appt.appointment_date)
+    .eq("appointment_time", appt.appointment_time)
+    .eq("status", "accepted")
+    .neq("id", appt.id);
+  if (error) {
+    console.error("Appointments: double-booking check failed —", error.message);
+    return false; // don't block accepting just because the check itself failed
+  }
+  return (data || []).length > 0;
+}
+
 // Best-effort status update for the farmer — reuses the existing
 // notifications table/NotificationsBell (src/components/NotificationsBell.jsx),
 // already wired up for every role. Never blocks or surfaces errors to the
@@ -187,6 +209,11 @@ export default function Appointments() {
     if (!canTransition(appt.status, "accepted")) {
       alert(`Can't accept an appointment that's already ${appt.status}.`);
       loadAppointments();
+      return;
+    }
+    const vetId = user?.id || appt.vet_id;
+    if (await hasConflictingAcceptedAppointment(vetId, appt)) {
+      alert("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
       return;
     }
     const { data, error } = await supabase.from("vet_appointments")

@@ -197,12 +197,30 @@ export default function VetDashboard() {
     setLoading(false);
   }
 
-  async function updateAppointmentStatus(id, status) {
+  async function updateAppointmentStatus(appt, status) {
     // Only pending -> accepted flows through here today — guard the source
     // status so a stale card can't push a cancelled/completed visit backwards.
+    if (status === "accepted") {
+      const vetId = user?.id || appt.vet_id;
+      // Skip the check when there's no time to compare — see the matching
+      // helper in Appointments.jsx for why.
+      if (vetId && appt.appointment_time) {
+        const { data: conflicts, error: conflictError } = await supabase.from("vet_appointments")
+          .select("id")
+          .eq("vet_id", vetId)
+          .eq("appointment_date", appt.appointment_date)
+          .eq("appointment_time", appt.appointment_time)
+          .eq("status", "accepted")
+          .neq("id", appt.id);
+        if (!conflictError && conflicts && conflicts.length > 0) {
+          alert("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
+          return;
+        }
+      }
+    }
     const { data, error } = await supabase.from("vet_appointments")
       .update({ status })
-      .eq("id", id)
+      .eq("id", appt.id)
       .in("status", ["pending"])
       .select();
     if (error) {
@@ -605,7 +623,7 @@ export default function VetDashboard() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
                         {appt.status !== "accepted" && (
                           <button
-                            onClick={() => updateAppointmentStatus(appt.id, "accepted")}
+                            onClick={() => updateAppointmentStatus(appt, "accepted")}
                             style={{
                               padding: "8px 16px", background: "#16a34a", color: "#fff",
                               border: "none", borderRadius: "8px", fontWeight: "700",

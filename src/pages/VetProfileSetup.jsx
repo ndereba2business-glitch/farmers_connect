@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import { Stethoscope, CheckCircle2, Clock, XCircle, Ban, Save } from "lucide-react";
+import { Stethoscope, CheckCircle2, Clock, XCircle, Ban, Save, CalendarOff, Trash2, Plus } from "lucide-react";
 
 const KENYA_COUNTIES = [
   "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika",
@@ -36,8 +36,15 @@ const labelStyle = {
 
 const EMPTY_FORM = {
   full_name: "", bio: "", service_counties: [], specializations: [],
-  accepts_emergency: false, base_fee: "", license_number: ""
+  accepts_emergency: false, base_fee: "", license_number: "",
+  working_days: [1, 2, 3, 4, 5], available_start_time: "08:00", available_end_time: "17:00"
 };
+
+const WEEKDAYS = [
+  { value: 1, label: "Mon" }, { value: 2, label: "Tue" }, { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" }, { value: 5, label: "Fri" }, { value: 6, label: "Sat" },
+  { value: 0, label: "Sun" },
+];
 
 export default function VetProfileSetup() {
   const { user, profile } = useAuth();
@@ -47,6 +54,11 @@ export default function VetProfileSetup() {
   const [saved, setSaved] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(null); // null = not loaded yet
   const [form, setForm] = useState(EMPTY_FORM);
+
+  // ── AVAILABILITY: blocked dates (Phase 4.2) ──
+  const [blockedDates, setBlockedDates] = useState([]);
+  const [newBlockedDate, setNewBlockedDate] = useState("");
+  const [blockedDateError, setBlockedDateError] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -73,7 +85,10 @@ export default function VetProfileSetup() {
           specializations: data.specializations || [],
           accepts_emergency: !!data.accepts_emergency,
           base_fee: data.base_fee != null ? String(data.base_fee) : "",
-          license_number: data.license_number || ""
+          license_number: data.license_number || "",
+          working_days: data.working_days || [1, 2, 3, 4, 5],
+          available_start_time: data.available_start_time || "08:00",
+          available_end_time: data.available_end_time || "17:00"
         });
       } else {
         setCurrentStatus("missing");
@@ -83,6 +98,47 @@ export default function VetProfileSetup() {
     }
     loadProfile();
   }, [user?.id]);
+
+  useEffect(() => {
+    async function loadBlockedDates() {
+      if (!user?.id) return;
+      const { data, error } = await supabase
+        .from("vet_blocked_dates")
+        .select("*")
+        .eq("vet_id", user.id)
+        .order("blocked_date", { ascending: true });
+      if (error) {
+        console.error("VetProfileSetup: failed to load blocked dates —", error.message);
+        return;
+      }
+      setBlockedDates(data || []);
+    }
+    loadBlockedDates();
+  }, [user?.id]);
+
+  async function addBlockedDate() {
+    setBlockedDateError("");
+    if (!newBlockedDate) return;
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from("vet_blocked_dates")
+      .insert([{ vet_id: user.id, blocked_date: newBlockedDate }])
+      .select();
+    if (error) {
+      setBlockedDateError(
+        error.code === "23505" ? "That date is already blocked." : "Failed to block date: " + error.message
+      );
+      return;
+    }
+    setBlockedDates(d => [...d, ...data].sort((a, b) => a.blocked_date.localeCompare(b.blocked_date)));
+    setNewBlockedDate("");
+  }
+
+  async function removeBlockedDate(id) {
+    const { error } = await supabase.from("vet_blocked_dates").delete().eq("id", id);
+    if (error) { alert("Failed to remove blocked date: " + error.message); return; }
+    setBlockedDates(d => d.filter(bd => bd.id !== id));
+  }
 
   function toggleArrayValue(field, value) {
     setForm(f => {
@@ -126,6 +182,9 @@ export default function VetProfileSetup() {
         accepts_emergency: form.accepts_emergency,
         base_fee: form.base_fee ? Number(form.base_fee) : null,
         license_number: form.license_number.trim() || null,
+        working_days: form.working_days,
+        available_start_time: form.available_start_time,
+        available_end_time: form.available_end_time,
         verification_status: nextStatus,
         updated_at: new Date().toISOString()
       }, { onConflict: "user_id" });
@@ -276,6 +335,103 @@ export default function VetProfileSetup() {
               );
             })}
           </div>
+        </div>
+
+        {/* AVAILABILITY (Phase 4.2) */}
+        <div style={{ marginBottom: "22px" }}>
+          <label style={labelStyle}>Working Days</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
+            {WEEKDAYS.map(day => {
+              const active = form.working_days.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => toggleArrayValue("working_days", day.value)}
+                  style={{
+                    padding: "6px 14px", borderRadius: "20px",
+                    border: `1.5px solid ${active ? "#22c55e" : "#e5e7eb"}`,
+                    background: active ? "#f0fdf4" : "#fff",
+                    color: active ? "#16a34a" : "#374151",
+                    fontWeight: "600", fontSize: "13px", cursor: "pointer"
+                  }}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={labelStyle}>Available From</label>
+              <input
+                type="time"
+                value={form.available_start_time}
+                onChange={e => setForm({ ...form, available_start_time: e.target.value })}
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Available Until</label>
+              <input
+                type="time"
+                value={form.available_end_time}
+                onChange={e => setForm({ ...form, available_end_time: e.target.value })}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BLOCKED DATES (Phase 4.2) */}
+        <div style={{ marginBottom: "22px" }}>
+          <label style={labelStyle}>Blocked Dates</label>
+          <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#9ca3af" }}>
+            Days you're fully unavailable — leave, travel, etc.
+          </p>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <input
+              type="date"
+              value={newBlockedDate}
+              onChange={e => setNewBlockedDate(e.target.value)}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={addBlockedDate}
+              style={{
+                flexShrink: 0, padding: "0 16px", border: "none", borderRadius: "10px",
+                background: "#111827", color: "#fff", fontWeight: "700",
+                cursor: "pointer", display: "flex", alignItems: "center", gap: "6px"
+              }}
+            >
+              <Plus size={16} /> Block
+            </button>
+          </div>
+          {blockedDateError && (
+            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#dc2626" }}>{blockedDateError}</p>
+          )}
+          {blockedDates.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {blockedDates.map(bd => (
+                <span key={bd.id} style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "6px 10px", borderRadius: "20px",
+                  background: "#f3f4f6", color: "#374151", fontSize: "13px", fontWeight: "600"
+                }}>
+                  <CalendarOff size={13} />
+                  {bd.blocked_date}
+                  <button
+                    type="button"
+                    onClick={() => removeBlockedDate(bd.id)}
+                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}
+                  >
+                    <Trash2 size={13} color="#9ca3af" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* EMERGENCY AVAILABILITY */}
