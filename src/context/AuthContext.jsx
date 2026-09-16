@@ -13,6 +13,20 @@ function identityOf(u) {
   return u?.email || u?.phone || null;
 }
 
+// Admin status must come from app_metadata — it's settable only via the
+// Supabase dashboard/SQL editor or the service-role key, never by the
+// authenticated client itself (unlike user_metadata, which any user can
+// set on their own account via supabase.auth.updateUser()). A self-
+// reported "admin" in user_metadata is never trusted; farmer/vet/supplier
+// self-selection is fine since those don't grant elevated access on their
+// own — vet-specific actions are separately gated by
+// vet_profiles.verification_status, an admin-controlled DB column.
+export function extractRole(user) {
+  if (user?.app_metadata?.role === "admin") return "admin";
+  const claimed = user?.user_metadata?.role;
+  return claimed === "admin" ? "farmer" : (claimed || "farmer");
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -66,13 +80,6 @@ export function AuthProvider({ children }) {
       console.error("fetchProfile: unexpected error —", err.message);
       setProfile(null);
     }
-  }
-
-  // -----------------------------
-  // EXTRACT ROLE FROM USER
-  // -----------------------------
-  function extractRole(user) {
-    return user?.user_metadata?.role || "farmer";
   }
 
   // -----------------------------

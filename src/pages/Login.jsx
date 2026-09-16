@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, extractRole } from "../context/AuthContext";
 
 export default function Login() {
 
@@ -112,9 +112,11 @@ export default function Login() {
     // SAVE USER
     setUser(data.user);
 
-    // GET ROLE
+    // GET ROLE — must match AuthContext's extractRole exactly, since a
+    // self-reported "admin" in user_metadata is never trusted (only
+    // app_metadata is authoritative for admin status).
     const role =
-      data.user?.user_metadata?.role;
+      extractRole(data.user);
 
     // REDIRECT BASED ON ROLE
     if (role === "vet") {
