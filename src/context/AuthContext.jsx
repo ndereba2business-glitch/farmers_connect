@@ -3,6 +3,16 @@ import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
+// Users sign up with either an email or a phone number (Signup.jsx already
+// writes farmer_profiles.user_email as email||phone for phone-only
+// accounts, and the RLS policies are built around
+// coalesce(auth.email(), auth.jwt()->>'phone') for exactly this reason) —
+// so "identity" here means whichever one the account actually has, not
+// email specifically.
+function identityOf(u) {
+  return u?.email || u?.phone || null;
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -12,13 +22,13 @@ export function AuthProvider({ children }) {
   // -----------------------------
   // FETCH FARMER PROFILE
   // -----------------------------
-  async function fetchProfile(email) {
-    if (!email) return;
+  async function fetchProfile(identity) {
+    if (!identity) return;
     try {
       const { data, error } = await supabase
         .from("farmer_profiles")
         .select("*")
-        .eq("user_email", email)
+        .eq("user_email", identity)
         .maybeSingle(); // returns null if no row found, instead of throwing
 
       if (error) {
@@ -33,11 +43,11 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      // No profile row yet for this email — create one.
+      // No profile row yet for this identity — create one.
       const { data: newProfile, error: insertError } = await supabase
         .from("farmer_profiles")
         .insert([{
-          user_email: email,
+          user_email: identity,
           full_name: "Farmer",
           county: "",
           avatar_url: ""
@@ -92,7 +102,7 @@ export function AuthProvider({ children }) {
       setRole(extractRole(currentUser));
 
       // Not awaited — runs in background, never blocks loading
-      fetchProfile(currentUser?.email);
+      fetchProfile(identityOf(currentUser));
 
     } catch (err) {
       console.error("getSession: failed or timed out —", err.message);
@@ -115,7 +125,7 @@ export function AuthProvider({ children }) {
         const currentUser = session?.user || null;
         setUser(currentUser);
         setRole(extractRole(currentUser));
-        fetchProfile(currentUser?.email);
+        fetchProfile(identityOf(currentUser));
       }
     );
 
@@ -142,12 +152,13 @@ export function AuthProvider({ children }) {
   // flash again before the next profile refetch.
   // -----------------------------
   async function completeOnboarding() {
-    if (!user?.email) return;
+    const identity = identityOf(user);
+    if (!identity) return;
 
     const { error } = await supabase
       .from("farmer_profiles")
       .update({ has_seen_onboarding: true })
-      .eq("user_email", user.email);
+      .eq("user_email", identity);
 
     if (error) {
       console.error("completeOnboarding: update failed —", error.message);
@@ -165,12 +176,13 @@ export function AuthProvider({ children }) {
   // needed, works from wherever the user triggers it (e.g. Profile).
   // -----------------------------
   async function replayOnboarding() {
-    if (!user?.email) return;
+    const identity = identityOf(user);
+    if (!identity) return;
 
     const { error } = await supabase
       .from("farmer_profiles")
       .update({ has_seen_onboarding: false })
-      .eq("user_email", user.email);
+      .eq("user_email", identity);
 
     if (error) {
       console.error("replayOnboarding: update failed —", error.message);
@@ -189,7 +201,7 @@ export function AuthProvider({ children }) {
       logout,
       completeOnboarding,
       replayOnboarding,
-      userEmail: user?.email || null,
+      userEmail: identityOf(user),
       isAdmin: role === "admin",
       isVet: role === "vet",
       isSupplier: role === "supplier",
