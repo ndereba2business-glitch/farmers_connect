@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Stethoscope, CheckCircle2, Clock, XCircle, Ban, Save, CalendarOff, Trash2, Plus } from "lucide-react";
 
 const KENYA_COUNTIES = [
@@ -48,6 +49,7 @@ const WEEKDAYS = [
 
 export default function VetProfileSetup() {
   const { user, profile, userEmail } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -136,7 +138,7 @@ export default function VetProfileSetup() {
 
   async function removeBlockedDate(id) {
     const { error } = await supabase.from("vet_blocked_dates").delete().eq("id", id);
-    if (error) { alert("Failed to remove blocked date: " + error.message); return; }
+    if (error) { toast.error("Failed to remove blocked date: " + error.message); return; }
     setBlockedDates(d => d.filter(bd => bd.id !== id));
   }
 

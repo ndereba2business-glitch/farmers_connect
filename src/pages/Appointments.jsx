@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban
 } from "lucide-react";
@@ -100,6 +101,7 @@ const EMPTY_MEDICATION = { name: "", dosage: "", instructions: "" };
 
 export default function Appointments() {
   const { userEmail, user } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -217,11 +219,11 @@ export default function Appointments() {
 
   async function claimAppointment(appt) {
     if (!user?.id) {
-      alert("You must be logged in to claim an appointment.");
+      toast.error("You must be logged in to claim an appointment.");
       return;
     }
     if (appt.status !== "pending") {
-      alert("This request is no longer available to claim.");
+      toast.error("This request is no longer available to claim.");
       loadAppointments();
       return;
     }
@@ -231,22 +233,22 @@ export default function Appointments() {
       .is("vet_id", null)
       .is("vet_email", null)
       .select();
-    if (error) { alert("Failed to claim: " + error.message); return; }
+    if (error) { toast.error("Failed to claim: " + error.message); return; }
     if (!data || data.length === 0) {
-      alert("Another vet already claimed this request.");
+      toast.error("Another vet already claimed this request.");
     }
     loadAppointments();
   }
 
   async function acceptAppointment(appt) {
     if (!canTransition(appt.status, "accepted")) {
-      alert(`Can't accept an appointment that's already ${appt.status}.`);
+      toast.error(`Can't accept an appointment that's already ${appt.status}.`);
       loadAppointments();
       return;
     }
     const vetId = user?.id || appt.vet_id;
     if (await hasConflictingAcceptedAppointment(vetId, appt)) {
-      alert("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
+      toast.error("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
       return;
     }
     const { data, error } = await supabase.from("vet_appointments")
@@ -258,9 +260,9 @@ export default function Appointments() {
       .eq("id", appt.id)
       .in("status", sourceStatusesFor("accepted"))
       .select();
-    if (error) { alert("Failed to accept: " + error.message); return; }
+    if (error) { toast.error("Failed to accept: " + error.message); return; }
     if (!data || data.length === 0) {
-      alert("This appointment's status changed elsewhere and can no longer be accepted.");
+      toast.error("This appointment's status changed elsewhere and can no longer be accepted.");
     } else {
       notifyFarmer(appt, "Visit request accepted", `Your visit request for ${appt.farm_name} on ${appt.appointment_date} was accepted.`);
     }
@@ -269,7 +271,7 @@ export default function Appointments() {
 
   function openReject(appt) {
     if (!canTransition(appt.status, "rejected")) {
-      alert(`Can't reject an appointment that's already ${appt.status}.`);
+      toast.error(`Can't reject an appointment that's already ${appt.status}.`);
       return;
     }
     setRejectReason("");
@@ -286,9 +288,9 @@ export default function Appointments() {
       .in("status", sourceStatusesFor("rejected"))
       .select();
     setSaving(false);
-    if (error) { alert("Failed to reject: " + error.message); return; }
+    if (error) { toast.error("Failed to reject: " + error.message); return; }
     if (!data || data.length === 0) {
-      alert("This appointment's status changed elsewhere and can no longer be rejected.");
+      toast.error("This appointment's status changed elsewhere and can no longer be rejected.");
     } else {
       notifyFarmer(rejectTarget, "Visit request declined", `Your visit request for ${rejectTarget.farm_name} on ${rejectTarget.appointment_date} was declined: ${rejectReason.trim()}`);
     }
@@ -298,7 +300,7 @@ export default function Appointments() {
 
   async function cancelAppointment(appt) {
     if (!canTransition(appt.status, "cancelled")) {
-      alert(`Can't cancel an appointment that's already ${appt.status}.`);
+      toast.error(`Can't cancel an appointment that's already ${appt.status}.`);
       loadAppointments();
       return;
     }
@@ -308,9 +310,9 @@ export default function Appointments() {
       .eq("id", appt.id)
       .in("status", sourceStatusesFor("cancelled"))
       .select();
-    if (error) { alert("Failed to cancel: " + error.message); return; }
+    if (error) { toast.error("Failed to cancel: " + error.message); return; }
     if (!data || data.length === 0) {
-      alert("This appointment's status changed elsewhere and can no longer be cancelled.");
+      toast.error("This appointment's status changed elsewhere and can no longer be cancelled.");
     } else {
       notifyFarmer(appt, "Visit cancelled", `Your visit for ${appt.farm_name} on ${appt.appointment_date} was cancelled by the vet.`);
     }
@@ -319,7 +321,7 @@ export default function Appointments() {
 
   function openEdit(appt) {
     if (!["pending", "accepted"].includes(appt.status)) {
-      alert(`Can't reschedule an appointment that's already ${appt.status}.`);
+      toast.error(`Can't reschedule an appointment that's already ${appt.status}.`);
       return;
     }
     setEditForm({
@@ -356,9 +358,9 @@ export default function Appointments() {
       .in("status", ["pending", "accepted"])
       .select();
     setSaving(false);
-    if (error) { alert("Failed to save changes: " + error.message); return; }
+    if (error) { toast.error("Failed to save changes: " + error.message); return; }
     if (!data || data.length === 0) {
-      alert("This appointment's status changed elsewhere and can no longer be rescheduled.");
+      toast.error("This appointment's status changed elsewhere and can no longer be rescheduled.");
     }
     setEditTarget(null);
     loadAppointments();
@@ -380,7 +382,7 @@ export default function Appointments() {
 
   function openComplete(appt) {
     if (!canTransition(appt.status, "completed")) {
-      alert(`Can't mark an appointment complete when it's already ${appt.status}.`);
+      toast.error(`Can't mark an appointment complete when it's already ${appt.status}.`);
       return;
     }
     setVisitForm(EMPTY_VISIT_FORM);
@@ -417,10 +419,10 @@ export default function Appointments() {
       .in("status", sourceStatusesFor("completed"))
       .select();
 
-    if (error) { setSaving(false); alert("Failed to mark complete: " + error.message); return; }
+    if (error) { setSaving(false); toast.error("Failed to mark complete: " + error.message); return; }
     if (!data || data.length === 0) {
       setSaving(false);
-      alert("This appointment's status changed elsewhere and can no longer be marked complete.");
+      toast.error("This appointment's status changed elsewhere and can no longer be marked complete.");
       setCompleteTarget(null);
       loadAppointments();
       return;
@@ -448,7 +450,7 @@ export default function Appointments() {
     if (visitRecordError) {
       // The appointment is already marked completed at this point — surface
       // this loudly rather than silently leaving a visit with no record.
-      alert("Visit marked complete, but the clinical record failed to save: " + visitRecordError.message);
+      toast.error("Visit marked complete, but the clinical record failed to save: " + visitRecordError.message);
     } else {
       notifyFarmer(completeTarget, "Visit completed", `Your visit for ${completeTarget.farm_name} on ${completeTarget.appointment_date} has been marked complete.`);
     }

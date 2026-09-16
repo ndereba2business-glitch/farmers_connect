@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
   MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
@@ -59,6 +60,7 @@ function timeAgo(timestamp) {
 
 export default function VetDashboard() {
   const { userEmail, profile, user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(""); // NEW — Phase 2.1 visible error surface
@@ -217,7 +219,7 @@ export default function VetDashboard() {
           .eq("status", "accepted")
           .neq("id", appt.id);
         if (!conflictError && conflicts && conflicts.length > 0) {
-          alert("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
+          toast.error("You already have another accepted appointment at this exact date and time. Reschedule one of them first.");
           return;
         }
       }
@@ -228,11 +230,11 @@ export default function VetDashboard() {
       .in("status", ["pending"])
       .select();
     if (error) {
-      alert("Failed to update appointment: " + error.message);
+      toast.error("Failed to update appointment: " + error.message);
       return;
     }
     if (!data || data.length === 0) {
-      alert("This appointment's status changed elsewhere and could not be updated.");
+      toast.error("This appointment's status changed elsewhere and could not be updated.");
     } else if (data[0].farmer_email) {
       // Best-effort — reuses the same notifications table NotificationsBell reads.
       const appt = data[0];
@@ -256,7 +258,7 @@ export default function VetDashboard() {
       })
       .eq("id", question.id);
     if (error) {
-      alert("Failed to respond: " + error.message);
+      toast.error("Failed to respond: " + error.message);
       return;
     }
     loadDashboard();
@@ -329,7 +331,7 @@ export default function VetDashboard() {
     setEscalateSaving(false);
 
     if (linkError) {
-      alert("Visit created, but couldn't link it back to the original question: " + linkError.message);
+      toast.error("Visit created, but couldn't link it back to the original question: " + linkError.message);
     }
 
     setEscalateTarget(null);
@@ -388,7 +390,7 @@ export default function VetDashboard() {
   }
 
   function comingSoon(feature) {
-    alert(`${feature} isn't built yet — it needs its own backend. On the roadmap.`);
+    toast.info(`${feature} isn't built yet — it needs its own backend. On the roadmap.`);
   }
 
   // UPDATED — Phase 2.1: consolidated to 6 glanceable cards (dropped the

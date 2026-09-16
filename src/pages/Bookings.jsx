@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   Stethoscope, Search, AlertTriangle, X, Send, Upload, MapPin,
   Calendar, Clock, CalendarPlus, CheckCircle2, XCircle, FileText
@@ -63,6 +64,7 @@ const labelStyle = {
 
 export default function Bookings() {
   const { userEmail, user } = useAuth();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState("ask");
   const [showEmergency, setShowEmergency] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -203,7 +205,7 @@ export default function Bookings() {
     }]);
     setEmergencyText("");
     setShowEmergency(false);
-    alert("Emergency request sent! A vet will respond urgently.");
+    toast.success("Emergency request sent! A vet will respond urgently.");
   }
 
   // ── SUBMIT A VISIT REQUEST ──
@@ -280,7 +282,7 @@ export default function Bookings() {
       .select();
 
     if (error) {
-      alert("Failed to cancel: " + error.message);
+      toast.error("Failed to cancel: " + error.message);
       return;
     }
     if (data && data.length > 0 && data[0].vet_email) {
@@ -294,7 +296,7 @@ export default function Bookings() {
       if (notifyError) console.error("Bookings: failed to notify vet —", notifyError.message);
     }
     if (!data || data.length === 0) {
-      alert("This request can no longer be cancelled — its status already changed.");
+      toast.error("This request can no longer be cancelled — its status already changed.");
     }
     loadMyBookings();
   }
