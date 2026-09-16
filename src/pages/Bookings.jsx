@@ -73,6 +73,7 @@ export default function Bookings() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [emergencyText, setEmergencyText] = useState("");
+  const [emergencySubmitting, setEmergencySubmitting] = useState(false);
   const [vetSearch, setVetSearch] = useState("");
   const [county, setCounty] = useState("All Counties");
   const [specialization, setSpecialization] = useState("All Specializations");
@@ -197,8 +198,9 @@ export default function Bookings() {
   }
 
   async function submitEmergency() {
-    if (!emergencyText.trim()) return;
-    await supabase.from("vet_questions").insert([{
+    if (!emergencyText.trim() || emergencySubmitting) return;
+    setEmergencySubmitting(true);
+    const { error } = await supabase.from("vet_questions").insert([{
       user_email: userEmail,
       farmer_id: user?.id || null,
       category: "Emergency",
@@ -206,6 +208,8 @@ export default function Bookings() {
       status: "pending",
       is_emergency: true
     }]);
+    setEmergencySubmitting(false);
+    if (error) { toast.error("Failed to send emergency request: " + error.message); return; }
     setEmergencyText("");
     setShowEmergency(false);
     toast.success("Emergency request sent! A vet will respond urgently.");
@@ -1025,16 +1029,17 @@ export default function Bookings() {
             </div>
             <button
               onClick={submitEmergency}
+              disabled={emergencySubmitting}
               style={{
                 width: "100%", padding: "14px",
-                background: "#ef4444", color: "#fff",
+                background: emergencySubmitting ? "#fca5a5" : "#ef4444", color: "#fff",
                 border: "none", borderRadius: "12px",
-                fontWeight: "700", fontSize: "15px", cursor: "pointer",
+                fontWeight: "700", fontSize: "15px", cursor: emergencySubmitting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center",
                 justifyContent: "center", gap: "8px"
               }}
             >
-              🚨 Send Emergency Request
+              {emergencySubmitting ? "Sending..." : "🚨 Send Emergency Request"}
             </button>
           </div>
         </div>
