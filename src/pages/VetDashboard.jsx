@@ -568,7 +568,11 @@ export default function VetDashboard() {
           </div>
 
           {loading ? (
-            <p style={{ color: "#9ca3af", fontSize: "14px" }}>Loading...</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[1, 2, 3].map(i => (
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+              ))}
+            </div>
           ) : appointments.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <Calendar size={40} color="#e5e7eb" style={{ marginBottom: "10px" }} />
@@ -688,7 +692,11 @@ export default function VetDashboard() {
           </div>
 
           {loading ? (
-            <p style={{ color: "#9ca3af", fontSize: "14px" }}>Loading...</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[1, 2].map(i => (
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+              ))}
+            </div>
           ) : emergencies.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 10px" }}>
               <AlertTriangle size={36} color="#e5e7eb" style={{ marginBottom: "10px" }} />

@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
-  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban
+  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban, AlertTriangle
 } from "lucide-react";
 import { VisitReportFields } from "../components/VisitReportModal";
 
@@ -103,6 +103,7 @@ export default function Appointments() {
   const { userEmail, user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
 
@@ -155,9 +156,11 @@ export default function Appointments() {
 
     if (error) {
       console.error("Appointments: failed to load —", error.message);
+      setLoadError("Appointments couldn't load. Check your connection and retry.");
       setLoading(false);
       return;
     }
+    setLoadError("");
     setAppointments(data || []);
     setLoading(false);
     sendDueReminders(data || []); // fire-and-forget, doesn't block the UI
@@ -516,6 +519,29 @@ export default function Appointments() {
         </button>
       </div>
 
+      {/* LOAD ERROR BANNER */}
+      {!loading && loadError && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "10px",
+          padding: "12px 16px", borderRadius: "12px",
+          background: "#fef2f2", border: "1px solid #fecaca",
+          color: "#991b1b", fontSize: "13px", marginBottom: "20px"
+        }}>
+          <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+          <span>{loadError}</span>
+          <button
+            onClick={loadAppointments}
+            style={{
+              marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+              borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
+              color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* TABS */}
       <div style={{ display: "flex", gap: "4px", marginBottom: "20px", flexWrap: "wrap" }}>
         {TABS.map(tab => (
@@ -537,7 +563,11 @@ export default function Appointments() {
 
       {/* LIST */}
       {loading ? (
-        <p style={{ color: "#9ca3af", fontSize: "14px" }}>Loading...</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ height: "120px", borderRadius: "18px", background: "#f3f4f6" }} />
+          ))}
+        </div>
       ) : displayList.length === 0 ? (
         <div style={{
           textAlign: "center", padding: "70px 20px",

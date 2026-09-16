@@ -86,6 +86,7 @@ export default function Bookings() {
   const [bookingForm, setBookingForm] = useState(EMPTY_BOOKING_FORM);
   const [bookingSaving, setBookingSaving] = useState(false);
   const [bookingError, setBookingError] = useState("");
+  const [bookingsLoadError, setBookingsLoadError] = useState("");
 
   // ── VISIT REPORT (Phase 3.3) ──
   const [reportTarget, setReportTarget] = useState(null);
@@ -160,9 +161,11 @@ export default function Bookings() {
 
     if (error) {
       console.error("Bookings: failed to load my visit requests —", error.message);
+      setBookingsLoadError("Your visit requests couldn't load. Check your connection and retry.");
       setLoadingBookings(false);
       return;
     }
+    setBookingsLoadError("");
     setMyBookings(data || []);
     setLoadingBookings(false);
   }
@@ -639,9 +642,36 @@ export default function Bookings() {
             </button>
           </div>
 
+          {/* LOAD ERROR BANNER */}
+          {!loadingBookings && bookingsLoadError && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              padding: "12px 16px", borderRadius: "12px",
+              background: "#fef2f2", border: "1px solid #fecaca",
+              color: "#991b1b", fontSize: "13px", marginBottom: "16px"
+            }}>
+              <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+              <span>{bookingsLoadError}</span>
+              <button
+                onClick={loadMyBookings}
+                style={{
+                  marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+                  borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
+                  color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* MY REQUESTS LIST */}
           {loadingBookings ? (
-            <p style={{ color: "#9ca3af", fontSize: "14px" }}>Loading...</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[1, 2, 3].map(i => (
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+              ))}
+            </div>
           ) : myBookings.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
