@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import FarmerPicker from "../components/FarmerPicker";
+import MedicalRecordModal from "../components/MedicalRecordModal";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
   MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
@@ -87,6 +88,9 @@ export default function VetDashboard() {
   const [escalateForm, setEscalateForm] = useState(EMPTY_ESCALATE_FORM);
   const [escalateSaving, setEscalateSaving] = useState(false);
   const [escalateError, setEscalateError] = useState("");
+
+  // ── STANDALONE MEDICAL RECORDS (Prescription/Diagnosis/Vaccination/Lab Results) ──
+  const [medicalRecordType, setMedicalRecordType] = useState(null);
 
   useEffect(() => {
     if (userEmail) loadDashboard();
@@ -380,11 +384,11 @@ export default function VetDashboard() {
     { icon: Users, label: "View Farmers", action: () => navigate("/vet/farmers"),bg: "#edf5ff", iconColor: "#3b82f6" },
     { icon: ClipboardList, label: "Manage Requests", action: () => navigate("/appointments"), bg: "#f0fdf4", iconColor: "#16a34a" },
     // existing
-    { icon: Pill, label: "Create Prescription", action: () => comingSoon("Prescriptions"), bg: "#f0fdf4", iconColor: "#22c55e" },
-    { icon: Stethoscope, label: "Record Diagnosis", action: () => comingSoon("Diagnosis records"), bg: "#eff6ff", iconColor: "#3b82f6" },
-    { icon: Syringe, label: "Add Vaccination Record", action: () => comingSoon("Vaccination records"), bg: "#f5f3ff", iconColor: "#8b5cf6" },
+    { icon: Pill, label: "Create Prescription", action: () => setMedicalRecordType("prescription"), bg: "#f0fdf4", iconColor: "#22c55e" },
+    { icon: Stethoscope, label: "Record Diagnosis", action: () => setMedicalRecordType("diagnosis"), bg: "#eff6ff", iconColor: "#3b82f6" },
+    { icon: Syringe, label: "Add Vaccination Record", action: () => setMedicalRecordType("vaccination"), bg: "#f5f3ff", iconColor: "#8b5cf6" },
     { icon: Calendar, label: "Schedule Visit", action: () => setShowScheduleForm(true), bg: "#fff7e6", iconColor: "#f59e0b" },
-    { icon: Beaker, label: "Upload Lab Results", action: () => comingSoon("Lab result uploads"), bg: "#fef2f2", iconColor: "#ef4444" },
+    { icon: Beaker, label: "Upload Lab Results", action: () => setMedicalRecordType("lab_result"), bg: "#fef2f2", iconColor: "#ef4444" },
     { icon: Send, label: "Message Farmer", action: () => comingSoon("Vet-to-farmer messaging"), bg: "#eff6ff", iconColor: "#3b82f6" },
   ];
 
@@ -1040,6 +1044,14 @@ export default function VetDashboard() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* STANDALONE MEDICAL RECORD MODAL */}
+      {medicalRecordType && (
+        <MedicalRecordModal
+          recordType={medicalRecordType}
+          onClose={() => setMedicalRecordType(null)}
+        />
       )}
     </div>
   );
