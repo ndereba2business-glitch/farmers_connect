@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import FarmerPicker from "../components/FarmerPicker";
 import MedicalRecordModal from "../components/MedicalRecordModal";
+import VetMessagesModal from "../components/VetMessagesModal";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
   MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
@@ -91,6 +92,9 @@ export default function VetDashboard() {
 
   // ── STANDALONE MEDICAL RECORDS (Prescription/Diagnosis/Vaccination/Lab Results) ──
   const [medicalRecordType, setMedicalRecordType] = useState(null);
+
+  // ── MESSAGE FARMER ──
+  const [showMessages, setShowMessages] = useState(false);
 
   useEffect(() => {
     if (userEmail) loadDashboard();
@@ -363,10 +367,6 @@ export default function VetDashboard() {
     loadDashboard();
   }
 
-  function comingSoon(feature) {
-    toast.info(`${feature} isn't built yet — it needs its own backend. On the roadmap.`);
-  }
-
   // UPDATED — Phase 2.1: consolidated to 6 glanceable cards (dropped the
   // always-zero "Unread Messages" placeholder; merged "Pending Reports"
   // into "Pending Requests" since both mean "things awaiting your action")
@@ -389,7 +389,7 @@ export default function VetDashboard() {
     { icon: Syringe, label: "Add Vaccination Record", action: () => setMedicalRecordType("vaccination"), bg: "#f5f3ff", iconColor: "#8b5cf6" },
     { icon: Calendar, label: "Schedule Visit", action: () => setShowScheduleForm(true), bg: "#fff7e6", iconColor: "#f59e0b" },
     { icon: Beaker, label: "Upload Lab Results", action: () => setMedicalRecordType("lab_result"), bg: "#fef2f2", iconColor: "#ef4444" },
-    { icon: Send, label: "Message Farmer", action: () => comingSoon("Vet-to-farmer messaging"), bg: "#eff6ff", iconColor: "#3b82f6" },
+    { icon: Send, label: "Message Farmer", action: () => setShowMessages(true), bg: "#eff6ff", iconColor: "#3b82f6" },
   ];
 
   const hour = new Date().getHours();
@@ -1052,6 +1052,11 @@ export default function VetDashboard() {
           recordType={medicalRecordType}
           onClose={() => setMedicalRecordType(null)}
         />
+      )}
+
+      {/* MESSAGE FARMER MODAL */}
+      {showMessages && (
+        <VetMessagesModal onClose={() => setShowMessages(false)} />
       )}
     </div>
   );
