@@ -3,8 +3,9 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
   Users, Search, Phone, MapPin, Calendar,
-  MessageSquare, Stethoscope
+  MessageSquare, Stethoscope, History, X, FileText
 } from "lucide-react";
+import VisitReportModal from "../components/VisitReportModal";
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
@@ -26,9 +27,47 @@ export default function MyFarmers() {
   const [farmers, setFarmers] = useState([]);
   const [search, setSearch] = useState("");
 
+  // ── VISIT HISTORY (Phase 3.3) ──
+  const [historyTarget, setHistoryTarget] = useState(null); // the farmer whose history is open
+  const [historyList, setHistoryList] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const [reportTarget, setReportTarget] = useState(null); // the appointment whose report is open
+  const [reportRecord, setReportRecord] = useState(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+
   useEffect(() => {
     if (user?.id) fetchMyFarmers();
   }, [user?.id]);
+
+  async function openHistory(farmer) {
+    setHistoryTarget(farmer);
+    setLoadingHistory(true);
+    const { data, error } = await supabase
+      .from("vet_appointments")
+      .select("*")
+      .eq("vet_id", user.id)
+      .eq("farmer_email", farmer.email)
+      .eq("status", "completed")
+      .order("appointment_date", { ascending: false });
+    if (error) console.error("MyFarmers: failed to load visit history —", error.message);
+    setHistoryList(data || []);
+    setLoadingHistory(false);
+  }
+
+  async function openReport(appt) {
+    setReportTarget(appt);
+    setReportRecord(null);
+    setLoadingReport(true);
+    const { data, error } = await supabase
+      .from("visit_records")
+      .select("*")
+      .eq("appointment_id", appt.id)
+      .maybeSingle();
+    if (error) console.error("MyFarmers: failed to load visit report —", error.message);
+    setReportRecord(data || null);
+    setLoadingReport(false);
+  }
 
   async function fetchMyFarmers() {
     setLoading(true);
@@ -252,16 +291,102 @@ export default function MyFarmers() {
                   </p>
                 </div>
 
-                {/* DATE */}
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                {/* DATE + ACTIONS */}
+                <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end", color: "#9ca3af", fontSize: "12px" }}>
                     <Calendar size={12} /> {formatDate(f.lastDate)}
                   </div>
+                  <button
+                    onClick={() => openHistory(f)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      padding: "6px 14px", background: "#fff", color: "#374151",
+                      border: "1px solid #e5e7eb", borderRadius: "8px",
+                      fontWeight: "600", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
+                    }}
+                  >
+                    <History size={13} /> View History
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* VISIT HISTORY MODAL */}
+      {historyTarget && (
+        <div
+          onClick={() => setHistoryTarget(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px"
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px", padding: "28px",
+              maxWidth: "520px", width: "100%", maxHeight: "90vh", overflowY: "auto"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Visit History</h2>
+              <button onClick={() => setHistoryTarget(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ margin: "0 0 18px", fontSize: "13px", color: "#6b7280" }}>
+              {historyTarget.fullName}
+            </p>
+
+            {loadingHistory ? (
+              <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+            ) : historyList.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#9ca3af" }}>No completed visits with this farmer yet.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {historyList.map(appt => (
+                  <div key={appt.id} style={{
+                    border: "1px solid #e5e7eb", borderRadius: "12px", padding: "14px",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    flexWrap: "wrap", gap: "10px"
+                  }}>
+                    <div>
+                      <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+                        {formatDate(appt.appointment_date)}
+                      </p>
+                      <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+                        KES {Number(appt.fee || 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => openReport(appt)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "6px",
+                        padding: "7px 14px", background: "#f0fdf4", color: "#16a34a",
+                        border: "1px solid #bbf7d0", borderRadius: "8px",
+                        fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
+                      }}
+                    >
+                      <FileText size={13} /> View Report
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* VISIT REPORT MODAL */}
+      {reportTarget && (
+        <VisitReportModal
+          appointment={reportTarget}
+          record={reportRecord}
+          loading={loadingReport}
+          onClose={() => { setReportTarget(null); setReportRecord(null); }}
+        />
       )}
     </div>
   );

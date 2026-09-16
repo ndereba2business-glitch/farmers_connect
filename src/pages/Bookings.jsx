@@ -3,8 +3,9 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import {
   Stethoscope, Search, AlertTriangle, X, Send, Upload, MapPin,
-  Calendar, Clock, CalendarPlus, CheckCircle2, XCircle
+  Calendar, Clock, CalendarPlus, CheckCircle2, XCircle, FileText
 } from "lucide-react";
+import VisitReportModal from "../components/VisitReportModal";
 
 const QUESTION_CATEGORIES = [
   { label: "Disease Symptoms", emoji: "🦠" },
@@ -79,6 +80,25 @@ export default function Bookings() {
   const [bookingForm, setBookingForm] = useState(EMPTY_BOOKING_FORM);
   const [bookingSaving, setBookingSaving] = useState(false);
   const [bookingError, setBookingError] = useState("");
+
+  // ── VISIT REPORT (Phase 3.3) ──
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportRecord, setReportRecord] = useState(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  async function openReport(appt) {
+    setReportTarget(appt);
+    setReportRecord(null);
+    setLoadingReport(true);
+    const { data, error } = await supabase
+      .from("visit_records")
+      .select("*")
+      .eq("appointment_id", appt.id)
+      .maybeSingle();
+    if (error) console.error("Bookings: failed to load visit report —", error.message);
+    setReportRecord(data || null);
+    setLoadingReport(false);
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -676,6 +696,19 @@ export default function Bookings() {
                           Cancel
                         </button>
                       )}
+                      {b.status === "completed" && (
+                        <button
+                          onClick={() => openReport(b)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: "6px",
+                            padding: "7px 14px", background: "#f0fdf4", color: "#16a34a",
+                            border: "1px solid #bbf7d0", borderRadius: "8px",
+                            fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
+                          }}
+                        >
+                          <FileText size={13} /> View Report
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -938,6 +971,16 @@ export default function Bookings() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* VISIT REPORT MODAL */}
+      {reportTarget && (
+        <VisitReportModal
+          appointment={reportTarget}
+          record={reportRecord}
+          loading={loadingReport}
+          onClose={() => { setReportTarget(null); setReportRecord(null); }}
+        />
       )}
     </div>
   );
