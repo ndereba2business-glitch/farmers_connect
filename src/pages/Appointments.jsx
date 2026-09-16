@@ -152,6 +152,33 @@ export default function Appointments() {
     }
     setAppointments(data || []);
     setLoading(false);
+    sendDueReminders(data || []); // fire-and-forget, doesn't block the UI
+  }
+
+  // Phase 5 — appointment reminders, checked opportunistically whenever a
+  // vet loads their appointments (no scheduled job exists in this repo —
+  // see the Phase 5 plan). Sends once per appointment via reminder_sent.
+  async function sendDueReminders(list) {
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    const due = list.filter(a =>
+      a.status === "accepted" && !a.reminder_sent &&
+      (a.appointment_date === today || a.appointment_date === tomorrow)
+    );
+    if (due.length === 0) return;
+
+    await Promise.all(due.map(async (appt) => {
+      await notifyFarmer(
+        appt,
+        "Upcoming visit reminder",
+        `Reminder: your visit for ${appt.farm_name} is on ${appt.appointment_date}${appt.appointment_time ? ` at ${appt.appointment_time}` : ""}.`
+      );
+      const { error: flagError } = await supabase.from("vet_appointments")
+        .update({ reminder_sent: true })
+        .eq("id", appt.id);
+      if (flagError) console.error("Appointments: failed to flag reminder sent —", flagError.message);
+    }));
   }
 
   const isMine = (a) =>

@@ -47,7 +47,7 @@ const WEEKDAYS = [
 ];
 
 export default function VetProfileSetup() {
-  const { user, profile } = useAuth();
+  const { user, profile, userEmail } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -175,6 +175,7 @@ export default function VetProfileSetup() {
       .from("vet_profiles")
       .upsert({
         user_id: user.id,
+        email: userEmail || null,
         full_name: form.full_name.trim(),
         bio: form.bio.trim() || null,
         service_counties: form.service_counties,
