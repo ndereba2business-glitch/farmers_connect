@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import FarmerPicker from "../components/FarmerPicker";
 import {
   Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
   MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
-  CalendarPlus, Search, CheckCircle2
+  CalendarPlus, CheckCircle2
 } from "lucide-react";
 
 function todayISO() {
@@ -79,9 +80,6 @@ export default function VetDashboard() {
   const [scheduleError, setScheduleError] = useState("");
 
   // ── FARMER PICKER FOR SCHEDULE VISIT ──
-  const [farmerQuery, setFarmerQuery] = useState("");
-  const [farmerResults, setFarmerResults] = useState([]);
-  const [farmerSearching, setFarmerSearching] = useState(false);
   const [selectedFarmer, setSelectedFarmer] = useState(null);
 
   // ── ESCALATE QUESTION → VISIT ──
@@ -93,32 +91,6 @@ export default function VetDashboard() {
   useEffect(() => {
     if (userEmail) loadDashboard();
   }, [userEmail]);
-
-  // ── FARMER SEARCH (debounced) ──
-  useEffect(() => {
-    if (!farmerQuery.trim() || selectedFarmer) {
-      setFarmerResults([]);
-      return;
-    }
-    const timeout = setTimeout(async () => {
-      setFarmerSearching(true);
-      const { data, error } = await supabase
-        .from("farmer_profiles")
-        .select("user_email, full_name, county, phone")
-        .or(`full_name.ilike.%${farmerQuery}%,user_email.ilike.%${farmerQuery}%`)
-        .limit(6);
-
-      if (error) {
-        console.error("VetDashboard: farmer search failed —", error.message);
-        setFarmerResults([]);
-      } else {
-        setFarmerResults(data || []);
-      }
-      setFarmerSearching(false);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [farmerQuery, selectedFarmer]);
 
   async function loadDashboard() {
     setLoading(true);
@@ -343,8 +315,6 @@ export default function VetDashboard() {
     setScheduleForm(EMPTY_SCHEDULE_FORM);
     setScheduleError("");
     setSelectedFarmer(null);
-    setFarmerQuery("");
-    setFarmerResults([]);
   }
 
   async function handleScheduleVisit(e) {
@@ -859,78 +829,7 @@ export default function VetDashboard() {
               {/* FARMER PICKER */}
               <div style={{ marginBottom: "12px" }}>
                 <label style={labelStyle}>Farmer</label>
-                {selectedFarmer ? (
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "10px 14px", borderRadius: "10px",
-                    border: "1.5px solid #22c55e", background: "#f0fdf4"
-                  }}>
-                    <div>
-                      <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "#111827" }}>
-                        {selectedFarmer.full_name || "Farmer"}
-                      </p>
-                      <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
-                        {selectedFarmer.user_email}{selectedFarmer.county ? ` · ${selectedFarmer.county}` : ""}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedFarmer(null); setFarmerQuery(""); }}
-                      aria-label="Clear selected farmer"
-                      style={{ background: "none", border: "none", cursor: "pointer" }}
-                    >
-                      <X size={16} color="#6b7280" />
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ position: "relative" }}>
-                    <Search size={15} style={{
-                      position: "absolute", left: "13px", top: "50%",
-                      transform: "translateY(-50%)", color: "#9ca3af"
-                    }} />
-                    <input
-                      placeholder="Search farmer by name or email..."
-                      value={farmerQuery}
-                      onChange={e => setFarmerQuery(e.target.value)}
-                      style={{ ...inputStyle, paddingLeft: "36px" }}
-                    />
-                    {farmerQuery.trim() && (
-                      <div style={{
-                        marginTop: "6px", border: "1px solid #e5e7eb", borderRadius: "10px",
-                        maxHeight: "180px", overflowY: "auto", background: "#fff"
-                      }}>
-                        {farmerSearching ? (
-                          <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "#9ca3af" }}>
-                            Searching...
-                          </p>
-                        ) : farmerResults.length === 0 ? (
-                          <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "#9ca3af" }}>
-                            No farmers found.
-                          </p>
-                        ) : (
-                          farmerResults.map(f => (
-                            <div
-                              key={f.user_email}
-                              onClick={() => { setSelectedFarmer(f); setFarmerResults([]); }}
-                              style={{
-                                padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f3f4f6"
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
-                              onMouseLeave={e => e.currentTarget.style.background = "#fff"}
-                            >
-                              <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "#111827" }}>
-                                {f.full_name || "Farmer"}
-                              </p>
-                              <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
-                                {f.user_email}{f.county ? ` · ${f.county}` : ""}
-                              </p>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <FarmerPicker value={selectedFarmer} onChange={setSelectedFarmer} />
               </div>
 
               <input
