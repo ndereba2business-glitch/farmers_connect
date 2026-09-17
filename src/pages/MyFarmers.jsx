@@ -27,7 +27,12 @@ const STATUS_COLORS = {
   claimed: { bg: "#eff6ff", color: "#3b82f6" },
   accepted: { bg: "#eff6ff", color: "#3b82f6" },
   completed: { bg: "#f0fdf4", color: "#16a34a" },
-  cancelled: { bg: "#fef2f2", color: "#ef4444" }
+  cancelled: { bg: "#fef2f2", color: "#ef4444" },
+  record: { bg: "#f5f3ff", color: "#8b5cf6" } // farmer reachable only via standalone medical records, no appointment
+};
+
+const STATUS_LABELS = {
+  record: "Records Only"
 };
 
 export default function MyFarmers() {
@@ -111,12 +116,15 @@ export default function MyFarmers() {
   async function fetchMyFarmers() {
     setLoading(true);
 
-    // 1. All appointments this vet has actually handled (vet_id = assigned vet's auth.uid())
-    const { data: appointments, error: apptError } = await supabase
-      .from("vet_appointments")
-      .select("*")
-      .eq("vet_id", user.id)
-      .order("created_at", { ascending: false });
+    // 1. All appointments this vet has actually handled (vet_id = assigned vet's auth.uid()),
+    // plus standalone medical records (prescriptions/diagnoses/vaccinations/lab
+    // results logged outside a formal appointment — phone consults, walk-ins).
+    // A farmer reachable only through the second source (no vet_appointments
+    // row at all) would otherwise never appear in this list.
+    const [{ data: appointments, error: apptError }, { data: records, error: recordsError }] = await Promise.all([
+      supabase.from("vet_appointments").select("*").eq("vet_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("vet_medical_records").select("*").eq("vet_id", user.id).order("created_at", { ascending: false })
+    ]);
 
     if (apptError) {
       console.error("MyFarmers: failed to load vet_appointments —", apptError.message);
@@ -124,6 +132,7 @@ export default function MyFarmers() {
       setLoading(false);
       return;
     }
+    if (recordsError) console.error("MyFarmers: failed to load vet_medical_records —", recordsError.message);
 
     // 2. Dedupe by farmer_email — first occurrence wins since we sorted newest first
     const latestByFarmer = {};
@@ -131,9 +140,29 @@ export default function MyFarmers() {
       const email = appt.farmer_email;
       if (!email) return;
       if (!latestByFarmer[email]) {
-        latestByFarmer[email] = { ...appt, appointmentCount: 1 };
+        latestByFarmer[email] = { ...appt, appointmentCount: 1, recordCount: 0 };
       } else {
         latestByFarmer[email].appointmentCount += 1;
+      }
+    });
+
+    // Farmers with only standalone records (no appointment at all) get a
+    // synthetic entry so they still show up; farmers already in the map
+    // just get their record counted and their "last activity" considered.
+    (records || []).forEach(record => {
+      const email = record.farmer_email;
+      if (!email) return;
+      if (!latestByFarmer[email]) {
+        latestByFarmer[email] = {
+          farmer_email: email, appointmentCount: 0, recordCount: 1,
+          status: null, reason: record.title, urgency: null,
+          appointment_date: record.created_at, created_at: record.created_at, updated_at: record.created_at
+        };
+      } else {
+        latestByFarmer[email].recordCount = (latestByFarmer[email].recordCount || 0) + 1;
+        if (new Date(record.created_at) > new Date(latestByFarmer[email].updated_at || latestByFarmer[email].created_at)) {
+          latestByFarmer[email].updated_at = record.created_at;
+        }
       }
     });
 
@@ -169,7 +198,8 @@ export default function MyFarmers() {
         phone: profile?.phone || "",
         avatarUrl: profile?.avatar_url || "",
         appointmentCount: appt.appointmentCount,
-        lastStatus: appt.status || "pending",
+        recordCount: appt.recordCount || 0,
+        lastStatus: appt.status || (appt.appointmentCount === 0 ? "record" : "pending"),
         lastReason: appt.reason || appt.question || appt.notes || appt.symptoms || "No details provided",
         lastDate: appt.appointment_date || appt.scheduled_date || appt.created_at,
         lastUpdated: appt.updated_at || appt.created_at,
@@ -293,7 +323,7 @@ export default function MyFarmers() {
                       fontSize: "11px", fontWeight: "700",
                       padding: "2px 9px", borderRadius: "20px", textTransform: "capitalize"
                     }}>
-                      {f.lastStatus}
+                      {STATUS_LABELS[f.lastStatus] || f.lastStatus}
                     </span>
                     {f.urgency === "high" && (
                       <span style={{
@@ -317,9 +347,16 @@ export default function MyFarmers() {
                       </span>
                     )}
                     <span>{f.email}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <Stethoscope size={11} /> {f.appointmentCount} appointment{f.appointmentCount !== 1 ? "s" : ""}
-                    </span>
+                    {f.appointmentCount > 0 && (
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <Stethoscope size={11} /> {f.appointmentCount} appointment{f.appointmentCount !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                    {f.recordCount > 0 && (
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <FileText size={11} /> {f.recordCount} record{f.recordCount !== 1 ? "s" : ""}
+                      </span>
+                    )}
                   </div>
                   <p style={{
                     margin: 0, fontSize: "13px", color: "#374151",

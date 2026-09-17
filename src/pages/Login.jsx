@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import { useAuth, extractRole } from "../context/AuthContext";
+import { extractRole } from "../context/AuthContext";
 
 export default function Login() {
 
@@ -25,9 +25,6 @@ export default function Login() {
 
   const navigate =
     useNavigate();
-
-  const { setUser } =
-    useAuth();
 
   // =========================
   // AUTO REDIRECT IF LOGGED IN
@@ -109,8 +106,9 @@ export default function Login() {
       return;
     }
 
-    // SAVE USER
-    setUser(data.user);
+    // AuthContext's own onAuthStateChange listener (supabase.auth.
+    // onAuthStateChange) already updates `user` for us on SIGNED_IN —
+    // no need to push it in manually here.
 
     // GET ROLE — must match AuthContext's extractRole exactly, since a
     // self-reported "admin" in user_metadata is never trusted (only

@@ -114,6 +114,10 @@ export default function VetMessagesModal({ onClose }) {
     setSending(false);
     if (error) { toast.error("Failed to send: " + error.message); return; }
     setDraft("");
+    // Don't rely solely on the Realtime subscription to reflect the
+    // sender's own message — refetch directly too, so it appears
+    // immediately regardless of Realtime latency.
+    fetchMessages(activeFarmer.user_email);
     loadConversations();
   }
 
