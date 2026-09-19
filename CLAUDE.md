@@ -9,8 +9,18 @@ At the start of every session, before writing or changing code:
 5. Summarize what you found in 2-3 sentences before proposing changes, so I can correct you if your read is wrong
 
 ## Project overview
-Offline-first web app for rural farmers with limited/no internet connectivity.
-Core principle: **every feature must degrade gracefully offline.**
+Web app for rural farmers with limited/no internet connectivity, built mobile-first
+for mid-range/low-end Android phones on unreliable mobile data.
+
+This is **not** an offline-first app, and it's not going to become one — no service
+worker, optimistic local state, or queued-sync pattern exists anywhere in the
+codebase, and building that infrastructure is a deliberate non-goal, not a gap to
+fill. For this audience, the complexity and failure modes of a real offline layer
+(stale writes, sync conflicts, cache invalidation bugs) are a worse tradeoff than
+just making the online experience fast and resilient on bad connections. Build for
+slow/unreliable networks, not for zero connectivity: fast initial loads, small
+payloads, clear loading states, and error states that let someone retry instead of
+losing their input.
 
 ## Stack
 - Frontend: React, react-router-dom v7, Redux Toolkit + React-Redux
@@ -18,7 +28,7 @@ Core principle: **every feature must degrade gracefully offline.**
 - Deploy: Vercel
 
 ## Non-negotiable rules
-- Every new feature must have an offline fallback plan — service worker caching, optimistic local state, or a queued-sync pattern. If a feature genuinely can't work offline (e.g. live vet chat), say so explicitly rather than silently skipping the offline case.
+- No offline fallback infrastructure (service workers, queued-sync, etc.) — see Project overview. Instead: handle network failures gracefully (retry-capable error states, no silent data loss on submit) and keep payloads/initial loads light for slow mobile data.
 - Supabase schema changes always go through `supabase\migrations\` as versioned files — never edit schema directly in the dashboard and call it done
 - After any schema change, regenerate TypeScript types and confirm the frontend types file is updated in the same commit
 - Every new screen/component must be checked for responsiveness — see Responsiveness section below — before it's considered done
