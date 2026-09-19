@@ -65,7 +65,7 @@ export default function Hero() {
             Get started
             <ArrowRight size={16} />
           </Link>
-          <a href="#solution" className="lp-btn lp-btn-ghost">
+          <a href="#how" className="lp-btn lp-btn-ghost">
             See how it works
           </a>
         </div>

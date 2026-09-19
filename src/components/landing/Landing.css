@@ -584,3 +584,329 @@
   color: var(--lp-muted);
   margin-top: 2px;
 }
+
+/* =====================================================================
+   Phase 2 — MyFarm, Vets, Marketplace, Community, Trust, How it works,
+   final CTA, footer. Shared building blocks first.
+   ===================================================================== */
+
+/* the sticky nav would otherwise cover the top of an anchor target */
+.lp-root section[id] { scroll-margin-top: 84px; }
+.lp-nav-link { display: inline-flex; align-items: center; min-height: 44px; }
+
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.lp-reveal.lp-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lp-band-dark {
+  background: linear-gradient(180deg, var(--lp-forest-900), var(--lp-forest-950));
+  color: var(--lp-on-dark);
+}
+.lp-band-dark .lp-section-head p,
+.lp-band-dark .lp-feature p,
+.lp-band-dark .lp-trust-item p {
+  color: var(--lp-on-dark-muted);
+}
+.lp-band-dark .lp-feature-icon {
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--lp-green-400);
+}
+.lp-band-tint { background: var(--lp-cream-2); }
+
+.lp-myfarm,
+.lp-market,
+.lp-how { padding-block: 72px 80px; background: var(--lp-cream); }
+.lp-vets,
+.lp-community,
+.lp-trust { padding-block: 72px 80px; }
+
+.lp-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 44px;
+}
+.lp-vets .lp-split { margin-top: 0; align-items: start; }
+@media (min-width: 900px) {
+  .lp-split { grid-template-columns: 1.05fr 1fr; gap: 64px; }
+}
+
+.lp-feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.lp-feature { display: flex; gap: 14px; align-items: flex-start; }
+.lp-feature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--lp-green-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.lp-root .lp-feature-title {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.lp-feature p {
+  margin-top: 4px;
+  color: var(--lp-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+.lp-chips {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lp-chip {
+  padding: 9px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--lp-line);
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--lp-ink);
+}
+.lp-chip--dark {
+  background: rgba(244, 243, 236, 0.05);
+  border-color: var(--lp-line-on-dark);
+  color: var(--lp-on-dark-muted);
+  font-weight: 500;
+}
+
+.lp-card-grid {
+  margin-top: 36px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .lp-card-grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .lp-card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+.lp-card {
+  background: #fff;
+  border: 1px solid var(--lp-line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 14px 34px -24px rgba(3, 21, 16, 0.3);
+}
+.lp-card h3 { font-size: 1.25rem; margin-top: 16px; }
+.lp-card p {
+  margin-top: 8px;
+  color: var(--lp-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------ batch mock */
+.lp-mock {
+  background: #fff;
+  border: 1px solid var(--lp-line);
+  border-radius: 20px;
+  box-shadow: var(--lp-shadow);
+  padding: 22px;
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+.lp-mock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--lp-line);
+}
+.lp-mock-title { font-weight: 700; font-size: 0.98rem; }
+.lp-mock-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--lp-green-600);
+}
+.lp-mock-rows { list-style: none; margin: 0; padding: 4px 0 0; }
+.lp-mock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--lp-line);
+  font-size: 0.9rem;
+}
+.lp-mock-row:last-child { border-bottom: 0; }
+.lp-mock-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--lp-muted);
+}
+.lp-mock-state--done { color: var(--lp-green-600); }
+.lp-mock-state--due { color: #b45309; }
+.lp-mock-cap {
+  margin-top: 14px;
+  font-size: 0.72rem;
+  color: var(--lp-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ trust */
+.lp-trust-grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+@media (min-width: 768px) {
+  .lp-trust-grid { grid-template-columns: repeat(3, 1fr); gap: 40px; }
+}
+.lp-trust-item {
+  border-top: 1px solid var(--lp-line-on-dark);
+  padding-top: 24px;
+}
+.lp-trust-item .lp-feature-icon { margin-bottom: 16px; }
+.lp-trust-item h3 { font-size: 1.2rem; }
+.lp-trust-item p {
+  margin-top: 8px;
+  font-size: 0.94rem;
+  line-height: 1.62;
+}
+
+/* -------------------------------------------------------- how it works */
+.lp-steps {
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+@media (min-width: 768px) {
+  .lp-steps { grid-template-columns: repeat(3, 1fr); gap: 36px; }
+}
+.lp-step { border-top: 2px solid var(--lp-green-500); padding-top: 20px; }
+.lp-step-num {
+  display: block;
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  font-weight: 560;
+  color: var(--lp-green-600);
+}
+.lp-step h3 { font-size: 1.25rem; margin-top: 14px; }
+.lp-step p {
+  margin-top: 8px;
+  color: var(--lp-muted);
+  font-size: 0.94rem;
+  line-height: 1.62;
+  max-width: 40ch;
+}
+
+/* ------------------------------------------------------------ final CTA */
+.lp-cta {
+  padding-block: 76px;
+  background: linear-gradient(135deg, var(--lp-green-600), #0f5f2e 55%, var(--lp-forest-800));
+  color: var(--lp-on-dark);
+}
+.lp-cta-inner { text-align: center; }
+.lp-cta h2 { font-size: clamp(1.9rem, 4.6vw, 3rem); }
+.lp-cta p {
+  margin: 16px auto 0;
+  max-width: 48ch;
+  font-size: 1.02rem;
+  line-height: 1.62;
+  color: rgba(244, 243, 236, 0.85);
+}
+.lp-cta-actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.lp-btn-light {
+  color: var(--lp-forest-900);
+  background: var(--lp-cream);
+  box-shadow: 0 16px 34px -12px rgba(3, 21, 16, 0.5);
+}
+.lp-btn-light:hover { transform: translateY(-1px); }
+
+/* --------------------------------------------------------------- footer */
+.lp-footer {
+  background: var(--lp-forest-950);
+  color: var(--lp-on-dark-muted);
+  padding: 56px 0 28px;
+}
+.lp-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 36px;
+}
+@media (min-width: 768px) {
+  .lp-footer-grid { grid-template-columns: 1.6fr 1fr 1fr; }
+}
+.lp-footer-brand p {
+  margin-top: 14px;
+  max-width: 32ch;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.lp-footer-col { display: flex; flex-direction: column; }
+.lp-footer-col h3 {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lp-on-dark);
+  margin-bottom: 6px;
+}
+.lp-footer-col a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.92rem;
+  transition: color 0.2s ease;
+}
+.lp-footer-col a:hover { color: var(--lp-on-dark); }
+.lp-footer-bottom {
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--lp-line-on-dark);
+  font-size: 0.8rem;
+}
+
+/* `.lp-root a { color: inherit }` outranks single-class link colours, so
+   these need the same specificity to actually apply. */
+.lp-root .lp-nav-link,
+.lp-root .lp-nav-login { color: var(--lp-on-dark-muted); }
+.lp-root .lp-nav-link:hover,
+.lp-root .lp-nav-login:hover { color: var(--lp-on-dark); }
+.lp-root .lp-btn-light { color: var(--lp-forest-900); }

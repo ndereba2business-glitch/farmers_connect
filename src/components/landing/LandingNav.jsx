@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 
-// Minimal nav for phase 1 of the landing page: only links to sections
-// that actually exist yet (#problem, #solution) plus the two real
-// auth routes. Grows as later phases add more sections.
+// Only links to sections that exist on the page, plus the two real auth
+// routes. Kept to four links so it still fits at the 860px breakpoint.
 export default function LandingNav() {
   return (
     <nav className="lp-nav" aria-label="Primary">
@@ -16,7 +15,9 @@ export default function LandingNav() {
 
       <div className="lp-nav-links">
         <a href="#problem" className="lp-nav-link">The problem</a>
-        <a href="#solution" className="lp-nav-link">How it works</a>
+        <a href="#vets" className="lp-nav-link">Ask a vet</a>
+        <a href="#marketplace" className="lp-nav-link">Marketplace</a>
+        <a href="#how" className="lp-nav-link">How it works</a>
       </div>
 
       <div className="lp-nav-actions">
