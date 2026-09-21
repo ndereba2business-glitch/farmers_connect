@@ -125,6 +125,10 @@ export default function Login() {
 
       navigate("/admin");
 
+    } else if (role === "supplier") {
+
+      navigate("/supplier");
+
     } else {
 
       navigate("/");

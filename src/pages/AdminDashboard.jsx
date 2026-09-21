@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, CheckCircle2, XCircle, Ban } from "lucide-react";
+import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban } from "lucide-react";
 
 const VET_STATUS_META = {
   unverified: { bg: "#f3f4f6", color: "#6b7280", label: "Unverified" },
@@ -11,7 +11,7 @@ const VET_STATUS_META = {
 };
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ users: 0, products: 0, batches: 0, posts: 0, pendingVets: 0 });
+  const [stats, setStats] = useState({ users: 0, products: 0, batches: 0, posts: 0, pendingVets: 0, pendingSuppliers: 0 });
   const [activeTab, setActiveTab] = useState("vets");
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -20,6 +20,9 @@ export default function AdminDashboard() {
   const [vetFilter, setVetFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [updatingVetId, setUpdatingVetId] = useState(null);
+  const [supplierProfiles, setSupplierProfiles] = useState([]);
+  const [supplierFilter, setSupplierFilter] = useState("pending");
+  const [updatingSupplierId, setUpdatingSupplierId] = useState(null);
 
   async function loadData() {
     setLoading(true);
@@ -28,16 +31,20 @@ export default function AdminDashboard() {
       { data: productData },
       { data: batchData },
       { count: posts },
-      { data: vetData, error: vetError }
+      { data: vetData, error: vetError },
+      { data: supplierData, error: supplierError }
     ] = await Promise.all([
       supabase.from("farmer_profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("farm_batches").select("*").order("created_at", { ascending: false }),
       supabase.from("community_posts").select("*", { count: "exact", head: true }),
-      supabase.from("vet_profiles").select("*").order("created_at", { ascending: false })
+      supabase.from("vet_profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("supplier_profiles").select("*").order("created_at", { ascending: false })
     ]);
 
     if (vetError) console.error("AdminDashboard: failed to load vet profiles —", vetError.message);
+    if (supplierError) console.error("AdminDashboard: failed to load supplier profiles —", supplierError.message);
+    setSupplierProfiles(supplierData || []);
 
     setUsers(profileData || []);
     setProducts(productData || []);
@@ -48,7 +55,8 @@ export default function AdminDashboard() {
       products: (productData || []).length,
       batches: (batchData || []).length,
       posts: posts || 0,
-      pendingVets: (vetData || []).filter(v => v.verification_status === "pending").length
+      pendingVets: (vetData || []).filter(v => v.verification_status === "pending").length,
+      pendingSuppliers: (supplierData || []).filter(s => s.verification_status === "pending").length
     });
     setLoading(false);
   }
@@ -73,9 +81,26 @@ export default function AdminDashboard() {
     loadData();
   }
 
+  async function updateSupplierStatus(id, newStatus) {
+    setUpdatingSupplierId(id);
+    const { error } = await supabase
+      .from("supplier_profiles")
+      .update({ verification_status: newStatus })
+      .eq("id", id);
+
+    setUpdatingSupplierId(null);
+
+    if (error) {
+      alert("Failed to update supplier status: " + error.message);
+      return;
+    }
+    loadData();
+  }
+
   const statCards = [
     { title: "Total Users", value: stats.users, icon: Users, color: "#edf9f1", iconColor: "#22c55e" },
     { title: "Pending Vet Reviews", value: stats.pendingVets, icon: Stethoscope, color: "#fef3c7", iconColor: "#d97706" },
+    { title: "Pending Supplier Reviews", value: stats.pendingSuppliers, icon: Store, color: "#fef3c7", iconColor: "#d97706" },
     { title: "Total Products", value: stats.products, icon: ShoppingBag, color: "#fff7e6", iconColor: "#f59e0b" },
     { title: "Chick Batches", value: stats.batches, icon: Egg, color: "#fff0eb", iconColor: "#f97316" },
     { title: "Community Posts", value: stats.posts, icon: MessageSquare, color: "#edf5ff", iconColor: "#3b82f6" },
@@ -139,7 +164,7 @@ export default function AdminDashboard() {
         background: "#f3f4f6", borderRadius: "12px",
         padding: "4px", marginBottom: "20px", width: "fit-content", flexWrap: "wrap"
       }}>
-        {["vets", "users", "products", "batches"].map(tab => (
+        {["vets", "suppliers", "users", "products", "batches"].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -161,6 +186,15 @@ export default function AdminDashboard() {
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
                 {stats.pendingVets}
+              </span>
+            )}
+            {tab === "suppliers" && stats.pendingSuppliers > 0 && (
+              <span style={{
+                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800",
+                width: "16px", height: "16px", borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center"
+              }}>
+                {stats.pendingSuppliers}
               </span>
             )}
             {tab}
@@ -311,6 +345,126 @@ export default function AdminDashboard() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ═══════════ SUPPLIERS TAB ═══════════ */}
+      {activeTab === "suppliers" && (
+        <div>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+            {["pending", "verified", "rejected", "suspended", "all"].map(f => (
+              <button
+                key={f}
+                onClick={() => setSupplierFilter(f)}
+                style={{
+                  padding: "6px 14px", borderRadius: "20px",
+                  border: `1.5px solid ${supplierFilter === f ? "#111827" : "#e5e7eb"}`,
+                  background: supplierFilter === f ? "#111827" : "#fff",
+                  color: supplierFilter === f ? "#fff" : "#6b7280",
+                  fontWeight: "600", fontSize: "12px", cursor: "pointer",
+                  textTransform: "capitalize"
+                }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {(() => {
+            const shown = supplierFilter === "all"
+              ? supplierProfiles
+              : supplierProfiles.filter(s => s.verification_status === supplierFilter);
+
+            if (shown.length === 0) {
+              return (
+                <div style={{
+                  textAlign: "center", padding: "60px 20px",
+                  background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+                }}>
+                  <Store size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
+                  <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+                    No {supplierFilter !== "all" ? supplierFilter : ""} supplier profiles.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {shown.map(sup => {
+                  const meta = VET_STATUS_META[sup.verification_status] || VET_STATUS_META.unverified;
+                  const busy = updatingSupplierId === sup.id;
+                  const actionStyle = (color, border) => ({
+                    display: "flex", alignItems: "center", gap: "6px", minHeight: "44px",
+                    padding: "0 16px", background: color === "#16a34a" ? "#16a34a" : "#fff",
+                    color: color === "#16a34a" ? "#fff" : color, border: border || "none",
+                    borderRadius: "8px", fontWeight: "700", fontSize: "12px",
+                    cursor: busy ? "not-allowed" : "pointer"
+                  });
+                  return (
+                    <div key={sup.id} style={{
+                      background: "#fff", borderRadius: "16px",
+                      border: "1px solid #e5e7eb", padding: "18px 20px",
+                      boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+                    }}>
+                      <div style={{
+                        display: "flex", justifyContent: "space-between",
+                        alignItems: "flex-start", flexWrap: "wrap", gap: "14px"
+                      }}>
+                        <div style={{ flex: 1, minWidth: "220px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
+                            <span style={{ fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                              {sup.business_name}
+                            </span>
+                            <span style={{
+                              fontSize: "11px", fontWeight: "700", padding: "2px 8px",
+                              borderRadius: "20px", background: meta.bg, color: meta.color
+                            }}>
+                              {meta.label}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
+                            {sup.supplier_type && <span>📦 {sup.supplier_type}</span>}
+                            {sup.county && <span>📍 {sup.county}</span>}
+                            {sup.phone && <span>📞 {sup.phone}</span>}
+                            {sup.delivery_available && <span>🚚 Delivers</span>}
+                            {sup.description && (
+                              <p style={{ margin: "6px 0 0", color: "#9ca3af", fontStyle: "italic" }}>
+                                "{sup.description}"
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          {sup.verification_status === "pending" && (
+                            <>
+                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "verified")} style={actionStyle("#16a34a")}>
+                                <CheckCircle2 size={14} /> Approve
+                              </button>
+                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "rejected")} style={actionStyle("#ef4444", "1px solid #fecaca")}>
+                                <XCircle size={14} /> Reject
+                              </button>
+                            </>
+                          )}
+                          {sup.verification_status === "verified" && (
+                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "suspended")} style={actionStyle("#991b1b", "1px solid #fecaca")}>
+                              <Ban size={14} /> Suspend
+                            </button>
+                          )}
+                          {(sup.verification_status === "rejected" || sup.verification_status === "suspended") && (
+                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "pending")} style={actionStyle("#374151", "1px solid #e5e7eb")}>
+                              Move to Pending
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 

@@ -36,7 +36,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   // ✅ Wrong role — send to their correct home
   if (allowedRoles && !allowedRoles.includes(role)) {
     if (role === "vet") return <Navigate to="/vet" replace />;
-    if (role === "supplier") return <Navigate to="/supplier-orders" replace />;
+    if (role === "supplier") return <Navigate to="/supplier" replace />;
     if (role === "admin") return <Navigate to="/admin" replace />;
     return <Navigate to="/" replace />;
   }
