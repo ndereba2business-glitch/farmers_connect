@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Store } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useSupplier } from "../components/supplier/supplierContext";
 
 const TYPES = [
   { value: "feeds", label: "Feeds" },
@@ -27,6 +28,7 @@ const labelStyle = { display: "block", fontSize: "13px", fontWeight: "600", colo
 
 export default function SupplierProfileSetup() {
   const { user } = useAuth();
+  const { refreshProfile } = useSupplier();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -108,6 +110,7 @@ export default function SupplierProfileSetup() {
     }
 
     setStatus(data.verification_status);
+    refreshProfile();
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }

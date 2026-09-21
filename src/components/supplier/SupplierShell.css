@@ -1,0 +1,326 @@
+/* Supplier shell. Prefixed `ss-` so it can't collide with the farmer/vet
+   shell (`fc-`) or the landing page (`lp-`). Mobile first: a top bar, a
+   slide-in drawer and a bottom tab bar; from 1024px a fixed sidebar. */
+
+.ss-root {
+  --ss-bg: #f4f7f4;
+  --ss-surface: #ffffff;
+  --ss-line: #e4e9e5;
+  --ss-ink: #0f1f17;
+  --ss-muted: #5b6b62;
+  --ss-green: #15803d;
+  --ss-green-400: #22c55e;
+  --ss-green-50: #f0fdf4;
+  --ss-amber: #b45309;
+  --ss-amber-50: #fffbeb;
+  --ss-blue: #1d4ed8;
+  --ss-blue-50: #eff6ff;
+  --ss-red: #b91c1c;
+  --ss-red-50: #fef2f2;
+  --ss-radius: 16px;
+  --ss-shadow: 0 1px 2px rgba(15, 31, 23, 0.04), 0 8px 24px -16px rgba(15, 31, 23, 0.18);
+
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--ss-bg);
+  color: var(--ss-ink);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ss-root *,
+.ss-root *::before,
+.ss-root *::after { box-sizing: border-box; }
+
+:where(.ss-root a) { color: inherit; }
+.ss-root :focus-visible {
+  outline: 2px solid var(--ss-green-400);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ---------------------------------------------------------- sidebar */
+.ss-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(8, 20, 14, 0.5);
+}
+
+.ss-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 70;
+  width: min(300px, 86vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--ss-surface);
+  border-right: 1px solid var(--ss-line);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.25s ease, visibility 0s linear 0.25s;
+}
+.ss-sidebar--open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.25s ease, visibility 0s;
+  box-shadow: 8px 0 40px rgba(8, 20, 14, 0.25);
+}
+
+.ss-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 14px;
+}
+.ss-brand { display: flex; align-items: center; gap: 10px; }
+.ss-brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: linear-gradient(155deg, var(--ss-green-400), var(--ss-green));
+}
+.ss-brand-text { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+.ss-brand-text b { color: var(--ss-green); font-weight: 800; }
+
+.ss-icon-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ss-line);
+  border-radius: 12px;
+  background: var(--ss-surface);
+  color: var(--ss-ink);
+  cursor: pointer;
+}
+.ss-icon-btn:hover { background: var(--ss-bg); }
+
+.ss-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ss-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--ss-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ss-link:hover { background: var(--ss-bg); color: var(--ss-ink); }
+.ss-link--active,
+.ss-link--active:hover {
+  background: var(--ss-green-50);
+  color: var(--ss-green);
+  box-shadow: inset 3px 0 0 var(--ss-green-400);
+}
+.ss-link-label { flex: 1; }
+
+.ss-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 100px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  background: #ef4444;
+}
+
+.ss-sidebar-foot {
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--ss-line);
+  display: grid;
+  gap: 10px;
+}
+.ss-user { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ss-avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--ss-green);
+  background: var(--ss-green-50);
+  border: 1px solid #bbf7d0;
+}
+.ss-user-text { display: flex; flex-direction: column; min-width: 0; }
+.ss-user-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ss-user-sub {
+  font-size: 0.75rem;
+  color: var(--ss-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ss-signout {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--ss-line);
+  border-radius: 12px;
+  background: var(--ss-surface);
+  color: var(--ss-red);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ss-signout:hover { background: var(--ss-red-50); }
+
+/* -------------------------------------------------------------- body */
+.ss-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ss-topbar {
+  flex: none;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--ss-surface);
+  border-bottom: 1px solid var(--ss-line);
+}
+.ss-topbar-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ss-topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.ss-status {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.ss-status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ss-status--green { color: var(--ss-green); background: var(--ss-green-50); }
+.ss-status--amber { color: var(--ss-amber); background: var(--ss-amber-50); }
+.ss-status--red { color: var(--ss-red); background: var(--ss-red-50); }
+
+.ss-main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px 96px;
+}
+.ss-main-inner { max-width: 1180px; margin: 0 auto; width: 100%; }
+
+/* --------------------------------------------------------- bottom tabs */
+.ss-bottomnav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--ss-surface);
+  border-top: 1px solid var(--ss-line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.ss-tab {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ss-muted);
+}
+.ss-tab-icon { position: relative; display: inline-flex; }
+.ss-tab-icon .ss-badge { position: absolute; top: -6px; right: -12px; }
+.ss-tab--active { color: var(--ss-green); }
+
+@media (min-width: 640px) {
+  .ss-topbar { padding: 0 20px; }
+  .ss-status { display: inline-flex; }
+  .ss-main { padding: 24px 24px 96px; }
+}
+
+@media (min-width: 1024px) {
+  .ss-sidebar {
+    position: static;
+    width: 264px;
+    flex: none;
+    transform: none;
+    visibility: visible;
+    box-shadow: none;
+  }
+  .ss-close,
+  .ss-menu,
+  .ss-backdrop,
+  .ss-bottomnav { display: none; }
+  .ss-topbar { padding: 0 28px; }
+  .ss-main { padding: 28px 32px 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-sidebar,
+  .ss-sidebar--open { transition: none; }
+}
+
+/* NotificationsBell is shared and draws a white icon, so it needs a dark
+   tile on this light header. The tile also gives it a 44px touch target. */
+.ss-bell {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #0f2a1d;
+}
+.ss-bell > div { display: block; width: 100%; height: 100%; }
+.ss-bell button {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+/* every page already has its own H1 on desktop; keep the header title for
+   the small screens where the page heading has scrolled away */
+@media (min-width: 1024px) {
+  .ss-topbar-title { visibility: hidden; }
+}
