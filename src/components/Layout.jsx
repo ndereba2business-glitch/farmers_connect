@@ -14,6 +14,7 @@ import "./Layout.css";
 const FARMER_NAV = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
   { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
+  { name: "My Orders", path: "/orders", icon: Package },
   { name: "My Farm", path: "/my-farm", icon: Egg },
   { name: "Ask Vet", path: "/bookings", icon: Stethoscope },
   { name: "Community", path: "/community", icon: Users },
@@ -36,8 +37,10 @@ const VET_NAV = [
 ];
 
 const SUPPLIER_NAV = [
-  { name: "My Orders", path: "/supplier-orders", icon: Package },
+  { name: "Dashboard", path: "/supplier", icon: LayoutDashboard },
+  { name: "Order Requests", path: "/supplier-orders", icon: Package },
   { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
+  { name: "Supplier Profile", path: "/supplier-profile", icon: ClipboardList },
   { name: "Wallet", path: "/wallet", icon: Wallet },
   { name: "Profile", path: "/profile", icon: UserCircle },
 ];

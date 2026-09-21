@@ -1,323 +1,162 @@
 import { useEffect, useState } from "react";
+import { Phone, MessageCircle, MapPin, Truck } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+
+const TYPES = [
+  { value: "all", label: "All" },
+  { value: "feeds", label: "Feeds" },
+  { value: "hatchery", label: "Chicks / hatchery" },
+  { value: "medicine", label: "Medicine" },
+  { value: "equipment", label: "Equipment" },
+  { value: "other", label: "Other" }
+];
+
+const digits = (phone) => String(phone).replace(/[^\d+]/g, "");
+
+function whatsappHref(number) {
+  let n = digits(number).replace(/^\+/, "");
+  if (n.startsWith("0")) n = "254" + n.slice(1);
+  return `https://wa.me/${n}`;
+}
+
+const contactBtn = (whatsapp) => ({
+  display: "inline-flex", alignItems: "center", gap: "8px",
+  minHeight: "44px", padding: "0 16px", borderRadius: "10px",
+  textDecoration: "none", fontWeight: "700", fontSize: "13px",
+  border: "1.5px solid #22c55e",
+  background: whatsapp ? "#22c55e" : "#f0fdf4",
+  color: whatsapp ? "#fff" : "#15803d"
+});
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
-  const [activeTab, setActiveTab] = useState("list");
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [type, setType] = useState("all");
 
-  const [form, setForm] = useState({
-    name: "",
-    category: "",
-    county: "",
-    contact: "",
-    verified: false
-  });
+  const [reload, setReload] = useState(0);
 
-  // -----------------------------
-  // FETCH SUPPLIERS
-  // -----------------------------
-  async function fetchSuppliers() {
-    const { data, error } = await supabase
-      .from("suppliers")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error(error.message);
-      return;
-    }
-
-    setSuppliers(data || []);
-  }
-
-  // -----------------------------
-  // REALTIME
-  // -----------------------------
   useEffect(() => {
-    fetchSuppliers();
+    let cancelled = false;
 
-    const channel = supabase
-      .channel("suppliers-live")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "suppliers"
-        },
-        () => {
-          fetchSuppliers();
-        }
-      )
-      .subscribe();
+    async function fetchSuppliers() {
+      const { data, error: fetchError } = await supabase
+        .from("supplier_profiles")
+        .select("id, business_name, supplier_type, county, phone, whatsapp_number, description, delivery_available")
+        .eq("verification_status", "verified")
+        .order("business_name", { ascending: true });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // -----------------------------
-  // ADD SUPPLIER
-  // -----------------------------
-  async function handleAddSupplier() {
-    if (
-      !form.name ||
-      !form.category ||
-      !form.county ||
-      !form.contact
-    ) {
-      alert("Please fill all fields");
-      return;
+      if (cancelled) return;
+      if (fetchError) {
+        setError("We couldn't load suppliers. Check your connection and try again.");
+        setLoading(false);
+        return;
+      }
+      setSuppliers(data || []);
+      setError("");
+      setLoading(false);
     }
 
-    const { error } = await supabase
-      .from("suppliers")
-      .insert([
-        {
-          name: form.name,
-          category: form.category,
-          county: form.county,
-          contact: form.contact,
-          verified: form.verified
-        }
-      ]);
-
-    if (error) {
-      console.error(error.message);
-      return;
-    }
-
-    setForm({
-      name: "",
-      category: "",
-      county: "",
-      contact: "",
-      verified: false
-    });
-
-    setActiveTab("list");
-
     fetchSuppliers();
-  }
+    return () => { cancelled = true; };
+  }, [reload]);
 
-  // -----------------------------
-  // FILTERED SUPPLIERS
-  // -----------------------------
-  const filteredSuppliers = suppliers.filter((s) => {
-    const matchesSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.county.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory =
-      categoryFilter === "All"
-        ? true
-        : s.category === categoryFilter;
-
-    return matchesSearch && matchesCategory;
-  });
+  const q = search.trim().toLowerCase();
+  const shown = suppliers.filter(s =>
+    (type === "all" || s.supplier_type === type) &&
+    (!q || s.business_name?.toLowerCase().includes(q) || s.county?.toLowerCase().includes(q))
+  );
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Suppliers Marketplace</h1>
+    <div style={{ maxWidth: "960px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+        Suppliers
+      </h1>
+      <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+        Verified suppliers of feed, chicks, medicine and equipment.
+      </p>
 
-      {/* TABS */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          marginBottom: "20px"
-        }}
-      >
-        <button onClick={() => setActiveTab("list")}>
-          View Suppliers
-        </button>
-
-        <button onClick={() => setActiveTab("add")}>
-          Add Supplier
-        </button>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", margin: "20px 0" }}>
+        <input
+          aria-label="Search suppliers"
+          placeholder="Search by name or county..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{
+            flex: "1 1 220px", minHeight: "44px", padding: "10px 14px", borderRadius: "10px",
+            border: "1.5px solid #e5e7eb", fontSize: "16px", boxSizing: "border-box"
+          }}
+        />
+        <select
+          aria-label="Filter by type"
+          value={type}
+          onChange={e => setType(e.target.value)}
+          style={{
+            minHeight: "44px", padding: "10px 14px", borderRadius: "10px",
+            border: "1.5px solid #e5e7eb", fontSize: "16px", background: "#fff"
+          }}
+        >
+          {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
       </div>
 
-      {/* SUPPLIERS LIST */}
-      {activeTab === "list" && (
-        <div>
-          {/* SEARCH + FILTER */}
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginBottom: "20px",
-              flexWrap: "wrap"
-            }}
+      {error && (
+        <div role="alert" style={{
+          marginBottom: "16px", padding: "14px 16px", borderRadius: "12px",
+          background: "#fef2f2", color: "#b91c1c", fontSize: "14px",
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap"
+        }}>
+          <span>{error}</span>
+          <button
+            onClick={() => { setError(""); setLoading(true); setReload(n => n + 1); }}
+            style={{ minHeight: "44px", padding: "0 18px", borderRadius: "10px", border: "1.5px solid #b91c1c", background: "#fff", color: "#b91c1c", fontWeight: "700", cursor: "pointer" }}
           >
-            <input
-              placeholder="Search supplier or county..."
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-            />
-
-            <select
-              value={categoryFilter}
-              onChange={(e) =>
-                setCategoryFilter(e.target.value)
-              }
-            >
-              <option>All</option>
-              <option>Feeds</option>
-              <option>Hatchery</option>
-              <option>Medicine</option>
-            </select>
-          </div>
-
-          {filteredSuppliers.length === 0 ? (
-            <p>No suppliers found.</p>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "15px"
-              }}
-            >
-              {filteredSuppliers.map((s) => (
-                <div
-                  key={s.id}
-                  style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "10px",
-                    padding: "15px"
-                  }}
-                >
-                  <h3>
-                    {s.name}{" "}
-                    {s.verified && (
-                      <span style={{ color: "green" }}>
-                        ✔ Verified
-                      </span>
-                    )}
-                  </h3>
-
-                  <p>
-                    <b>Category:</b> {s.category}
-                  </p>
-
-                  <p>
-                    <b>County:</b> {s.county}
-                  </p>
-
-                  <p>
-                    <b>Contact:</b> {s.contact}
-                  </p>
-
-                  <button>
-                    Contact Supplier
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ADD SUPPLIER */}
-      {activeTab === "add" && (
-        <div>
-          <h3>Add Supplier</h3>
-
-          <input
-            placeholder="Supplier Name"
-            value={form.name}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                name: e.target.value
-              })
-            }
-          />
-
-          <br /><br />
-
-          <select
-            value={form.category}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                category: e.target.value
-              })
-            }
-          >
-            <option value="">
-              Select Category
-            </option>
-
-            <option value="Feeds">
-              Feeds
-            </option>
-
-            <option value="Hatchery">
-              Hatchery
-            </option>
-
-            <option value="Medicine">
-              Medicine
-            </option>
-          </select>
-
-          <br /><br />
-
-          <input
-            placeholder="County"
-            value={form.county}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                county: e.target.value
-              })
-            }
-          />
-
-          <br /><br />
-
-          <input
-            placeholder="Contact"
-            value={form.contact}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                contact: e.target.value
-              })
-            }
-          />
-
-          <br /><br />
-
-          <label>
-            <input
-              type="checkbox"
-              checked={form.verified}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  verified: e.target.checked
-                })
-              }
-            />
-
-            {" "}Verified Supplier
-          </label>
-
-          <br /><br />
-
-          <button onClick={handleAddSupplier}>
-            Save Supplier
+            Try again
           </button>
         </div>
       )}
+
+      {loading && !error && <p style={{ color: "#9ca3af" }}>Loading suppliers...</p>}
+
+      {!loading && !error && shown.length === 0 && (
+        <p style={{ color: "#6b7280" }}>
+          {suppliers.length === 0
+            ? "No verified suppliers yet. Check back soon."
+            : "No suppliers match your search."}
+        </p>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "16px" }}>
+        {shown.map(s => (
+          <div key={s.id} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: "16px", padding: "18px" }}>
+            <div style={{ fontWeight: "800", fontSize: "16px", color: "#111827" }}>
+              {s.business_name}{" "}
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "#16a34a", background: "#dcfce7", padding: "2px 8px", borderRadius: "20px", verticalAlign: "middle" }}>
+                ✔ Verified
+              </span>
+            </div>
+            <div style={{ marginTop: "8px", fontSize: "13px", color: "#6b7280", display: "grid", gap: "4px" }}>
+              {s.supplier_type && <span style={{ textTransform: "capitalize" }}>{s.supplier_type}</span>}
+              {s.county && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={13} aria-hidden="true" /> {s.county}</span>}
+              {s.delivery_available && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Truck size={13} aria-hidden="true" /> Delivers</span>}
+            </div>
+            {s.description && <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#6b7280", lineHeight: 1.5 }}>{s.description}</p>}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "14px" }}>
+              {s.phone && (
+                <a href={`tel:${digits(s.phone)}`} style={contactBtn(false)}>
+                  <Phone size={16} aria-hidden="true" /> Call
+                </a>
+              )}
+              {s.whatsapp_number && (
+                <a href={whatsappHref(s.whatsapp_number)} target="_blank" rel="noopener noreferrer" style={contactBtn(true)}>
+                  <MessageCircle size={16} aria-hidden="true" /> WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

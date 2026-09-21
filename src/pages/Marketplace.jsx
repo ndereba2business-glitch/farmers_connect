@@ -56,6 +56,7 @@ export default function Marketplace() {
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [currentUserPhone, setCurrentUserPhone] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [mySupplier, setMySupplier] = useState(null);
   const [checkoutForm, setCheckoutForm] = useState({
     customer_name: "", county: "", phone: ""
   });
@@ -83,6 +84,15 @@ export default function Marketplace() {
 
         // 🟢 This auto-fills the form state instantly when the page loads!
         setForm(prev => ({ ...prev, seller_phone: phone }));
+
+        // A supplier account tags its listings with its supplier profile so
+        // they can be ordered and show up in that supplier's dashboard.
+        const { data: profile } = await supabase
+          .from("supplier_profiles")
+          .select("id, verification_status")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        setMySupplier(profile || null);
       }
     }
     loadUser();
@@ -151,6 +161,7 @@ export default function Marketplace() {
       description: form.description || "",
       // 🟢 Uses the form text field, falls back to profile phone, or stays blank
       seller_phone: form.seller_phone || currentUserPhone || "",
+      supplier_id: mySupplier?.id ?? null,
       is_verified: false,
       sold_out: false
     }]);
@@ -250,28 +261,33 @@ function handleContactSeller(product) {
     }
     setPaymentLoading(true);
 
+    const quantities = new Map();
     for (const item of cart) {
-      const platformFee = item.price * 0.05;
-      const supplierEarnings = item.price - platformFee;
-      await supabase.from("orders").insert([{
-        product_name: item.product_name,
-        customer_name: checkoutForm.customer_name,
-        county: checkoutForm.county,
-        quantity: 1,
-        total_price: item.price,
-        platform_fee: platformFee,
-        supplier_earnings: supplierEarnings,
-        status: "pending",
-        delivery_status: "pending"
-      }]);
+      quantities.set(item.id, (quantities.get(item.id) || 0) + 1);
     }
+
+    // Price, fee and supplier are decided by the database, not the browser.
+    const { data: placed, error } = await supabase.rpc("place_order", {
+      p_items: [...quantities].map(([product_id, quantity]) => ({ product_id, quantity })),
+      p_customer_name: checkoutForm.customer_name,
+      p_county: checkoutForm.county,
+      p_phone: checkoutForm.phone
+    });
+
+    if (error) {
+      setPaymentLoading(false);
+      alert("Could not send your order: " + error.message);
+      return;
+    }
+
+    const phone = checkoutForm.phone;
 
     if (currentUserEmail) {
       await createNotification({
         userEmail: currentUserEmail,
         type: "marketplace",
-        title: "Order Placed ✅",
-        message: `${cart.length} item(s) totalling KES ${total.toLocaleString()} ordered. M-Pesa request sent to ${checkoutForm.phone}.`,
+        title: "Order request sent ✅",
+        message: `${placed} item(s) requested. The supplier will contact you on ${phone} to arrange payment and delivery.`,
         link: "/orders"
       });
     }
@@ -280,7 +296,7 @@ function handleContactSeller(product) {
     setCheckoutForm({ customer_name: "", county: "", phone: "" });
     setPaymentLoading(false);
     setView("list");
-    alert(`M-Pesa request sent to ${checkoutForm.phone}`);
+    alert(`Order request sent. The supplier will contact you on ${phone} to arrange payment and delivery.`);
   }
 
   // -----------------------------
@@ -320,6 +336,21 @@ function handleContactSeller(product) {
               </p>
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
+              {cart.length > 0 && (
+                <button
+                  onClick={() => setView("cart")}
+                  aria-label={`View order (${cart.length} items)`}
+                  style={{
+                    height: "44px", padding: "0 16px",
+                    border: "1.5px solid #22c55e", borderRadius: "12px",
+                    background: "#f0fdf4", color: "#16a34a",
+                    fontWeight: "700", cursor: "pointer", fontSize: "14px",
+                    display: "flex", alignItems: "center", gap: "8px"
+                  }}
+                >
+                  <ShoppingCart size={18} /> Order ({cart.length})
+                </button>
+              )}
               <button
                 onClick={() => setView("add")}
                 style={{
@@ -895,7 +926,7 @@ function handleContactSeller(product) {
                 {[
                   { placeholder: "Your full name", key: "customer_name", label: "Full Name" },
                   { placeholder: "Your county", key: "county", label: "County" },
-                  { placeholder: "e.g., 0712345678", key: "phone", label: "M-Pesa Phone Number" }
+                  { placeholder: "e.g., 0712345678", key: "phone", label: "Phone number (the supplier will call you)" }
                 ].map(({ placeholder, key, label }) => (
                   <div key={key} style={{ marginBottom: "14px" }}>
                     <label style={labelStyle}>{label}</label>
@@ -925,7 +956,7 @@ function handleContactSeller(product) {
                   boxShadow: "0 6px 20px rgba(34,197,94,0.25)"
                 }}
               >
-                {paymentLoading ? "Processing..." : "Checkout via M-Pesa"}
+                {paymentLoading ? "Sending..." : "Send order request"}
               </button>
             </div>
           )}
@@ -1114,6 +1145,22 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         <p style={{ fontSize: "12px", color: "#9ca3af", margin: "0 0 14px" }}>
           by {product.supplier_name || "Farmer"}
         </p>
+
+{/* ORDER BUTTON — only supplier listings can be ordered in-app */}
+{!isSeller && product.supplier_id && !product.sold_out && (
+  <button
+    onClick={() => onAddToCart(product)}
+    style={{
+      width: "100%", padding: "12px", marginBottom: "8px",
+      minHeight: "44px",
+      background: "linear-gradient(135deg,#22c55e,#16a34a)",
+      color: "#fff", border: "none", borderRadius: "10px",
+      fontWeight: "700", fontSize: "13px", cursor: "pointer"
+    }}
+  >
+    🛒 Add to order
+  </button>
+)}
 
 {/* BUYER BUTTON */}
 {!isSeller && (

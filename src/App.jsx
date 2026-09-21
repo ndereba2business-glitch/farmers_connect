@@ -22,6 +22,8 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
 const Wallet = lazy(() => import("./pages/Wallet"));
 const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
+const SupplierDashboard = lazy(() => import("./pages/SupplierDashboard"));
+const SupplierProfileSetup = lazy(() => import("./pages/SupplierProfileSetup"));
 const CluckyAI = lazy(() => import("./pages/CluckyAI"));
 const MyFarm = lazy(() => import("./pages/MyFarm"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -87,7 +89,7 @@ function LoadingScreen({ label }) {
 }
 
 function AppRoutes() {
-  const { user, userEmail, loading } = useAuth();
+  const { user, role, loading } = useAuth();
 
   // =========================
   // LOADING SCREEN
@@ -132,7 +134,12 @@ function AppRoutes() {
           path="/"
           element={user ? <Layout /> : <LandingPage />}
         >
-          {user && <Route index element={<Dashboard />} />}
+          {user && (
+            <Route
+              index
+              element={role === "supplier" ? <Navigate to="/supplier" replace /> : <Dashboard />}
+            />
+          )}
         </Route>
 
         {/* =========================
@@ -238,6 +245,24 @@ function AppRoutes() {
           {/* =========================
               SUPPLIER ROUTES
           ========================= */}
+
+          <Route
+            path="/supplier"
+            element={
+              <ProtectedRoute allowedRoles={["supplier"]}>
+                <SupplierDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/supplier-profile"
+            element={
+              <ProtectedRoute allowedRoles={["supplier"]}>
+                <SupplierProfileSetup />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/supplier-orders"
