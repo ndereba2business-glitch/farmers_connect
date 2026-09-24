@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import {
   Package, Check, TriangleAlert, Inbox, Plus, Pencil, Search, Truck,
-  MapPin, Phone, ArrowRight, ShoppingBag, Clock
+  MapPin, Phone, ArrowRight, ShoppingBag, Clock, EyeOff, BadgeCheck
 } from "lucide-react";
 import {
-  TYPE_LABELS, UNIT_LABELS, VERIFICATION_META, formatKes, initialsOf, timeAgo
+  CATEGORY_LABELS, UNIT_LABELS, VERIFICATION_META, formatKes, initialsOf, timeAgo
 } from "./supplierFormat";
+import { productStatus } from "./useSupplierProducts";
+import { IN_APP_ORDERING } from "../../config/features";
 
 /* ------------------------------------------------------------ skeletons */
 export function ProfileSkeleton() {
@@ -54,23 +56,35 @@ export function ListSkeleton({ rows = 3 }) {
 export function ProfileSummary({ profile }) {
   const status = VERIFICATION_META[profile.verification_status] || VERIFICATION_META.pending;
   const isVerified = profile.verification_status === "verified";
+  const categories = profile.product_categories || [];
+  const place = [profile.location_details, profile.county].filter(Boolean).join(", ");
 
   return (
     <section className="sd-card sd-profile" aria-label="Supplier profile summary">
       <div className="sd-profile-main">
-        <span className="sd-avatar" aria-hidden="true">{initialsOf(profile.business_name)}</span>
+        <span className="sd-avatar" aria-hidden="true">
+          {profile.logo_url ? <img src={profile.logo_url} alt="" /> : initialsOf(profile.business_name)}
+        </span>
         <div className="sd-profile-text">
           <div className="sd-profile-name">
             <h2>{profile.business_name}</h2>
-            <span className={`sd-chip sd-tone-${status.tone}`}>{status.label}</span>
+            {isVerified ? (
+              <span className="sd-chip sd-tone-green"><BadgeCheck size={14} aria-hidden="true" /> Verified</span>
+            ) : (
+              <span className={`sd-chip sd-tone-${status.tone}`}>{status.label}</span>
+            )}
           </div>
           <ul className="sd-meta">
-            {profile.supplier_type && <li>{TYPE_LABELS[profile.supplier_type] || profile.supplier_type}</li>}
-            {profile.county && <li><MapPin size={14} aria-hidden="true" /> {profile.county}</li>}
+            {place && <li><MapPin size={14} aria-hidden="true" /> {place}</li>}
             {profile.phone && <li><Phone size={14} aria-hidden="true" /> {profile.phone}</li>}
+            {profile.operating_hours && <li><Clock size={14} aria-hidden="true" /> {profile.operating_hours}</li>}
             {profile.delivery_available && <li><Truck size={14} aria-hidden="true" /> Delivers</li>}
           </ul>
-          {profile.description && <p className="sd-profile-desc">{profile.description}</p>}
+          {categories.length > 0 && (
+            <div className="sd-tags">
+              {categories.map(c => <span key={c} className="sd-chip sd-tone-green">{CATEGORY_LABELS[c] || c}</span>)}
+            </div>
+          )}
         </div>
       </div>
       <div className="sd-profile-actions">
@@ -109,10 +123,14 @@ function StatCard({ icon: Icon, label, value, hint, tone, to }) {
 export function OverviewCards({ overview }) {
   return (
     <ul className="sd-stats" aria-label="Overview">
-      <StatCard icon={Package} tone="neutral" label="Total products" value={overview.totalProducts} to="/marketplace" />
-      <StatCard icon={Check} tone="green" label="Active products" value={overview.activeProducts} hint="Not marked sold out" />
-      <StatCard icon={TriangleAlert} tone={overview.outOfStock > 0 ? "amber" : "neutral"} label="Out of stock" value={overview.outOfStock} hint="Marked sold out" />
-      <StatCard icon={Inbox} tone={overview.pendingRequests > 0 ? "blue" : "neutral"} label="Pending requests" value={overview.pendingRequests} hint="Waiting for you" to="/supplier-orders" />
+      <StatCard icon={Package} tone="neutral" label="Total products" value={overview.totalProducts} to="/supplier/products" />
+      <StatCard icon={Check} tone="green" label="Active" value={overview.activeProducts} hint="Visible and in stock" />
+      <StatCard icon={TriangleAlert} tone={overview.outOfStock > 0 ? "amber" : "neutral"} label="Out of stock" value={overview.outOfStock} hint="Visible, marked sold out" />
+      {IN_APP_ORDERING ? (
+        <StatCard icon={Inbox} tone={overview.pendingRequests > 0 ? "blue" : "neutral"} label="Pending requests" value={overview.pendingRequests} hint="Waiting for you" to="/supplier-orders" />
+      ) : (
+        <StatCard icon={EyeOff} tone="neutral" label="Inactive" value={overview.inactive} hint="Hidden from farmers" />
+      )}
     </ul>
   );
 }
@@ -130,10 +148,12 @@ export function OrderSummary({ overview }) {
 /* --------------------------------------------------------- quick actions */
 export function QuickActions({ pendingCount }) {
   const actions = [
-    { to: "/marketplace", icon: Plus, label: "List a product", hint: "Add something to sell" },
-    { to: "/supplier-orders", icon: Inbox, label: "Order requests", hint: pendingCount > 0 ? `${pendingCount} waiting` : "Review and confirm" },
+    { to: "/supplier/products/new", icon: Plus, label: "Add a product", hint: "List something to sell" },
+    IN_APP_ORDERING
+      ? { to: "/supplier-orders", icon: Inbox, label: "Order requests", hint: pendingCount > 0 ? `${pendingCount} waiting` : "Review and confirm" }
+      : { to: "/supplier/products", icon: Package, label: "Manage products", hint: "Prices, stock and photos" },
     { to: "/supplier-profile", icon: Pencil, label: "Edit profile", hint: "Update your details" },
-    { to: "/marketplace", icon: ShoppingBag, label: "Browse marketplace", hint: "See what others list" }
+    { to: "/marketplace", icon: ShoppingBag, label: "Browse marketplace", hint: "See what farmers see" }
   ];
   return (
     <section aria-labelledby="sd-actions-title">
@@ -167,7 +187,9 @@ export function ActivityFeed({ events }) {
       {events.length === 0 ? (
         <div className="sd-empty sd-empty--compact">
           <Clock size={28} aria-hidden="true" />
-          <p>Nothing yet. Listings you add and order requests you receive will show up here.</p>
+          <p>
+            Nothing yet. Products you list{IN_APP_ORDERING ? " and order requests you receive" : ""} will show up here.
+          </p>
         </div>
       ) : (
         <ol className="sd-feed">
@@ -193,15 +215,15 @@ export function ActivityFeed({ events }) {
 }
 
 /* -------------------------------------------------------------- products */
-export function ProductList({ products, busyId, onToggle }) {
-  const shown = products.slice(0, 6);
+export function ProductList({ products }) {
+  const shown = products.slice(0, 5);
 
   return (
     <section className="sd-card" aria-labelledby="sd-products-title">
       <div className="sd-section-head">
         <h2 id="sd-products-title" className="sd-section-title">Your products</h2>
         {products.length > 0 && (
-          <Link to="/marketplace" className="sd-link">Manage listings</Link>
+          <Link to="/supplier/products" className="sd-link">Manage products</Link>
         )}
       </div>
 
@@ -209,43 +231,42 @@ export function ProductList({ products, busyId, onToggle }) {
         <div className="sd-empty">
           <Package size={36} aria-hidden="true" />
           <h3>No products listed yet</h3>
-          <p>List your first product so farmers can find and order it.</p>
-          <Link to="/marketplace" className="sd-btn sd-btn--primary">
-            <Plus size={16} aria-hidden="true" /> List a product
+          <p>Add your first product so farmers can find it and contact you.</p>
+          <Link to="/supplier/products/new" className="sd-btn sd-btn--primary">
+            <Plus size={16} aria-hidden="true" /> Add a product
           </Link>
         </div>
       ) : (
         <ul className="sd-list">
-          {shown.map(p => (
-            <li key={p.id} className="sd-row">
-              <span className="sd-thumb" aria-hidden="true">
-                {p.image_url
-                  ? <img src={p.image_url} alt="" loading="lazy" />
-                  : <Package size={20} />}
-              </span>
-              <div className="sd-row-text">
-                <span className="sd-row-title">{p.product_name}</span>
-                <span className="sd-row-sub">
-                  {formatKes(p.price)}{UNIT_LABELS[p.unit] || ""}
-                  {p.stock > 0 ? ` · ${p.stock} in stock` : ""}
+          {shown.map(p => {
+            const status = productStatus(p);
+            return (
+              <li key={p.id} className="sd-row">
+                <span className="sd-thumb" aria-hidden="true">
+                  {p.image_url
+                    ? <img src={p.image_url} alt="" loading="lazy" />
+                    : <Package size={20} />}
                 </span>
-              </div>
-              <span className={`sd-chip sd-tone-${p.sold_out ? "amber" : "green"}`}>
-                {p.sold_out ? "Sold out" : "Available"}
-              </span>
-              <button
-                className="sd-btn sd-btn--ghost sd-btn--sm"
-                disabled={busyId === p.id}
-                onClick={() => onToggle(p)}
-              >
-                {p.sold_out ? "Mark available" : "Mark sold out"}
-              </button>
-            </li>
-          ))}
+                <div className="sd-row-text">
+                  <span className="sd-row-title">{p.product_name}</span>
+                  <span className="sd-row-sub">
+                    {formatKes(p.price)}{UNIT_LABELS[p.unit] || ""}
+                    {p.stock > 0 ? ` · ${p.stock} in stock` : ""}
+                  </span>
+                </div>
+                <span className={`sd-chip sd-tone-${status.tone}`}>{status.label}</span>
+                <Link to={`/supplier/products/${p.id}/edit`} className="sd-btn sd-btn--ghost sd-btn--sm">
+                  <Pencil size={14} aria-hidden="true" /> Edit
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
       {products.length > shown.length && (
-        <p className="sd-more">Showing {shown.length} of {products.length} products.</p>
+        <p className="sd-more">
+          Showing {shown.length} of {products.length}. <Link to="/supplier/products" className="sd-link">See all</Link>
+        </p>
       )}
     </section>
   );

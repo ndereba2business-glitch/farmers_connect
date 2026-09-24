@@ -328,3 +328,9 @@
   .sd-stat--link,
   .sd-action { transition: none; }
 }
+
+/* Phase 3 profile fields */
+.sd-avatar { overflow: hidden; }
+.sd-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sd-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.sd-chip { gap: 4px; }

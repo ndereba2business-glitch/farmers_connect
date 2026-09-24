@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Inbox, ShoppingBag, Store, Wallet, UserCircle,
+  LayoutDashboard, Inbox, Package, ShoppingBag, Store, Wallet, UserCircle,
   Menu, X, LogOut
 } from "lucide-react";
+import { IN_APP_ORDERING } from "../../config/features";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import NotificationsBell from "../NotificationsBell";
@@ -11,9 +12,12 @@ import { SupplierContext } from "./supplierContext";
 import { VERIFICATION_META, initialsOf } from "./supplierFormat";
 import "./SupplierShell.css";
 
+const ORDERS_LINK = { to: "/supplier-orders", label: "Order requests", icon: Inbox, badge: true };
+
 const NAV = [
   { to: "/supplier", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/supplier-orders", label: "Order requests", icon: Inbox, badge: true },
+  { to: "/supplier/products", label: "Products", icon: Package },
+  ...(IN_APP_ORDERING ? [ORDERS_LINK] : []),
   { to: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/supplier-profile", label: "Supplier profile", icon: Store },
   { to: "/wallet", label: "Wallet", icon: Wallet },
@@ -22,20 +26,36 @@ const NAV = [
 
 const BOTTOM_NAV = [
   { to: "/supplier", label: "Home", icon: LayoutDashboard, end: true },
-  { to: "/supplier-orders", label: "Requests", icon: Inbox, badge: true },
-  { to: "/marketplace", label: "Market", icon: ShoppingBag },
+  { to: "/supplier/products", label: "Products", icon: Package },
+  IN_APP_ORDERING
+    ? { ...ORDERS_LINK, label: "Requests" }
+    : { to: "/marketplace", label: "Market", icon: ShoppingBag },
   { to: "/supplier-profile", label: "Profile", icon: Store }
 ];
 
-const TITLES = {
-  "/supplier": "Dashboard",
-  "/supplier-orders": "Order requests",
-  "/supplier-profile": "Supplier profile",
-  "/marketplace": "Marketplace",
-  "/wallet": "Wallet",
-  "/profile": "Account",
-  "/suppliers": "Supplier directory"
-};
+const TITLES = [
+  ["/supplier/products/new", "Add product"],
+  ["/supplier/products/", "Edit product"],
+  ["/supplier/products", "Products"],
+  ["/supplier-orders", "Order requests"],
+  ["/supplier-profile", "Supplier profile"],
+  ["/supplier", "Dashboard"],
+  ["/marketplace", "Marketplace"],
+  ["/wallet", "Wallet"],
+  ["/profile", "Account"],
+  ["/suppliers", "Supplier directory"]
+];
+
+function titleFor(pathname) {
+  // match whole path segments, so "/suppliers" doesn't match "/supplier"
+  return TITLES.find(([prefix]) =>
+    pathname === prefix || pathname.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`)
+  )?.[1] || "Farmers Connect";
+}
+
+const PROFILE_COLUMNS =
+  "id, business_name, verification_status, supplier_type, product_categories, county, location_details, " +
+  "phone, whatsapp_number, description, delivery_available, operating_hours, logo_url";
 
 function Badge({ count }) {
   if (!count) return null;
@@ -72,7 +92,7 @@ export default function SupplierShell() {
     async function load() {
       const { data, error } = await supabase
         .from("supplier_profiles")
-        .select("id, business_name, verification_status, supplier_type, county, phone, whatsapp_number, description, delivery_available")
+        .select(PROFILE_COLUMNS)
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -93,7 +113,7 @@ export default function SupplierShell() {
   const profileId = profile?.id;
 
   useEffect(() => {
-    if (!profileId) return undefined;
+    if (!profileId || !IN_APP_ORDERING) return undefined;
     let cancelled = false;
 
     async function loadCount() {
@@ -110,7 +130,7 @@ export default function SupplierShell() {
   }, [profileId, reload]);
 
   useEffect(() => {
-    if (!profileId) return undefined;
+    if (!profileId || !IN_APP_ORDERING) return undefined;
     const channel = supabase
       .channel(`supplier-shell-${profileId}`)
       .on(
@@ -141,7 +161,7 @@ export default function SupplierShell() {
     [profile, profileLoading, profileError, pendingCount, refreshProfile, retryProfile]
   );
 
-  const title = TITLES[location.pathname] || "Farmers Connect";
+  const title = titleFor(location.pathname);
   const displayName = profile?.business_name || userEmail || "Supplier";
   const status = profile ? VERIFICATION_META[profile.verification_status] : null;
 
