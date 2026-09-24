@@ -55,6 +55,7 @@ export default function Marketplace() {
   const [submitting, setSubmitting] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [currentUserPhone, setCurrentUserPhone] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [mySupplier, setMySupplier] = useState(null);
   const [checkoutForm, setCheckoutForm] = useState({
@@ -75,11 +76,14 @@ export default function Marketplace() {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
-        const email = data.user.email || "";
+        // Identity as the database sees it: email, or the phone number for
+        // phone-only accounts (their email is ""). Products are owned by it.
+        const identity = data.user.email || data.user.phone || "";
         // Grab phone from Supabase auth profile or metadata fallback
-        const phone = data.user.phone || data.user.user_metadata?.phone || ""; 
-      
-        setCurrentUserEmail(email);
+        const phone = data.user.phone || data.user.user_metadata?.phone || "";
+
+        setCurrentUserEmail(identity);
+        setCurrentUserId(data.user.id);
         setCurrentUserPhone(phone);
 
         // 🟢 This auto-fills the form state instantly when the page loads!
@@ -134,7 +138,8 @@ export default function Marketplace() {
 
     if (form.imageFile) {
       const fileExt = form.imageFile.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      // Storage only accepts uploads inside the user's own folder.
+      const fileName = `${currentUserId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("marketplace-images")
