@@ -3,8 +3,11 @@ import { supabase } from "../lib/supabaseClient";
 import { createNotification } from "../lib/notifications";
 import {
   Search, Plus, MapPin, ShoppingBag,
-  ChevronDown, X, ShoppingCart
+  ChevronDown, X, ShoppingCart, Phone, MessageCircle, BadgeCheck
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { IN_APP_ORDERING } from "../config/features";
 import "./Marketplace.css";
 
 const CATEGORIES = [
@@ -44,6 +47,11 @@ const labelStyle = {
 };
 
 export default function Marketplace() {
+  const navigate = useNavigate();
+  const { role } = useAuth();
+  // Suppliers list through their own products page so listings are tied to
+  // their supplier profile (dashboard, directory, verified badge).
+  const startListing = () => (role === "supplier" ? navigate("/supplier/products/new") : setView("add"));
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [view, setView] = useState("list");
@@ -106,9 +114,11 @@ export default function Marketplace() {
   // -----------------------------
   async function fetchProducts() {
     setLoading(true);
+    // The embedded supplier is only readable when it's verified (or your own),
+    // so a non-null verified status is safe to show as a trust badge.
     const { data } = await supabase
       .from("products")
-      .select("*")
+      .select("*, supplier:supplier_profiles(business_name, verification_status)")
       .order("created_at", { ascending: false });
     setProducts(data || []);
     setLoading(false);
@@ -341,7 +351,7 @@ function handleContactSeller(product) {
               </p>
             </div>
             <div style={{ display: "flex", gap: "10px" }}>
-              {cart.length > 0 && (
+              {IN_APP_ORDERING && cart.length > 0 && (
                 <button
                   onClick={() => setView("cart")}
                   aria-label={`View order (${cart.length} items)`}
@@ -357,7 +367,7 @@ function handleContactSeller(product) {
                 </button>
               )}
               <button
-                onClick={() => setView("add")}
+                onClick={startListing}
                 style={{
                   height: "44px", padding: "0 20px", border: "none",
                   borderRadius: "12px",
@@ -498,7 +508,7 @@ function handleContactSeller(product) {
                 Try a different search or be the first to list!
               </p>
               <button
-                onClick={() => setView("add")}
+                onClick={startListing}
                 style={{
                   padding: "12px 24px", background: "#22c55e",
                   color: "#fff", border: "none", borderRadius: "12px",
@@ -971,6 +981,27 @@ function handleContactSeller(product) {
   );
 }
 
+// Seller phone as international digits (07.. -> 2547..), or "" if none.
+function sellerDigits(product) {
+  let phone = String(product.seller_phone || "").replace(/[^\d+]/g, "");
+  if (phone.startsWith("+")) phone = phone.slice(1);
+  if (phone.startsWith("0")) phone = "254" + phone.slice(1);
+  return phone.length >= 9 ? phone : "";
+}
+
+function contactButton(primary) {
+  return {
+    // wraps to one button per row on narrow two-column phone layouts
+    flex: "1 1 104px", minHeight: "44px", padding: "0 10px",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+    borderRadius: "10px", fontWeight: "700", fontSize: "13px",
+    textDecoration: "none", cursor: "pointer",
+    border: "1.5px solid #22c55e",
+    background: primary ? "#22c55e" : "#f0fdf4",
+    color: primary ? "#fff" : "#15803d"
+  };
+}
+
 // ======================== PRODUCT CARD ========================
 function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, onProductUpdated }) {
   const [hovered, setHovered] = useState(false);
@@ -1151,8 +1182,14 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           by {product.supplier_name || "Farmer"}
         </p>
 
+{product.supplier?.verification_status === "verified" && (
+  <p style={{ display: "flex", alignItems: "center", gap: "6px", margin: "-8px 0 12px", fontSize: "12px", fontWeight: "700", color: "#15803d" }}>
+    <BadgeCheck size={14} aria-hidden="true" /> Verified supplier
+  </p>
+)}
+
 {/* ORDER BUTTON — only supplier listings can be ordered in-app */}
-{!isSeller && product.supplier_id && !product.sold_out && (
+{IN_APP_ORDERING && !isSeller && product.supplier_id && !product.sold_out && (
   <button
     onClick={() => onAddToCart(product)}
     style={{
@@ -1167,31 +1204,38 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
   </button>
 )}
 
-{/* BUYER BUTTON */}
-{!isSeller && (
-  <button
-    onClick={() => !product.sold_out && onContactSeller(product)}
-    disabled={!!product.sold_out}
-    style={{
-      width: "100%", padding: "10px",
-      background: product.sold_out
-        ? "#f3f4f6"
-        : hovered ? "#22c55e" : "#f0fdf4",
-      color: product.sold_out
-        ? "#9ca3af"
-        : hovered ? "#fff" : "#22c55e",
-      border: product.sold_out
-        ? "1.5px solid #e5e7eb"
-        : "1.5px solid #22c55e",
-      borderRadius: "10px", fontWeight: "700",
-      fontSize: "13px",
-      cursor: product.sold_out ? "not-allowed" : "pointer",
-      transition: "all 0.2s"
-    }}
-  >
-    {product.sold_out ? "Sold Out" : "💬 Contact Seller"}
+{/* BUYER CONTACT — the MVP flow: call or WhatsApp the seller and agree
+    price and delivery directly */}
+{!isSeller && (product.sold_out ? (
+  <div style={{
+    minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center",
+    background: "#f3f4f6", color: "#6b7280", border: "1.5px solid #e5e7eb",
+    borderRadius: "10px", fontWeight: "700", fontSize: "13px"
+  }}>
+    Sold out
+  </div>
+) : sellerDigits(product) ? (
+  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+    <a
+      href={`tel:+${sellerDigits(product)}`}
+      aria-label={`Call the seller of ${product.product_name}`}
+      style={contactButton(false)}
+    >
+      <Phone size={16} aria-hidden="true" /> Call
+    </a>
+    <button
+      onClick={() => onContactSeller(product)}
+      aria-label={`WhatsApp the seller of ${product.product_name}`}
+      style={contactButton(true)}
+    >
+      <MessageCircle size={16} aria-hidden="true" /> WhatsApp
+    </button>
+  </div>
+) : (
+  <button onClick={() => onContactSeller(product)} style={{ ...contactButton(false), width: "100%" }}>
+    <MessageCircle size={16} aria-hidden="true" /> Contact seller
   </button>
-)}
+))}
         {/* SELLER CONTROLS */}
         {isSeller && (
           <div>
