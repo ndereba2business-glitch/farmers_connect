@@ -1,10 +1,10 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
-  Users, MessageCircle, Shield, Wallet,
+  Users, MessageCircle, Shield,
   BarChart3, ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
   Package, Calculator, Menu, X, CalendarClock
@@ -36,14 +36,9 @@ const VET_NAV = [
   { name: "Profile", path: "/profile", icon: UserCircle },
 ];
 
-const SUPPLIER_NAV = [
-  { name: "Dashboard", path: "/supplier", icon: LayoutDashboard },
-  { name: "Order Requests", path: "/supplier-orders", icon: Package },
-  { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
-  { name: "Supplier Profile", path: "/supplier-profile", icon: ClipboardList },
-  { name: "Wallet", path: "/wallet", icon: Wallet },
-  { name: "Profile", path: "/profile", icon: UserCircle },
-];
+// Suppliers get their own shell (sidebar, header, mobile tabs); loaded lazily
+// so farmer/vet/admin bundles don't carry it.
+const SupplierShell = lazy(() => import("./supplier/SupplierShell"));
 
 const ADMIN_NAV = [
   { name: "Admin Panel", path: "/admin", icon: Shield },
@@ -67,11 +62,18 @@ export default function Layout() {
   const navItems =
     role === "admin" ? ADMIN_NAV :
     role === "vet" ? VET_NAV :
-    role === "supplier" ? SUPPLIER_NAV :
     FARMER_NAV;
 
   const initials = (profile?.full_name || userEmail || "U")
     .charAt(0).toUpperCase();
+
+  if (role === "supplier") {
+    return (
+      <Suspense fallback={<div className="fc-layout" />}>
+        <SupplierShell />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="fc-layout">
