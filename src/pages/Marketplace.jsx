@@ -396,7 +396,7 @@ function handleContactSeller(product) {
                 placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ ...inputStyle, paddingLeft: "40px" }}
+                style={{ ...inputStyle, paddingLeft: "40px", minHeight: "44px", fontSize: "16px" }}
               />
             </div>
 
