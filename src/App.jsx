@@ -16,8 +16,6 @@ const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Orders = lazy(() => import("./pages/Orders"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const ChatSupport = lazy(() => import("./pages/ChatSupport"));
-const VetVerification = lazy(() => import("./pages/VetVerification"));
-const SupplierVerification = lazy(() => import("./pages/SupplierVerification"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
 const Wallet = lazy(() => import("./pages/Wallet"));
@@ -117,14 +115,17 @@ function AppRoutes() {
         <Route path="/signup" element={<Signup />} />
 
 
+        {/* Old standalone verification forms wrote to tables that never
+            existed. Vets and suppliers now get verified through their
+            profile pages (admin approves), so these URLs just point there. */}
         <Route
           path="/vet-verification"
-          element={<VetVerification />}
+          element={<Navigate to={!user ? "/signup" : role === "vet" ? "/vet-profile" : "/"} replace />}
         />
 
         <Route
           path="/supplier-verification"
-          element={<SupplierVerification />}
+          element={<Navigate to={!user ? "/signup" : role === "supplier" ? "/supplier-profile" : "/"} replace />}
         />
 
         {/* =========================
@@ -201,7 +202,11 @@ function AppRoutes() {
           {/* VERIFICATIONS */}
           <Route
             path="/verifications"
-            element={<VerificationRequests />}
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <VerificationRequests />
+              </ProtectedRoute>
+            }
           />
 
           {/* =========================

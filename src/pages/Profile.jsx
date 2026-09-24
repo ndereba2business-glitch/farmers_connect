@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import {
   Edit2, Save, LogOut, Camera, Trash2,
   MapPin, Phone, ShoppingBag, Star, Loader2, PlayCircle
@@ -154,39 +155,42 @@ export default function Profile() {
   // ========================
   async function handlePhotoUpload(e) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
+    const problem = validateImage(file);
+    if (problem) {
+      alert(problem);
       return;
     }
 
     setUploadingPhoto(true);
+    const previous = profileData.avatar_url;
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userEmail}-${Date.now()}.${fileExt}`;
+    try {
+      // Shrunk before upload and stored in the user's own folder, the only
+      // place the avatars bucket accepts writes.
+      const avatarUrl = await uploadImage(user.id, file, "avatar", "avatars");
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(fileName, file, { upsert: true });
-
-    if (!uploadError) {
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      const avatarUrl = urlData.publicUrl;
-
-      await supabase
+      const { error } = await supabase
         .from("farmer_profiles")
         .upsert({
           user_email: userEmail,
           avatar_url: avatarUrl
         }, { onConflict: "user_email" });
 
-      setProfileData(prev => ({ ...prev, avatar_url: avatarUrl }));
-    }
+      if (error) {
+        removeImageByUrl(avatarUrl, user.id);
+        alert("Your photo didn't save: " + error.message);
+        return;
+      }
 
-    setUploadingPhoto(false);
+      removeImageByUrl(previous, user.id);
+      setProfileData(prev => ({ ...prev, avatar_url: avatarUrl }));
+    } catch (err) {
+      alert("Your photo didn't upload: " + (err.message || "check your connection") + ". Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
   }
 
   // ========================
@@ -286,7 +290,7 @@ export default function Profile() {
                   : <Camera size={18} color="#fff" />
                 }
                 <input
-                  type="file" accept="image/*"
+                  type="file" accept={IMAGE_ACCEPT}
                   style={{ display: "none" }}
                   onChange={handlePhotoUpload}
                 />

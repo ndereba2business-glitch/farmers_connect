@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { createNotification } from "../lib/notifications";
+import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
@@ -78,7 +79,7 @@ export default function Community() {
       setUploading(true);
 
       const { data: userData } = await supabase.auth.getUser();
-      const email = userData.user.email;
+      const email = (userData.user.email || userData.user.phone);
 
       const { data: profile } = await supabase
         .from("farmer_profiles")
@@ -88,21 +89,23 @@ export default function Community() {
 
       let imageUrl = "";
 
+      // A failed photo upload used to post the text without the photo,
+      // silently. Stop instead, keeping the text so the user can retry.
       if (image) {
-        const fileName = Date.now() + "-" + image.name;
-        const { error } = await supabase.storage
-          .from("community-posts")
-          .upload(fileName, image);
-
-        if (!error) {
-          const { data } = supabase.storage
-            .from("community-posts")
-            .getPublicUrl(fileName);
-          imageUrl = data.publicUrl;
+        const problem = validateImage(image);
+        if (problem) {
+          alert(problem);
+          return;
+        }
+        try {
+          imageUrl = await uploadImage(userData.user.id, image, "post", "community-posts");
+        } catch (uploadError) {
+          alert("Your photo didn't upload: " + (uploadError.message || "check your connection") + ". Your post is still here, so try again.");
+          return;
         }
       }
 
-      await supabase.from("community_posts").insert([
+      const { error: postError } = await supabase.from("community_posts").insert([
         {
           user_email: email,
           user_name: profile?.full_name || "Farmer",
@@ -111,6 +114,12 @@ export default function Community() {
           image_url: imageUrl
         }
       ]);
+
+      if (postError) {
+        removeImageByUrl(imageUrl, userData.user.id);
+        alert("Your post didn't publish: " + postError.message);
+        return;
+      }
 
       await createNotification({
         userEmail: email,
@@ -157,7 +166,7 @@ export default function Community() {
     if (!text?.trim()) return;
 
     const { data: userData } = await supabase.auth.getUser();
-    const email = userData.user.email;
+    const email = (userData.user.email || userData.user.phone);
 
     const { data: profile } = await supabase
       .from("farmer_profiles")
@@ -236,7 +245,7 @@ export default function Community() {
                 </svg>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   style={{ display: "none" }}
                   onChange={(e) => setImage(e.target.files[0])}
                 />

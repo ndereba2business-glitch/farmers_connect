@@ -17,7 +17,7 @@ export default function Finance() {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData?.user) return;
 
-    const email = userData.user.email;
+    const email = (userData.user.email || userData.user.phone);
 
     const { data } = await supabase
       .from("farm_finances")
@@ -39,7 +39,7 @@ export default function Finance() {
     if (!category || !amount) return;
 
     const { data: userData } = await supabase.auth.getUser();
-    const email = userData.user.email;
+    const email = (userData.user.email || userData.user.phone);
 
     await supabase.from("farm_finances").insert([
       {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import { Camera, X, Trash2, Upload } from "lucide-react";
 
 const inputStyle = {
@@ -15,7 +16,7 @@ const labelStyle = {
 };
 
 export default function FarmGallery() {
-  const { userEmail } = useAuth();
+  const { user, userEmail } = useAuth();
   const [photos, setPhotos] = useState([]);
   const [batches, setBatches] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -67,27 +68,20 @@ export default function FarmGallery() {
     if (!form.imageFile) { setError("Please select a photo"); return; }
     setUploading(true);
 
+    const problem = validateImage(form.imageFile);
+    if (problem) { setError(problem); setUploading(false); return; }
+
     try {
-      // ✅ STEP 1 — Upload to storage
-      const fileExt = form.imageFile.name.split(".").pop();
-      const fileName = `${userEmail.replace("@", "_")}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("farm-gallery")
-        .upload(fileName, form.imageFile, { upsert: true });
-
-      if (uploadError) {
-        setError("Upload failed: " + uploadError.message);
+      // ✅ STEP 1 — Upload (shrunk first) into the user's own folder, the
+      // only place the farm-gallery bucket accepts writes
+      let imageUrl;
+      try {
+        imageUrl = await uploadImage(user.id, form.imageFile, "photo", "farm-gallery");
+      } catch (uploadError) {
+        setError("Upload failed: " + (uploadError.message || "check your connection"));
         setUploading(false);
         return;
       }
-
-      // ✅ STEP 2 — Get public URL
-      const { data: urlData } = supabase.storage
-        .from("farm-gallery")
-        .getPublicUrl(fileName);
-
-      const imageUrl = urlData.publicUrl;
 
       // ✅ STEP 3 — Save to farm_gallery table
       const selectedBatch = batches.find(b => b.id === form.batch_id);
@@ -105,6 +99,7 @@ export default function FarmGallery() {
         }]);
 
       if (insertError) {
+        removeImageByUrl(imageUrl, user.id);
         setError("Failed to save photo: " + insertError.message);
         setUploading(false);
         return;
@@ -132,12 +127,14 @@ export default function FarmGallery() {
   async function deletePhoto(photo) {
     if (!window.confirm("Delete this photo?")) return;
 
-    // Delete from storage
-    const fileName = photo.image_url.split("/").pop();
-    await supabase.storage.from("farm-gallery").remove([fileName]);
-
-    // Delete from table
-    await supabase.from("farm_gallery").delete().eq("id", photo.id);
+    // Delete the record first; the file is cleaned up best effort (photos
+    // uploaded before the own-folder rule can't be removed from here).
+    const { error: deleteError } = await supabase.from("farm_gallery").delete().eq("id", photo.id);
+    if (deleteError) {
+      alert("Couldn't delete the photo: " + deleteError.message);
+      return;
+    }
+    removeImageByUrl(photo.image_url, user.id);
     setSelectedPhoto(null);
     fetchPhotos();
   }
@@ -254,7 +251,7 @@ export default function FarmGallery() {
             <input
               id="gallery-upload"
               type="file"
-              accept="image/*"
+              accept={IMAGE_ACCEPT}
               style={{ display: "none" }}
               onChange={e => {
                 const file = e.target.files[0];

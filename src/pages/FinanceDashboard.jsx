@@ -20,7 +20,7 @@ export default function FinanceDashboard() {
       await supabase.auth.getUser();
 
     const email =
-      userData.user.email;
+      (userData.user.email || userData.user.phone);
 
     const { data } = await supabase
       .from("farm_finances")
@@ -45,7 +45,7 @@ export default function FinanceDashboard() {
       await supabase.auth.getUser();
 
     const email =
-      userData.user.email;
+      (userData.user.email || userData.user.phone);
 
     await supabase
       .from("farm_finances")

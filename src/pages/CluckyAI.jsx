@@ -93,7 +93,7 @@ export default function CluckyAI() {
     if (!userData?.user) return;
 
     const email =
-      userData.user.email;
+      (userData.user.email || userData.user.phone);
 
     const { data } =
       await supabase
@@ -116,7 +116,7 @@ export default function CluckyAI() {
     if (!userData?.user) return;
 
     const email =
-      userData.user.email;
+      (userData.user.email || userData.user.phone);
 
     const { data } =
       await supabase

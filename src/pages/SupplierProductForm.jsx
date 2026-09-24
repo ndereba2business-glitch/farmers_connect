@@ -8,7 +8,7 @@ import { useSupplier } from "../components/supplier/supplierContext";
 import { PRODUCT_COLUMNS } from "../components/supplier/useSupplierProducts";
 import { CATEGORIES, UNITS } from "../components/supplier/supplierFormat";
 import { KENYA_COUNTIES } from "../components/supplier/kenyaCounties";
-import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../components/supplier/imageUpload";
+import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import {
   firstError, maxLength, required, validatePhone, validatePrice, validateStock
 } from "../components/supplier/formValidation";

@@ -7,7 +7,7 @@ export default function Wallet() {
   async function fetchWallet() {
     const user = await supabase.auth.getUser();
 
-    const email = user.data.user.email;
+    const email = (user.data.user.email || user.data.user.phone);
 
     const { data } = await supabase
       .from("wallets")
