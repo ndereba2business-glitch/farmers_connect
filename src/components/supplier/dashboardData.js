@@ -1,26 +1,30 @@
 import { parseDbDate } from "./supplierFormat";
+import { productStatus } from "./useSupplierProducts";
 
 // Keeps "3 × Layers Mash" from wrapping between the quantity and the name.
 const NBSP = String.fromCharCode(160);
 
 // Every number here is derived from columns that exist today:
-//   products.sold_out, orders.status / delivery_status / supplier_earnings.
+//   products.is_active / sold_out, orders.status / delivery_status /
+//   supplier_earnings (orders only when in-app ordering is on).
 //
 // Definitions (kept explicit so the UI never overstates anything):
-//   active products   = listed and not marked sold out
-//   out of stock      = products.sold_out is true
+//   active products   = visible to farmers and not sold out
+//   out of stock      = visible to farmers, marked sold out
+//   inactive          = hidden from farmers by the supplier
 //   pending requests  = order requests still waiting for the supplier
-//                       (the closest real thing to an "inquiry": Contact
-//                       Seller only opens WhatsApp, so it is never stored)
+//                       (Contact Seller only opens WhatsApp/phone, so no
+//                       inquiry is ever stored to count)
 //   earned            = supplier_earnings on confirmed, delivered orders
 export function computeOverview(products, orders) {
-  const activeProducts = products.filter(p => !p.sold_out).length;
+  const statuses = products.map(p => productStatus(p).key);
   const delivered = orders.filter(o => o.status === "confirmed" && o.delivery_status === "delivered");
 
   return {
     totalProducts: products.length,
-    activeProducts,
-    outOfStock: products.length - activeProducts,
+    activeProducts: statuses.filter(s => s === "active").length,
+    outOfStock: statuses.filter(s => s === "soldOut").length,
+    inactive: statuses.filter(s => s === "inactive").length,
     pendingRequests: orders.filter(o => o.status === "pending").length,
     inProgress: orders.filter(o => o.status === "confirmed" && o.delivery_status !== "delivered").length,
     delivered: delivered.length,

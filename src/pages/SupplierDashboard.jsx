@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Store, Plus } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
 import { useSupplier } from "../components/supplier/supplierContext";
-import { useSupplierDashboardData } from "../components/supplier/useSupplierDashboardData";
+import { useSupplierProducts } from "../components/supplier/useSupplierProducts";
 import { buildActivity, computeOverview } from "../components/supplier/dashboardData";
 import {
   ActivityFeed, ListSkeleton, OrderSummary, OverviewCards, ProductList,
   ProfileSkeleton, ProfileSummary, QuickActions, StatsSkeleton
 } from "../components/supplier/DashboardWidgets";
+import { IN_APP_ORDERING } from "../config/features";
 import "./SupplierDashboard.css";
 
 function ErrorBanner({ message, onRetry }) {
@@ -24,28 +24,10 @@ function ErrorBanner({ message, onRetry }) {
 
 export default function SupplierDashboard() {
   const { profile, profileLoading, profileError, retryProfile } = useSupplier();
-  const data = useSupplierDashboardData(profile?.id);
-  const [busyId, setBusyId] = useState(null);
-  const [actionError, setActionError] = useState("");
+  const data = useSupplierProducts(profile?.id);
 
   const overview = useMemo(() => computeOverview(data.products, data.orders), [data.products, data.orders]);
   const activity = useMemo(() => buildActivity(data.products, data.orders), [data.products, data.orders]);
-
-  async function toggleSoldOut(product) {
-    setBusyId(product.id);
-    setActionError("");
-    const { error } = await supabase
-      .from("products")
-      .update({ sold_out: !product.sold_out })
-      .eq("id", product.id);
-    setBusyId(null);
-
-    if (error) {
-      setActionError("That change didn't save: " + error.message);
-      return;
-    }
-    data.refresh();
-  }
 
   if (profileLoading) {
     return (
@@ -76,8 +58,8 @@ export default function SupplierDashboard() {
           <Store size={44} aria-hidden="true" />
           <h1>Set up your supplier profile</h1>
           <p>
-            Tell farmers who you are and what you supply. Once an admin verifies your
-            profile, your products can be ordered and requests appear on this dashboard.
+            Tell farmers who you are and what you supply. Once your profile is set up you can
+            list products, and farmers can find you and call or WhatsApp you directly.
           </p>
           <Link to="/supplier-profile" className="sd-btn sd-btn--primary">Set up supplier profile</Link>
         </section>
@@ -92,21 +74,20 @@ export default function SupplierDashboard() {
       <header className="sd-header">
         <div>
           <h1>Dashboard</h1>
-          <p>Welcome back, {profile.business_name}. Here's how your listings and order requests are doing.</p>
+          <p>Welcome back, {profile.business_name}. Here's how your products are doing.</p>
         </div>
-        <Link to="/marketplace" className="sd-btn sd-btn--primary">
-          <Plus size={16} aria-hidden="true" /> List a product
+        <Link to="/supplier/products/new" className="sd-btn sd-btn--primary">
+          <Plus size={16} aria-hidden="true" /> Add a product
         </Link>
       </header>
 
       {!isVerified && (
         <div role="status" className="sd-banner sd-banner--warn">
-          Your profile is <b>{profile.verification_status}</b>. Farmers can only order from verified
-          suppliers, so no requests will arrive until an admin approves it.
+          {profile.verification_status === "pending"
+            ? "Your profile is waiting for admin review. Your products are listed, but the verified badge only appears once you're approved."
+            : <>Your profile is <b>{profile.verification_status}</b>. Check your supplier profile for details.</>}
         </div>
       )}
-
-      {actionError && <ErrorBanner message={actionError} />}
 
       <ProfileSummary profile={profile} />
 
@@ -123,10 +104,10 @@ export default function SupplierDashboard() {
       ) : (
         <>
           <OverviewCards overview={overview} />
-          <OrderSummary overview={overview} />
+          {IN_APP_ORDERING && <OrderSummary overview={overview} />}
           <QuickActions pendingCount={overview.pendingRequests} />
           <div className="sd-grid">
-            <ProductList products={data.products} busyId={busyId} onToggle={toggleSoldOut} />
+            <ProductList products={data.products} />
             <ActivityFeed events={activity} />
           </div>
         </>

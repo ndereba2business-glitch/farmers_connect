@@ -10,11 +10,12 @@ import {
   Package, Calculator, Menu, X, CalendarClock
 } from "lucide-react";
 import "./Layout.css";
+import { IN_APP_ORDERING } from "../config/features";
 
 const FARMER_NAV = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
   { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
-  { name: "My Orders", path: "/orders", icon: Package },
+  ...(IN_APP_ORDERING ? [{ name: "My Orders", path: "/orders", icon: Package }] : []),
   { name: "My Farm", path: "/my-farm", icon: Egg },
   { name: "Ask Vet", path: "/bookings", icon: Stethoscope },
   { name: "Community", path: "/community", icon: Users },

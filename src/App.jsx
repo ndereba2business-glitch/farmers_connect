@@ -24,6 +24,8 @@ const Wallet = lazy(() => import("./pages/Wallet"));
 const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
 const SupplierDashboard = lazy(() => import("./pages/SupplierDashboard"));
 const SupplierProfileSetup = lazy(() => import("./pages/SupplierProfileSetup"));
+const SupplierProducts = lazy(() => import("./pages/SupplierProducts"));
+const SupplierProductForm = lazy(() => import("./pages/SupplierProductForm"));
 const CluckyAI = lazy(() => import("./pages/CluckyAI"));
 const MyFarm = lazy(() => import("./pages/MyFarm"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -251,6 +253,33 @@ function AppRoutes() {
             element={
               <ProtectedRoute allowedRoles={["supplier"]}>
                 <SupplierDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/supplier/products"
+            element={
+              <ProtectedRoute allowedRoles={["supplier"]}>
+                <SupplierProducts />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/supplier/products/new"
+            element={
+              <ProtectedRoute allowedRoles={["supplier"]}>
+                <SupplierProductForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/supplier/products/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={["supplier"]}>
+                <SupplierProductForm />
               </ProtectedRoute>
             }
           />

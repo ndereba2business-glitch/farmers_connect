@@ -6,6 +6,28 @@ export const TYPE_LABELS = {
   other: "Other"
 };
 
+// Same values as products.category and supplier_profiles.product_categories
+// (the database rejects anything else).
+export const CATEGORIES = [
+  { value: "feeds", label: "Feeds" },
+  { value: "chickens", label: "Chicks & birds" },
+  { value: "eggs", label: "Eggs" },
+  { value: "medicine", label: "Medicine & vaccines" },
+  { value: "equipment", label: "Equipment" },
+  { value: "other", label: "Other" }
+];
+
+export const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(c => [c.value, c.label]));
+
+export const UNITS = [
+  { value: "per_kg", label: "Per kg" },
+  { value: "per_bag", label: "Per bag" },
+  { value: "per_bird", label: "Per chick / bird" },
+  { value: "per_tray", label: "Per tray" },
+  { value: "per_piece", label: "Per item" },
+  { value: "per_lot", label: "Per lot" }
+];
+
 export const UNIT_LABELS = {
   per_bird: "/bird",
   per_tray: "/tray",

@@ -424,7 +424,10 @@ export default function AdminDashboard() {
                             </span>
                           </div>
                           <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
-                            {sup.supplier_type && <span>📦 {sup.supplier_type}</span>}
+                            {(sup.product_categories || []).length > 0
+                              ? <span>📦 {sup.product_categories.join(", ")}</span>
+                              : sup.supplier_type && <span>📦 {sup.supplier_type}</span>}
+                            {sup.location_details && <span>🏪 {sup.location_details}</span>}
                             {sup.county && <span>📍 {sup.county}</span>}
                             {sup.phone && <span>📞 {sup.phone}</span>}
                             {sup.delivery_available && <span>🚚 Delivers</span>}
