@@ -1,6 +1,5 @@
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "./supabaseClient";
 
-const BUCKET = "marketplace-images";
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_INPUT_BYTES = 15 * 1024 * 1024;
 const MAX_DIMENSION = 1200;
@@ -16,7 +15,7 @@ export function validateImage(file) {
 
 // Phone cameras produce 4-12 MB photos. Shrink to at most 1200px and
 // re-encode as JPEG before upload: much faster on slow mobile data, and it
-// stays well under the bucket's 5 MB limit. Falls back to the original file
+// stays well under the buckets' 5 MB limit. Falls back to the original file
 // if the browser can't decode it.
 async function shrink(file) {
   try {
@@ -38,28 +37,31 @@ async function shrink(file) {
   }
 }
 
-// Storage policies only allow writes inside the caller's own <uid>/ folder.
-export async function uploadImage(userId, file, prefix) {
+// Storage policies only allow writes inside the caller's own <uid>/ folder,
+// in every photo bucket (marketplace-images, avatars, farm-gallery,
+// community-posts). Returns the public URL.
+export async function uploadImage(userId, file, prefix, bucket = "marketplace-images") {
   const body = await shrink(file);
   const ext = body.type === "image/png" ? "png" : body.type === "image/webp" ? "webp" : "jpg";
   const path = `${userId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { error } = await supabase.storage
-    .from(BUCKET)
+    .from(bucket)
     .upload(path, body, { contentType: body.type || "image/jpeg", upsert: false });
   if (error) throw error;
 
-  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
-// Best effort: only files in the caller's own folder can be removed, and a
-// failed cleanup must never block the save or delete that triggered it.
+// Best effort: only files in the caller's own folder can be removed (older
+// files at a bucket's root can't), and a failed cleanup must never block the
+// save or delete that triggered it.
 export async function removeImageByUrl(url, userId) {
   if (!url || !userId) return;
-  const marker = `/object/public/${BUCKET}/`;
-  const at = url.indexOf(marker);
-  if (at === -1) return;
-  const path = decodeURIComponent(url.slice(at + marker.length));
+  const match = /\/object\/public\/([^/]+)\/(.+)$/.exec(String(url).split("?")[0]);
+  if (!match) return;
+  const [, bucket, rawPath] = match;
+  const path = decodeURIComponent(rawPath);
   if (!path.startsWith(`${userId}/`)) return;
-  await supabase.storage.from(BUCKET).remove([path]).catch(() => {});
+  await supabase.storage.from(bucket).remove([path]).catch(() => {});
 }

@@ -6,7 +6,7 @@ import { useToast } from "../context/ToastContext";
 import { useSupplier } from "../components/supplier/supplierContext";
 import { CATEGORIES, CATEGORY_LABELS, initialsOf } from "../components/supplier/supplierFormat";
 import { KENYA_COUNTIES } from "../components/supplier/kenyaCounties";
-import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../components/supplier/imageUpload";
+import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import { firstError, maxLength, required, validatePhone } from "../components/supplier/formValidation";
 import "../components/supplier/SupplierForms.css";
 
