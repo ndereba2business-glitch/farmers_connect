@@ -78,7 +78,7 @@ export default function Community() {
       setUploading(true);
 
       const { data: userData } = await supabase.auth.getUser();
-      const email = userData.user.email;
+      const email = (userData.user.email || userData.user.phone);
 
       const { data: profile } = await supabase
         .from("farmer_profiles")
@@ -157,7 +157,7 @@ export default function Community() {
     if (!text?.trim()) return;
 
     const { data: userData } = await supabase.auth.getUser();
-    const email = userData.user.email;
+    const email = (userData.user.email || userData.user.phone);
 
     const { data: profile } = await supabase
       .from("farmer_profiles")
