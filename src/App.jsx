@@ -14,8 +14,6 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Orders = lazy(() => import("./pages/Orders"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const ChatSupport = lazy(() => import("./pages/ChatSupport"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
 const Wallet = lazy(() => import("./pages/Wallet"));
@@ -164,7 +162,9 @@ function AppRoutes() {
 
           <Route path="/finance" element={<Finance />} />
 
-          <Route path="/analytics" element={<Analytics />} />
+          {/* Retired: its totals came from unused tables (bookings, the old
+              suppliers table). The admin dashboard and /revenue cover this. */}
+          <Route path="/analytics" element={<Navigate to={role === "admin" ? "/admin" : "/"} replace />} />
 
           {/* PROFILE */}
           <Route path="/profile" element={<Profile />} />
@@ -196,8 +196,9 @@ function AppRoutes() {
           {/* AI */}
           <Route path="/clucky" element={<CluckyAI />} />
 
-          {/* CHAT */}
-          <Route path="/chat" element={<ChatSupport />} />
+          {/* Retired anonymous chat room (no owner on messages, so nothing could
+              be moderated or attributed). Community chat replaced it. */}
+          <Route path="/chat" element={<Navigate to="/community-chat" replace />} />
 
           {/* VERIFICATIONS */}
           <Route
