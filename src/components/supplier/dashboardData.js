@@ -1,20 +1,20 @@
 import { parseDbDate } from "./supplierFormat";
-import { productStatus } from "./useSupplierProducts";
+import { needsCheck, productStatus } from "./useSupplierProducts";
 
 // Keeps "3 × Layers Mash" from wrapping between the quantity and the name.
 const NBSP = String.fromCharCode(160);
 
 // Every number here is derived from columns that exist today:
-//   products.is_active / sold_out, orders.status / delivery_status /
-//   supplier_earnings (orders only when in-app ordering is on).
+//   products.is_active / availability / updated_at, orders.status /
+//   delivery_status / supplier_earnings (orders only when in-app ordering
+//   is on).
 //
 // Definitions (kept explicit so the UI never overstates anything):
-//   active products   = visible to farmers and not sold out
-//   out of stock      = visible to farmers, marked sold out
+//   available         = visible to farmers, in stock or available on order
+//   out of stock      = visible to farmers, marked out of stock
 //   inactive          = hidden from farmers by the supplier
+//   needs a check     = visible to farmers, not updated in STALE_DAYS
 //   pending requests  = order requests still waiting for the supplier
-//                       (Contact Seller only opens WhatsApp/phone, so no
-//                       inquiry is ever stored to count)
 //   earned            = supplier_earnings on confirmed, delivered orders
 export function computeOverview(products, orders) {
   const statuses = products.map(p => productStatus(p).key);
@@ -22,9 +22,10 @@ export function computeOverview(products, orders) {
 
   return {
     totalProducts: products.length,
-    activeProducts: statuses.filter(s => s === "active").length,
-    outOfStock: statuses.filter(s => s === "soldOut").length,
+    available: statuses.filter(s => s === "in_stock" || s === "on_order").length,
+    outOfStock: statuses.filter(s => s === "out_of_stock").length,
     inactive: statuses.filter(s => s === "inactive").length,
+    needsCheck: products.filter(needsCheck).length,
     pendingRequests: orders.filter(o => o.status === "pending").length,
     inProgress: orders.filter(o => o.status === "confirmed" && o.delivery_status !== "delivered").length,
     delivered: delivered.length,

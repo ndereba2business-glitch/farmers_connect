@@ -7,10 +7,12 @@ import { useToast } from "../context/ToastContext";
 import { useSupplier } from "../components/supplier/supplierContext";
 import { PRODUCT_COLUMNS } from "../components/supplier/useSupplierProducts";
 import { CATEGORIES, UNITS } from "../components/supplier/supplierFormat";
+import { AVAILABILITY_OPTIONS, freshness } from "../lib/productListing";
 import { KENYA_COUNTIES } from "../components/supplier/kenyaCounties";
 import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import {
-  firstError, maxLength, required, validatePhone, validatePrice, validateStock
+  firstError, maxLength, required, validateAvailability, validateMinOrder, validatePhone,
+  validatePrice, validatePriceMax, validateStock
 } from "../components/supplier/formValidation";
 import "../components/supplier/SupplierForms.css";
 
@@ -56,12 +58,14 @@ function ProductForm({ profile, product }) {
     description: product?.description || "",
     price: product ? String(product.price ?? "") : "",
     unit: product?.unit || "",
+    price_max: product?.price_max ? String(product.price_max) : "",
+    min_order_qty: product?.min_order_qty ? String(product.min_order_qty) : "",
     stock: product?.stock > 0 ? String(product.stock) : "",
+    availability: product?.availability || "in_stock",
     county: product?.county ?? profile.county ?? "",
     location_details: product?.location_details ?? profile.location_details ?? "",
     seller_phone: product?.seller_phone || profile.whatsapp_number || profile.phone || "",
-    is_active: product ? product.is_active : true,
-    sold_out: product ? !!product.sold_out : false
+    is_active: product ? product.is_active : true
   }));
   const [savedImage, setSavedImage] = useState(product?.image_url || null);
   const [imageFile, setImageFile] = useState(null);
@@ -75,9 +79,18 @@ function ProductForm({ profile, product }) {
 
   useEffect(() => () => { if (imagePreview) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
 
+  // Cross-field checks (range vs price, status vs quantity) clear when any
+  // of the fields involved changes.
+  const LINKED_ERRORS = {
+    price: ["price_max"],
+    stock: ["availability"],
+    min_order_qty: ["availability"]
+  };
+
   function set(key, value) {
     setForm(prev => ({ ...prev, [key]: value }));
-    if (errors[key]) setErrors(prev => ({ ...prev, [key]: "" }));
+    const clear = [key, ...(LINKED_ERRORS[key] || [])].filter(k => errors[k]);
+    if (clear.length) setErrors(prev => ({ ...prev, ...Object.fromEntries(clear.map(k => [k, ""])) }));
   }
 
   function pickImage(e) {
@@ -107,8 +120,11 @@ function ProductForm({ profile, product }) {
       category: required(form.category, "Choose a category."),
       description: maxLength(form.description, 2000, "Description"),
       price: validatePrice(form.price),
+      price_max: validatePriceMax(form.price_max, form.price),
       unit: required(form.unit, "Choose how the price is counted."),
+      min_order_qty: validateMinOrder(form.min_order_qty),
       stock: validateStock(form.stock),
+      availability: validateAvailability(form),
       county: required(form.county, "Enter the county you supply from."),
       location_details: maxLength(form.location_details, 120, "Location details"),
       seller_phone: validatePhone(form.seller_phone, { required: true })
@@ -142,8 +158,11 @@ function ProductForm({ profile, product }) {
       category: form.category,
       description: form.description.trim(),
       price: Number(form.price),
+      price_max: form.price_max.trim() ? Number(form.price_max) : null,
       unit: form.unit,
+      min_order_qty: form.min_order_qty.trim() ? Number(form.min_order_qty) : null,
       stock: form.stock.trim() ? Number(form.stock) : 0,
+      availability: form.availability,
       county: form.county.trim(),
       location_details: form.location_details.trim() || null,
       seller_phone: form.seller_phone.trim(),
@@ -153,12 +172,12 @@ function ProductForm({ profile, product }) {
 
     const request = isEdit
       ? supabase.from("products")
-          .update({ ...fields, is_active: form.is_active, sold_out: form.sold_out })
+          .update({ ...fields, is_active: form.is_active })
           .eq("id", product.id)
           .eq("supplier_id", profile.id)
           .select("id")
       : supabase.from("products")
-          .insert({ ...fields, supplier_id: profile.id, user_email: userEmail, is_active: true, sold_out: false })
+          .insert({ ...fields, supplier_id: profile.id, user_email: userEmail, is_active: true })
           .select("id");
 
     const { data, error } = await request;
@@ -257,17 +276,45 @@ function ProductForm({ profile, product }) {
         </div>
 
         <div className="sf-section">
-          <h2 className="sf-section-title">Price and stock</h2>
+          <h2 className="sf-section-title">Availability, price and stock</h2>
+
+          <fieldset className="sf-choices" id="pf-availability" tabIndex={-1}
+            aria-describedby={errors.availability ? "pf-availability-err" : undefined}>
+            <legend className="sf-label">Availability <span className="sf-req">*</span></legend>
+            {AVAILABILITY_OPTIONS.map(o => (
+              <label key={o.value} className="sf-choice">
+                <input type="radio" name="pf-availability" value={o.value}
+                  checked={form.availability === o.value} onChange={() => set("availability", o.value)} />
+                <span>
+                  <b>{o.label}</b>
+                  <small>{o.hint}</small>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          {err("availability")}
+
           <div className="sf-row sf-row--2">
             <div className="sf-field">
               <label className="sf-label" htmlFor="pf-price">Price <span className="sf-req">*</span></label>
               <div className="sf-prefix">
                 <span aria-hidden="true">KES</span>
-                <input id="pf-price" className="sf-input" inputMode="decimal" placeholder="3200"
+                <input id="pf-price" className="sf-input" inputMode="decimal" placeholder="3000"
                   value={form.price} onChange={e => set("price", e.target.value)} {...aria("price")} />
               </div>
               {err("price")}
             </div>
+            <div className="sf-field">
+              <label className="sf-label" htmlFor="pf-price_max">Up to <span className="sf-opt">(optional, for a price range)</span></label>
+              <div className="sf-prefix">
+                <span aria-hidden="true">KES</span>
+                <input id="pf-price_max" className="sf-input" inputMode="decimal" placeholder="3400"
+                  value={form.price_max} onChange={e => set("price_max", e.target.value)} {...aria("price_max")} />
+              </div>
+              {err("price_max")}
+            </div>
+          </div>
+          <div className="sf-row sf-row--2">
             <div className="sf-field">
               <label className="sf-label" htmlFor="pf-unit">Price is <span className="sf-req">*</span></label>
               <select id="pf-unit" className="sf-input" value={form.unit} onChange={e => set("unit", e.target.value)} {...aria("unit")}>
@@ -275,6 +322,12 @@ function ProductForm({ profile, product }) {
                 {UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
               </select>
               {err("unit")}
+            </div>
+            <div className="sf-field">
+              <label className="sf-label" htmlFor="pf-min_order_qty">Minimum order <span className="sf-opt">(optional)</span></label>
+              <input id="pf-min_order_qty" className="sf-input" inputMode="numeric" placeholder="e.g. 5"
+                value={form.min_order_qty} onChange={e => set("min_order_qty", e.target.value)} {...aria("min_order_qty")} />
+              {err("min_order_qty")}
             </div>
           </div>
           <div className="sf-field">
@@ -314,15 +367,14 @@ function ProductForm({ profile, product }) {
 
         {isEdit && (
           <div className="sf-section">
-            <h2 className="sf-section-title">Status</h2>
+            <h2 className="sf-section-title">Visibility</h2>
             <label className="sf-toggle">
               <input type="checkbox" checked={form.is_active} onChange={e => set("is_active", e.target.checked)} />
               <span>Active: farmers can see this product</span>
             </label>
-            <label className="sf-toggle">
-              <input type="checkbox" checked={form.sold_out} onChange={e => set("sold_out", e.target.checked)} />
-              <span>Out of stock: still shown, marked sold out</span>
-            </label>
+            <p className="sf-hint" style={{ margin: 0 }}>
+              {freshness(product).label}. Saving any change shows farmers it's up to date.
+            </p>
           </div>
         )}
 
