@@ -2,16 +2,9 @@ import { useEffect, useState } from "react";
 import { Phone, MessageCircle, MapPin, Truck, Clock } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { CATEGORIES, CATEGORY_LABELS, initialsOf } from "../components/supplier/supplierFormat";
+import { recordContact, supplierMessage, telHref, whatsappHref } from "../lib/contactSupplier";
 
 const TYPES = [{ value: "all", label: "All" }, ...CATEGORIES];
-
-const digits = (phone) => String(phone).replace(/[^\d+]/g, "");
-
-function whatsappHref(number) {
-  let n = digits(number).replace(/^\+/, "");
-  if (n.startsWith("0")) n = "254" + n.slice(1);
-  return `https://wa.me/${n}`;
-}
 
 const contactBtn = (whatsapp) => ({
   display: "inline-flex", alignItems: "center", gap: "8px",
@@ -157,13 +150,19 @@ export default function Suppliers() {
             </div>
             {s.description && <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#6b7280", lineHeight: 1.5 }}>{s.description}</p>}
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "14px" }}>
-              {s.phone && (
-                <a href={`tel:${digits(s.phone)}`} style={contactBtn(false)}>
+              {telHref(s.phone) && (
+                <a href={telHref(s.phone)} style={contactBtn(false)}
+                  onClick={() => recordContact({ supplierId: s.id, channel: "call" })}
+                  aria-label={`Call ${s.business_name}`}>
                   <Phone size={16} aria-hidden="true" /> Call
                 </a>
               )}
-              {s.whatsapp_number && (
-                <a href={whatsappHref(s.whatsapp_number)} target="_blank" rel="noopener noreferrer" style={contactBtn(true)}>
+              {/* the profile form treats WhatsApp as "if different from your phone" */}
+              {whatsappHref(s.whatsapp_number || s.phone) && (
+                <a href={whatsappHref(s.whatsapp_number || s.phone, supplierMessage(s))}
+                  target="_blank" rel="noopener noreferrer" style={contactBtn(true)}
+                  onClick={() => recordContact({ supplierId: s.id, channel: "whatsapp" })}
+                  aria-label={`WhatsApp ${s.business_name}`}>
                   <MessageCircle size={16} aria-hidden="true" /> WhatsApp
                 </a>
               )}

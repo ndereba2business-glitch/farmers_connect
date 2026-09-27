@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import {
   Package, Check, TriangleAlert, Inbox, Plus, Pencil, Search, Truck,
-  MapPin, Phone, ArrowRight, ShoppingBag, Clock, RefreshCw, BadgeCheck
+  MapPin, Phone, ArrowRight, ShoppingBag, Clock, RefreshCw, BadgeCheck, MessageCircle
 } from "lucide-react";
 import { STALE_DAYS, freshness, priceText, unitSuffix } from "../../lib/productListing";
+import { CONTACT_WINDOW_DAYS } from "./useContactSummary";
 import {
   CATEGORY_LABELS, VERIFICATION_META, formatKes, initialsOf, timeAgo
 } from "./supplierFormat";
@@ -134,6 +135,46 @@ export function OverviewCards({ overview }) {
         <StatCard icon={Inbox} tone={overview.pendingRequests > 0 ? "blue" : "neutral"} label="Pending requests" value={overview.pendingRequests} hint="Waiting for you" to="/supplier-orders" />
       )}
     </ul>
+  );
+}
+
+// Counts only: farmers' identities are never available to suppliers.
+export function ContactSummaryPanel({ summary, products }) {
+  if (summary.loading || summary.error) return null;
+  const totals = summary.totals || { contacts: 0, whatsapp: 0, calls: 0 };
+  const names = Object.fromEntries(products.map(p => [p.id, p.product_name]));
+  const top = Object.entries(summary.byProduct)
+    .filter(([id]) => names[id])
+    .sort((a, b) => b[1].farmers - a[1].farmers)
+    .slice(0, 3);
+
+  return (
+    <section className="sd-card sd-contacts" aria-labelledby="sd-contacts-title">
+      <div className="sd-contacts-head">
+        <span className="sd-stat-icon sd-tone-blue"><MessageCircle size={20} aria-hidden="true" /></span>
+        <div>
+          <h2 id="sd-contacts-title" className="sd-section-title" style={{ margin: 0 }}>
+            {totals.contacts} farmer contact{totals.contacts === 1 ? "" : "s"}
+            <span className="sd-contacts-window"> in the last {CONTACT_WINDOW_DAYS} days</span>
+          </h2>
+          <p className="sd-contacts-sub">
+            {totals.contacts > 0
+              ? `${totals.whatsapp} used WhatsApp and ${totals.calls} called${totals.whatsapp + totals.calls > totals.contacts ? " (some did both)" : ""}. Each farmer counts once per product per day.`
+              : "When farmers tap Call or WhatsApp on your products, you'll see it here."}
+          </p>
+        </div>
+      </div>
+      {(top.length > 0 || summary.directory) && (
+        <ul className="sd-contacts-list">
+          {top.map(([id, c]) => (
+            <li key={id}><span>{names[id]}</span><b>{c.farmers}</b></li>
+          ))}
+          {summary.directory && (
+            <li><span>From the supplier directory</span><b>{summary.directory.farmers}</b></li>
+          )}
+        </ul>
+      )}
+    </section>
   );
 }
 

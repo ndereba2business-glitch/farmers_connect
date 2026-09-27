@@ -334,3 +334,21 @@
 .sd-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .sd-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .sd-chip { gap: 4px; }
+
+/* Phase 6: farmer contact counts */
+.sd-contacts { display: grid; gap: 14px; }
+.sd-contacts-head { display: flex; gap: 14px; align-items: flex-start; }
+.sd-contacts-head .sd-stat-icon { margin: 0; flex: none; }
+.sd-contacts-window { font-weight: 600; color: var(--ss-muted); font-size: 0.9rem; }
+.sd-contacts-sub { margin: 4px 0 0; font-size: 0.86rem; color: var(--ss-muted); line-height: 1.5; }
+.sd-contacts-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sd-contacts-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ss-bg);
+  font-size: 0.88rem;
+}
+.sd-contacts-list span { min-width: 0; overflow-wrap: anywhere; }
