@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { IN_APP_ORDERING } from "../../config/features";
+import { AVAILABILITY, freshness } from "../../lib/productListing";
 
 const LOAD_ERROR = "We couldn't load your products. Check your connection and try again.";
 
 export const PRODUCT_COLUMNS =
-  "id, product_name, category, description, price, unit, stock, sold_out, is_active, " +
-  "image_url, county, location_details, seller_phone, created_at";
+  "id, product_name, category, description, price, price_max, unit, stock, min_order_qty, " +
+  "availability, sold_out, is_active, image_url, county, location_details, seller_phone, " +
+  "created_at, updated_at";
 
 // This supplier's products (and, when in-app ordering is on, their order
 // requests). Row-level security already limits both to the supplier; the
@@ -76,11 +78,15 @@ export function useSupplierProducts(profileId) {
   return { ...state, refresh, retry };
 }
 
-// active   = visible to farmers and in stock
-// soldOut  = visible to farmers, marked sold out
-// inactive = hidden from farmers by the supplier
+// key: "inactive" (hidden from farmers by the supplier), otherwise the
+// product's availability: "in_stock" | "on_order" | "out_of_stock".
 export function productStatus(p) {
   if (!p.is_active) return { key: "inactive", label: "Inactive", tone: "neutral" };
-  if (p.sold_out) return { key: "soldOut", label: "Out of stock", tone: "amber" };
-  return { key: "active", label: "Active", tone: "green" };
+  const key = AVAILABILITY[p.availability] ? p.availability : (p.sold_out ? "out_of_stock" : "in_stock");
+  return { key, ...AVAILABILITY[key] };
+}
+
+// Visible to farmers but not updated in STALE_DAYS: may be out of date.
+export function needsCheck(p) {
+  return p.is_active && freshness(p).stale;
 }

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import {
   Package, Check, TriangleAlert, Inbox, Plus, Pencil, Search, Truck,
-  MapPin, Phone, ArrowRight, ShoppingBag, Clock, EyeOff, BadgeCheck
+  MapPin, Phone, ArrowRight, ShoppingBag, Clock, RefreshCw, BadgeCheck
 } from "lucide-react";
+import { STALE_DAYS, freshness, priceText, unitSuffix } from "../../lib/productListing";
 import {
-  CATEGORY_LABELS, UNIT_LABELS, VERIFICATION_META, formatKes, initialsOf, timeAgo
+  CATEGORY_LABELS, VERIFICATION_META, formatKes, initialsOf, timeAgo
 } from "./supplierFormat";
 import { productStatus } from "./useSupplierProducts";
 import { IN_APP_ORDERING } from "../../config/features";
@@ -123,13 +124,14 @@ function StatCard({ icon: Icon, label, value, hint, tone, to }) {
 export function OverviewCards({ overview }) {
   return (
     <ul className="sd-stats" aria-label="Overview">
-      <StatCard icon={Package} tone="neutral" label="Total products" value={overview.totalProducts} to="/supplier/products" />
-      <StatCard icon={Check} tone="green" label="Active" value={overview.activeProducts} hint="Visible and in stock" />
-      <StatCard icon={TriangleAlert} tone={overview.outOfStock > 0 ? "amber" : "neutral"} label="Out of stock" value={overview.outOfStock} hint="Visible, marked sold out" />
-      {IN_APP_ORDERING ? (
+      <StatCard icon={Package} tone="neutral" label="Total products" value={overview.totalProducts}
+        hint={overview.inactive > 0 ? `${overview.inactive} hidden from farmers` : "All visible to farmers"} to="/supplier/products" />
+      <StatCard icon={Check} tone="green" label="Available" value={overview.available} hint="In stock or on order" />
+      <StatCard icon={TriangleAlert} tone={overview.outOfStock > 0 ? "amber" : "neutral"} label="Out of stock" value={overview.outOfStock} hint="Shown as out of stock" />
+      <StatCard icon={RefreshCw} tone={overview.needsCheck > 0 ? "red" : "neutral"} label="Needs a check" value={overview.needsCheck}
+        hint={`Not updated in ${STALE_DAYS} days`} to="/supplier/products?status=stale" />
+      {IN_APP_ORDERING && (
         <StatCard icon={Inbox} tone={overview.pendingRequests > 0 ? "blue" : "neutral"} label="Pending requests" value={overview.pendingRequests} hint="Waiting for you" to="/supplier-orders" />
-      ) : (
-        <StatCard icon={EyeOff} tone="neutral" label="Inactive" value={overview.inactive} hint="Hidden from farmers" />
       )}
     </ul>
   );
@@ -250,8 +252,7 @@ export function ProductList({ products }) {
                 <div className="sd-row-text">
                   <span className="sd-row-title">{p.product_name}</span>
                   <span className="sd-row-sub">
-                    {formatKes(p.price)}{UNIT_LABELS[p.unit] || ""}
-                    {p.stock > 0 ? ` · ${p.stock} in stock` : ""}
+                    {priceText(p)}{unitSuffix(p.unit)} · {freshness(p).label}
                   </span>
                 </div>
                 <span className={`sd-chip sd-tone-${status.tone}`}>{status.label}</span>

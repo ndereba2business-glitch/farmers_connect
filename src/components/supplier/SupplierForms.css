@@ -253,3 +253,42 @@ textarea.sf-input { min-height: 104px; resize: vertical; line-height: 1.5; }
 @media (min-width: 1024px) {
   .sf-actions { bottom: 16px; }
 }
+
+/* single-choice cards (availability) */
+.sf-choices { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.sf-choices > legend { margin-bottom: 8px; padding: 0; }
+.sf-choice { position: relative; display: block; }
+.sf-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sf-choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 52px;
+  padding: 10px 14px 10px 42px;
+  border: 1.5px solid var(--ss-line);
+  border-radius: 12px;
+  background: var(--ss-surface);
+  cursor: pointer;
+  position: relative;
+}
+.sf-choice > span::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 2px solid #9ca3af;
+  background: #fff;
+}
+.sf-choice b { font-size: 0.92rem; }
+.sf-choice small { font-size: 0.78rem; color: var(--ss-muted); }
+.sf-choice input:checked + span { border-color: var(--ss-green-400); background: var(--ss-green-50); }
+.sf-choice input:checked + span::before { border-color: var(--ss-green); box-shadow: inset 0 0 0 3px #fff; background: var(--ss-green); }
+.sf-choice input:focus-visible + span { outline: 2px solid var(--ss-green-400); outline-offset: 2px; }
+@media (min-width: 640px) {
+  .sf-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sf-choices > legend { grid-column: 1 / -1; }
+}
