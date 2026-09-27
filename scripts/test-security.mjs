@@ -11,10 +11,12 @@ import { fileURLToPath } from "node:url";
 // Run from the repo root with a relative path: on Windows the CLI goes
 // through the shell, which would split a path containing spaces.
 const root = fileURLToPath(new URL("..", import.meta.url));
-const run = spawnSync("supabase", ["db", "query", "--linked", "-f", "supabase/tests/security.sql"], {
+// A fixed command string (no user input), which the shell needs on Windows
+// to find the npm-installed supabase shim.
+const run = spawnSync("supabase db query --linked -f supabase/tests/security.sql", {
   cwd: root,
   encoding: "utf8",
-  shell: process.platform === "win32"
+  shell: true
 });
 
 const output = `${run.stdout || ""}\n${run.stderr || ""}`.replace(/\\n/g, "\n");
