@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { IN_APP_ORDERING } from "../config/features";
 import { AVAILABILITY, freshness, minOrderText, priceText, unitSuffix } from "../lib/productListing";
+import { productMessage, recordContact, telHref, whatsappHref } from "../lib/contactSupplier";
 import "./Marketplace.css";
 
 const CATEGORIES = [
@@ -222,45 +223,20 @@ export default function Marketplace() {
 // -----------------------------
 // CONTACT SELLER
 // -----------------------------
+// WhatsApp with the product's details pre-filled, so the seller knows which
+// listing the farmer means. The contact is counted (anonymously to the
+// seller) without delaying the chat.
 function handleContactSeller(product) {
-  // ✅ Check if seller has a phone number
-  // We'll use the product's seller phone if available,
-  // otherwise prompt the buyer to ask in community chat
-  
-  const sellerPhone = product.seller_phone || product.phone || null;
-
-  if (sellerPhone) {
-    // ✅ Format phone to international format
-    // Remove spaces, dashes, brackets
-    let phone = sellerPhone.replace(/[\s\-\(\)]/g, "");
-
-    // Convert Kenyan 07XX to +2547XX
-    if (phone.startsWith("0")) {
-      phone = "+254" + phone.slice(1);
-    }
-
-    // Remove + for WhatsApp link
-    phone = phone.replace("+", "");
-
-    // ✅ Pre-written message
-    const message = encodeURIComponent(
-      `Hello! I saw your listing on Farmers Connect.\n\n` +
-      `Product: *${product.product_name}*\n` +
-      `Price: KES ${Number(product.price).toLocaleString()}${product.unit ? " " + (product.unit.replace("_", "/")) : ""}\n` +
-      `Location: ${product.county || "Kenya"}\n\n` +
-      `I'm interested in buying. Is it still available?`
-    );
-
-    // ✅ Open WhatsApp
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-
-  } else {
-    // ✅ No phone number — show a helpful alert
+  const link = whatsappHref(product.seller_phone, productMessage(product));
+  if (!link) {
     alert(
-      `The seller hasn't added a WhatsApp number yet.\n\n` +
+      `The seller hasn't added a phone number yet.\n\n` +
       `You can find them in the Community Chat and message them there.`
     );
+    return;
   }
+  recordContact({ productId: product.id, channel: "whatsapp" });
+  window.open(link, "_blank", "noopener");
 }
 
   // -----------------------------
@@ -978,13 +954,6 @@ function handleContactSeller(product) {
   );
 }
 
-// Seller phone as international digits (07.. -> 2547..), or "" if none.
-function sellerDigits(product) {
-  let phone = String(product.seller_phone || "").replace(/[^\d+]/g, "");
-  if (phone.startsWith("+")) phone = phone.slice(1);
-  if (phone.startsWith("0")) phone = "254" + phone.slice(1);
-  return phone.length >= 9 ? phone : "";
-}
 
 function contactButton(primary) {
   return {
@@ -1225,10 +1194,11 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
   }}>
     Out of stock
   </div>
-) : sellerDigits(product) ? (
+) : telHref(product.seller_phone) ? (
   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
     <a
-      href={`tel:+${sellerDigits(product)}`}
+      href={telHref(product.seller_phone)}
+      onClick={() => recordContact({ productId: product.id, channel: "call" })}
       aria-label={`Call the seller of ${product.product_name}`}
       style={contactButton(false)}
     >
