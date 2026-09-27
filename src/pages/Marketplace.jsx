@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { IN_APP_ORDERING } from "../config/features";
+import { AVAILABILITY, freshness, minOrderText, priceText, unitSuffix } from "../lib/productListing";
 import "./Marketplace.css";
 
 const CATEGORIES = [
@@ -29,10 +30,6 @@ const UNITS = [
   { value: "per_lot", label: "Per Lot" },
 ];
 
-const UNIT_LABELS = {
-  per_bird: "/bird", per_tray: "/tray", per_kg: "/kg",
-  per_bag: "/bag", per_piece: "/piece", per_lot: "/lot"
-};
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
@@ -336,12 +333,12 @@ function handleContactSeller(product) {
         <div>
           {/* HEADER */}
           <div style={{
-            display: "flex", justifyContent: "space-between",
+            display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
             alignItems: "flex-start", marginBottom: "24px"
           }}>
             <div>
               <h1 style={{
-                margin: 0, fontSize: "36px", fontWeight: "800",
+                margin: 0, fontSize: "clamp(28px, 8vw, 36px)", fontWeight: "800",
                 color: "#111827", letterSpacing: "-1px"
               }}>
                 Marketplace
@@ -1109,7 +1106,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
               background: "#ef4444", color: "#fff", fontWeight: "800",
               fontSize: "14px", padding: "8px 20px", borderRadius: "20px"
             }}>
-              SOLD OUT
+              OUT OF STOCK
             </span>
           </div>
         )}
@@ -1147,34 +1144,48 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           {product.product_name}
         </h3>
 
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          alignItems: "center", marginBottom: "8px"
-        }}>
-          <span style={{ fontSize: "18px", fontWeight: "800", color: "#22c55e" }}>
-            KES {Number(product.price).toLocaleString()}
-            <span style={{ fontSize: "12px", fontWeight: "400", color: "#9ca3af" }}>
-              {UNIT_LABELS[product.unit] || ""}
-            </span>
+        <div style={{ marginBottom: "6px", fontSize: "18px", fontWeight: "800", color: "#16a34a", lineHeight: 1.25, overflowWrap: "anywhere" }}>
+          {priceText(product)}
+          <span style={{ fontSize: "12px", fontWeight: "400", color: "#9ca3af" }}>
+            {unitSuffix(product.unit)}
           </span>
-          {product.stock > 0 && !product.sold_out && (
-            <span style={{
-              fontSize: "12px", fontWeight: "600",
-              background: "#fef3c7", color: "#d97706",
-              padding: "3px 10px", borderRadius: "20px"
-            }}>
-              {product.stock} available
-            </span>
-          )}
         </div>
+
+        {!product.sold_out && (
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+            <span style={{
+              fontSize: "12px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px",
+              ...(product.availability === "on_order"
+                ? { background: "#eff6ff", color: "#1d4ed8" }
+                : { background: "#f0fdf4", color: "#15803d" })
+            }}>
+              {(AVAILABILITY[product.availability] || AVAILABILITY.in_stock).label}
+              {product.availability !== "on_order" && product.stock > 0 ? ` · ${product.stock}` : ""}
+            </span>
+            {minOrderText(product) && (
+              <span style={{ fontSize: "12px", color: "#6b7280" }}>{minOrderText(product)}</span>
+            )}
+          </div>
+        )}
 
         {product.county && (
           <div style={{
-            display: "flex", alignItems: "center", gap: "4px",
-            fontSize: "12px", color: "#9ca3af", marginBottom: "4px"
+            display: "flex", alignItems: "flex-start", gap: "4px",
+            fontSize: "12px", color: "#6b7280", marginBottom: "4px"
           }}>
-            <MapPin size={12} />
-            {product.county}
+            <MapPin size={12} style={{ flex: "none", marginTop: "2px" }} aria-hidden="true" />
+            {[product.location_details, product.county].filter(Boolean).join(", ")}
+          </div>
+        )}
+
+        {freshness(product).label && (
+          <div style={{
+            fontSize: "12px", marginBottom: "4px",
+            color: freshness(product).stale ? "#b45309" : "#9ca3af",
+            fontWeight: freshness(product).stale ? 700 : 400
+          }}>
+            {freshness(product).label}
+            {freshness(product).stale && !product.sold_out ? ". Confirm it's still available." : ""}
           </div>
         )}
 
@@ -1212,7 +1223,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
     background: "#f3f4f6", color: "#6b7280", border: "1.5px solid #e5e7eb",
     borderRadius: "10px", fontWeight: "700", fontSize: "13px"
   }}>
-    Sold out
+    Out of stock
   </div>
 ) : sellerDigits(product) ? (
   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -1313,7 +1324,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                       justifyContent: "center", gap: "6px"
                     }}
                   >
-                    📦 {product.sold_out ? "Sold Out" : "Mark Sold Out"}
+                    📦 {product.sold_out ? "Out of stock" : "Mark out of stock"}
                   </button>
                   <button
                     onClick={handleRemove}
