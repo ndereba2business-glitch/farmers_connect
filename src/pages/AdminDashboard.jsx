@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban } from "lucide-react";
+import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall } from "lucide-react";
 
 const VET_STATUS_META = {
   unverified: { bg: "#f3f4f6", color: "#6b7280", label: "Unverified" },
@@ -11,7 +11,7 @@ const VET_STATUS_META = {
 };
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ users: 0, products: 0, batches: 0, posts: 0, pendingVets: 0, pendingSuppliers: 0 });
+  const [stats, setStats] = useState({ users: 0, products: 0, batches: 0, posts: 0, pendingVets: 0, pendingSuppliers: 0, contactFarmers: 0, contactSuppliers: 0 });
   const [activeTab, setActiveTab] = useState("vets");
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -32,14 +32,17 @@ export default function AdminDashboard() {
       { data: batchData },
       { count: posts },
       { data: vetData, error: vetError },
-      { data: supplierData, error: supplierError }
+      { data: supplierData, error: supplierError },
+      { data: contactData }
     ] = await Promise.all([
       supabase.from("farmer_profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("farm_batches").select("*").order("created_at", { ascending: false }),
       supabase.from("community_posts").select("*", { count: "exact", head: true }),
       supabase.from("vet_profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("supplier_profiles").select("*").order("created_at", { ascending: false })
+      supabase.from("supplier_profiles").select("*").order("created_at", { ascending: false }),
+      // counts only; admin-checked in the database
+      supabase.rpc("admin_contact_stats", { p_days: 30 })
     ]);
 
     if (vetError) console.error("AdminDashboard: failed to load vet profiles —", vetError.message);
@@ -56,7 +59,9 @@ export default function AdminDashboard() {
       batches: (batchData || []).length,
       posts: posts || 0,
       pendingVets: (vetData || []).filter(v => v.verification_status === "pending").length,
-      pendingSuppliers: (supplierData || []).filter(s => s.verification_status === "pending").length
+      pendingSuppliers: (supplierData || []).filter(s => s.verification_status === "pending").length,
+      contactFarmers: Number(contactData?.[0]?.farmers || 0),
+      contactSuppliers: Number(contactData?.[0]?.suppliers || 0)
     });
     setLoading(false);
   }
@@ -99,6 +104,10 @@ export default function AdminDashboard() {
 
   const statCards = [
     { title: "Total Users", value: stats.users, icon: Users, color: "#edf9f1", iconColor: "#22c55e" },
+    {
+      title: `Farmers who contacted a supplier (30 days) · ${stats.contactSuppliers} supplier${stats.contactSuppliers === 1 ? "" : "s"} reached`,
+      value: stats.contactFarmers, icon: PhoneCall, color: "#eff6ff", iconColor: "#1d4ed8"
+    },
     { title: "Pending Vet Reviews", value: stats.pendingVets, icon: Stethoscope, color: "#fef3c7", iconColor: "#d97706" },
     { title: "Pending Supplier Reviews", value: stats.pendingSuppliers, icon: Store, color: "#fef3c7", iconColor: "#d97706" },
     { title: "Total Products", value: stats.products, icon: ShoppingBag, color: "#fff7e6", iconColor: "#f59e0b" },

@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Clock, Eye, EyeOff, MapPin, Package, Pencil, Plus, RefreshCw, Search, Store } from "lucide-react";
+import { Clock, Eye, EyeOff, MapPin, MessageCircle, Package, Pencil, Plus, RefreshCw, Search, Store } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useToast } from "../context/ToastContext";
 import { useSupplier } from "../components/supplier/supplierContext";
 import { needsCheck, productStatus, useSupplierProducts } from "../components/supplier/useSupplierProducts";
+import { CONTACT_WINDOW_DAYS, contactsLabel, useContactSummary } from "../components/supplier/useContactSummary";
 import { CATEGORIES, CATEGORY_LABELS, parseDbDate } from "../components/supplier/supplierFormat";
 import {
   AVAILABILITY, AVAILABILITY_OPTIONS, STALE_DAYS, freshness, minOrderText, priceText, unitSuffix
@@ -32,7 +33,7 @@ const STATUS_FILTERS = [
 const matchesStatus = (p, status) =>
   status === "all" || (status === "stale" ? needsCheck(p) : productStatus(p).key === status);
 
-function ProductCard({ product, busy, onToggleActive, onAvailability, onConfirm }) {
+function ProductCard({ product, contacts, busy, onToggleActive, onAvailability, onConfirm }) {
   const status = productStatus(product);
   const fresh = freshness(product);
   const stale = needsCheck(product);
@@ -58,6 +59,11 @@ function ProductCard({ product, busy, onToggleActive, onAvailability, onConfirm 
           {product.stock > 0 && <li>{product.stock} available</li>}
           {place && <li><MapPin size={13} aria-hidden="true" /> {place}</li>}
           <li className={stale ? "spl-stale-text" : undefined}><Clock size={13} aria-hidden="true" /> {fresh.label}</li>
+          {contacts?.farmers > 0 && (
+            <li className="spl-contacts">
+              <MessageCircle size={13} aria-hidden="true" /> {contactsLabel(contacts.farmers)} ({CONTACT_WINDOW_DAYS} days)
+            </li>
+          )}
         </ul>
       </div>
 
@@ -114,6 +120,7 @@ export default function SupplierProducts() {
   const toast = useToast();
   const { profile, profileLoading, profileError, retryProfile } = useSupplier();
   const data = useSupplierProducts(profile?.id);
+  const contactSummary = useContactSummary(profile?.id);
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -283,6 +290,7 @@ export default function SupplierProducts() {
           <ul className="spl-grid">
             {shown.map(p => (
               <ProductCard key={p.id} product={p} busy={busyId === p.id} onToggleActive={toggleActive}
+                contacts={contactSummary.byProduct[p.id]}
                 onAvailability={changeAvailability} onConfirm={confirmStillAccurate} />
             ))}
           </ul>

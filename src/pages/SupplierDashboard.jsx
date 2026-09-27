@@ -5,9 +5,10 @@ import { useSupplier } from "../components/supplier/supplierContext";
 import { useSupplierProducts } from "../components/supplier/useSupplierProducts";
 import { buildActivity, computeOverview } from "../components/supplier/dashboardData";
 import {
-  ActivityFeed, ListSkeleton, OrderSummary, OverviewCards, ProductList,
+  ActivityFeed, ContactSummaryPanel, ListSkeleton, OrderSummary, OverviewCards, ProductList,
   ProfileSkeleton, ProfileSummary, QuickActions, StatsSkeleton
 } from "../components/supplier/DashboardWidgets";
+import { useContactSummary } from "../components/supplier/useContactSummary";
 import { IN_APP_ORDERING } from "../config/features";
 import "./SupplierDashboard.css";
 
@@ -25,6 +26,7 @@ function ErrorBanner({ message, onRetry }) {
 export default function SupplierDashboard() {
   const { profile, profileLoading, profileError, retryProfile } = useSupplier();
   const data = useSupplierProducts(profile?.id);
+  const contacts = useContactSummary(profile?.id);
 
   const overview = useMemo(() => computeOverview(data.products, data.orders), [data.products, data.orders]);
   const activity = useMemo(() => buildActivity(data.products, data.orders), [data.products, data.orders]);
@@ -104,6 +106,7 @@ export default function SupplierDashboard() {
       ) : (
         <>
           <OverviewCards overview={overview} />
+          <ContactSummaryPanel summary={contacts} products={data.products} />
           {IN_APP_ORDERING && <OrderSummary overview={overview} />}
           <QuickActions pendingCount={overview.pendingRequests} />
           <div className="sd-grid">

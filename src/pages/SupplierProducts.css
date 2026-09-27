@@ -110,3 +110,4 @@
   color: #7f1d1d;
 }
 .sf-tone-blue { color: var(--ss-blue); background: var(--ss-blue-50); }
+.spl-contacts { color: var(--ss-blue); font-weight: 700; }
