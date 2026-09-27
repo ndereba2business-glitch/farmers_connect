@@ -54,10 +54,14 @@ This app is for farmers likely using mid-range/low-end Android phones on mobile 
 - `src/components/common/` — shared UI primitives (currently stubbed out — confirm before assuming they're implemented)
 
 ## Commands
-- Dev server: [confirm exact script from package.json]
-- Supabase local: `supabase start` / `supabase db push`
-- Type generation: `supabase gen types typescript --local > [confirm path]`
+- Dev server: `npm run dev`
 - Build (run before every Vercel push): `npm run build`
+- Tests (no database needed): `npm test` = `npm run test:unit` (validation and listing logic) + `npm run test:e2e` (the real app in Chromium against an in-memory mock of Supabase, including 320/360/768/1280px layout and accessibility checks)
+- Security rules against the linked database (rolls back, leaves no data): `npm run test:security`
+- Real-login journeys against the live project: `npm run test:live` (skips until `.env.test.local` is filled in; see `.env.test.local.example`)
+- Secret leak check of the production build: `npm run check:secrets`
+- Apply migrations to the linked project: `supabase db push` (after a rolled-back dry run of the SQL)
+- No TypeScript types file exists yet (JS project), so there is nothing to regenerate after schema changes
 
 ## Git commit conventions
 Follow conventional commits, since this repo is also a portfolio piece:

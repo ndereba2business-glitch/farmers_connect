@@ -366,6 +366,7 @@ function handleContactSeller(product) {
                 top: "50%", transform: "translateY(-50%)", color: "#9ca3af"
               }} />
               <input
+                aria-label="Search products"
                 placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -483,7 +484,7 @@ function handleContactSeller(product) {
               <button
                 onClick={startListing}
                 style={{
-                  padding: "12px 24px", background: "#22c55e",
+                  minHeight: "44px", padding: "12px 24px", background: "#22c55e",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px", cursor: "pointer"
                 }}

@@ -1,0 +1,196 @@
+// A small in-memory stand-in for the Supabase REST, auth and storage APIs,
+// enough to drive the supplier dashboard and marketplace end to end in a
+// browser without touching a real database. It applies the same ownership
+// rules as the real row-level security policies (owners edit their own
+// products; inactive products are hidden from everyone else), so the UI's
+// handling of "not allowed" can be tested too. The real policies are
+// tested separately against the live database: npm run test:security.
+
+export const MOCK_SUPABASE_URL = "https://e2e.supabase.test";
+export const MOCK_ANON_KEY = "e2e-anon-key";
+
+const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+const fakeJwt = (sub) => `${b64url({ alg: "HS256", typ: "JWT" })}.${b64url({ sub, role: "authenticated", exp: 9999999999 })}.sig`;
+
+let seq = 0;
+const newId = (prefix) => `${prefix}-${++seq}`;
+
+export function createMockBackend() {
+  const db = {
+    users: new Map(),          // email -> { id, email, password, role }
+    supplier_profiles: [],
+    products: [],
+    contact_events: [],
+    writes: []
+  };
+
+  function addUser({ email, password = "secret123", role = "farmer" }) {
+    const user = { id: newId("user"), email, password, role };
+    db.users.set(email, user);
+    return user;
+  }
+
+  function authUser(user) {
+    return {
+      id: user.id, aud: "authenticated", role: "authenticated", email: user.email, phone: "",
+      app_metadata: {}, user_metadata: { role: user.role }, created_at: "2026-09-01T00:00:00Z"
+    };
+  }
+
+  function session(user) {
+    return {
+      access_token: fakeJwt(user.id), token_type: "bearer", expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600, refresh_token: "refresh-" + user.id, user: authUser(user)
+    };
+  }
+
+  const ownProfileIds = (user) => db.supplier_profiles.filter(p => p.user_id === user?.id).map(p => p.id);
+  const ownsProduct = (user, p) => !!user && (p.user_email === user.email || ownProfileIds(user).includes(p.supplier_id));
+
+  // PostgREST-style filters: ?col=eq.value, ?col=in.(a,b)
+  function matches(row, params) {
+    for (const [key, raw] of params) {
+      if (["select", "order", "limit", "columns", "on_conflict", "offset"].includes(key)) continue;
+      const [op, ...rest] = raw.split(".");
+      const value = rest.join(".");
+      if (op === "eq" && String(row[key]) !== value) return false;
+      if (op === "in" && !value.replace(/^\(|\)$/g, "").split(",").includes(String(row[key]))) return false;
+    }
+    return true;
+  }
+
+  function withSupplier(product) {
+    const sp = db.supplier_profiles.find(s => s.id === product.supplier_id);
+    return { ...product, supplier: sp && sp.verification_status === "verified" ? { business_name: sp.business_name, verification_status: sp.verification_status } : null };
+  }
+
+  // Installs the mock for one browser context, signed in (or not) as `user`.
+  async function attach(context, { signedInAs = null } = {}) {
+    let current = signedInAs ? db.users.get(signedInAs) : null;
+
+    if (current) {
+      await context.addInitScript(([key, value]) => localStorage.setItem(key, value),
+        ["sb-e2e-auth-token", JSON.stringify(session(current))]);
+    }
+
+    await context.route(`${MOCK_SUPABASE_URL}/auth/v1/**`, async route => {
+      const req = route.request();
+      const url = new URL(req.url());
+      const json = (status, body) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+      if (url.pathname.endsWith("/token") && url.searchParams.get("grant_type") === "password") {
+        const { email, password } = JSON.parse(req.postData() || "{}");
+        const user = db.users.get(email);
+        if (!user || user.password !== password) return json(400, { error: "invalid_grant", error_description: "Invalid login credentials" });
+        current = user;
+        return json(200, session(user));
+      }
+      if (url.pathname.endsWith("/logout")) { current = null; return route.fulfill({ status: 204, body: "" }); }
+      if (url.pathname.endsWith("/user")) return current ? json(200, authUser(current)) : json(401, { message: "not signed in" });
+      return json(200, {});
+    });
+
+    await context.route(`${MOCK_SUPABASE_URL}/storage/v1/**`, route =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ Key: "ok" }) }));
+
+    await context.route(`${MOCK_SUPABASE_URL}/rest/v1/**`, async route => {
+      const req = route.request();
+      const url = new URL(req.url());
+      const method = req.method();
+      const table = url.pathname.split("/rest/v1/")[1];
+      const wantsObject = (req.headers()["accept"] || "").includes("vnd.pgrst.object");
+      const reply = (status, rows) => {
+        if (wantsObject) {
+          if (!rows.length) return route.fulfill({ status: 406, contentType: "application/json", body: JSON.stringify({ code: "PGRST116", message: "no rows" }) });
+          return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(rows[0]) });
+        }
+        return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(rows) });
+      };
+      const body = () => { const b = JSON.parse(req.postData() || "{}"); return Array.isArray(b) ? b : [b]; };
+      const params = [...url.searchParams.entries()];
+
+      if (table.startsWith("rpc/")) {
+        if (table === "rpc/supplier_contact_summary") {
+          const mine = ownProfileIds(current);
+          const byProduct = new Map();
+          for (const e of db.contact_events.filter(e => mine.includes(e.supplier_id))) {
+            const k = e.product_id || "";
+            const s = byProduct.get(k) || { product_id: e.product_id, users: new Set(), wa: new Set(), call: new Set() };
+            s.users.add(e.by); (e.channel === "whatsapp" ? s.wa : s.call).add(e.by);
+            byProduct.set(k, s);
+          }
+          return reply(200, [...byProduct.values()].map(s => ({ product_id: s.product_id, farmers: s.users.size, whatsapp: s.wa.size, calls: s.call.size })));
+        }
+        return reply(200, []);
+      }
+
+      if (method !== "GET" && method !== "HEAD") db.writes.push({ method, table, search: url.search, user: current?.email });
+
+      if (table === "farmer_profiles") {
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + current.role, has_seen_onboarding: true }] : []);
+      }
+
+      if (table === "supplier_profiles") {
+        if (method === "GET") {
+          const visible = db.supplier_profiles.filter(p => p.user_id === current?.id || p.verification_status === "verified");
+          return reply(200, visible.filter(p => matches(p, params)));
+        }
+        if (method === "POST") {
+          const [row] = body();
+          if (!current || row.user_id !== current.id) return reply(403, []);
+          let existing = db.supplier_profiles.find(p => p.user_id === current.id);
+          if (existing) Object.assign(existing, row, { verification_status: existing.verification_status });
+          else { existing = { id: newId("sp"), verification_status: "pending", ...row }; existing.verification_status = "pending"; db.supplier_profiles.push(existing); }
+          return reply(201, [existing]);
+        }
+      }
+
+      if (table === "products") {
+        if (method === "GET") {
+          const visible = db.products.filter(p => p.is_active || ownsProduct(current, p));
+          const rows = visible.filter(p => matches(p, params));
+          const embed = (url.searchParams.get("select") || "").includes("supplier:");
+          return reply(200, embed ? rows.map(withSupplier) : rows);
+        }
+        if (method === "POST") {
+          const inserted = [];
+          for (const row of body()) {
+            if (!current || row.user_email !== current.email) return reply(403, []);
+            if (row.supplier_id && !ownProfileIds(current).includes(row.supplier_id)) return reply(403, []);
+            const now = new Date().toISOString();
+            const product = { id: newId("prod"), availability: "in_stock", is_active: true, sold_out: false, created_at: now.replace("Z", ""), updated_at: now, ...row };
+            product.sold_out = product.availability === "out_of_stock";
+            db.products.push(product);
+            inserted.push(product);
+          }
+          return reply(201, inserted);
+        }
+        const targets = db.products.filter(p => matches(p, params) && ownsProduct(current, p));
+        if (method === "PATCH") {
+          const [changes] = body();
+          for (const p of targets) {
+            Object.assign(p, changes, { updated_at: new Date().toISOString() });
+            p.sold_out = p.availability === "out_of_stock";
+          }
+          return reply(200, targets);
+        }
+        if (method === "DELETE") {
+          db.products = db.products.filter(p => !targets.includes(p));
+          return reply(200, targets);
+        }
+      }
+
+      if (table === "contact_events" && method === "POST") {
+        const [row] = body();
+        const product = row.product_id ? db.products.find(p => p.id === row.product_id && p.is_active) : null;
+        if (row.product_id && !product) return reply(400, []);
+        db.contact_events.push({ ...row, supplier_id: product ? product.supplier_id : row.supplier_id, by: current?.id });
+        return reply(201, []);
+      }
+
+      if (method === "GET" || method === "HEAD") return reply(200, []);
+      return reply(201, []);
+    });
+  }
+
+  return { db, addUser, attach };
+}
