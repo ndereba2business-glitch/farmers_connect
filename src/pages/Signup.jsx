@@ -209,7 +209,7 @@ export default function Signup() {
 
       }, 1500);
 
-    } catch (err) {
+    } catch {
 
       setError(
         "Something went wrong. Please try again."

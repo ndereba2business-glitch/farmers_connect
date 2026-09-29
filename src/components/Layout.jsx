@@ -51,7 +51,7 @@ const ADMIN_NAV = [
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, role, userEmail, profile, logout } = useAuth();
+  const { role, userEmail, profile, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   async function handleLogout() {

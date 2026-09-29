@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
   Stethoscope, Search, AlertTriangle, X, Send, Upload, MapPin,
-  Calendar, Clock, CalendarPlus, CheckCircle2, XCircle, FileText
+  Calendar, Clock, CalendarPlus, FileText
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 import FarmerMessagesPanel from "../components/FarmerMessagesPanel";

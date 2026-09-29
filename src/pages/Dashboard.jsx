@@ -63,10 +63,6 @@ export default function Dashboard() {
   const [recentTasks, setRecentTasks] = useState([]);
   const [overdueVaccines, setOverdueVaccines] = useState([]);
   const [mortalityData, setMortalityData] = useState([]);
-  const [financeData, setFinanceData] = useState({
-    totalIncome: 0, totalExpenses: 0, profit: 0
-  });
-
   const [dailyFinanceData, setDailyFinanceData] = useState([]);
   const [periodTotals, setPeriodTotals] = useState({ revenue: 0, expenses: 0, profit: 0 });
 
@@ -94,8 +90,7 @@ export default function Dashboard() {
       { data: batchData },
       { data: mortalityLogs },
       { data: expenseData, error: expenseError },
-      { data: salesData, error: salesError },
-      { data: financeRecords }
+      { data: salesData, error: salesError }
     ] = await Promise.all([
       supabase.from("farm_batches").select("*", { count: "exact", head: true })
         .eq("user_email", userEmail).eq("status", "active"),
@@ -118,9 +113,7 @@ export default function Dashboard() {
       supabase.from("batch_expenses").select("*")
         .eq("user_id", userId),
       supabase.from("batch_sales").select("*")
-        .eq("user_id", userId),
-      supabase.from("farm_finances").select("*")
-        .eq("user_email", userEmail)
+        .eq("user_id", userId)
     ]);
 
     if (expenseError) console.error("Dashboard: failed to load expenses —", expenseError.message);
@@ -139,14 +132,6 @@ export default function Dashboard() {
       return { batch_name: batch.batch_name, totalDeaths, aliveCount, survivalRate, totalCount };
     });
     setMortalityData(mortality);
-
-    const income = (financeRecords || [])
-      .filter(r => r.type === "income")
-      .reduce((s, r) => s + Number(r.amount), 0);
-    const expenses = (financeRecords || [])
-      .filter(r => r.type === "expense")
-      .reduce((s, r) => s + Number(r.amount), 0);
-    setFinanceData({ totalIncome: income, totalExpenses: expenses, profit: income - expenses });
 
     const dayList = [];
     for (let i = 13; i >= 0; i--) {
