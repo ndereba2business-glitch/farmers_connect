@@ -202,6 +202,7 @@ export default function Login() {
 
           <button
             type="button"
+            className="fc-tap"
 
             onClick={() => {
               setMethod("email");
@@ -230,6 +231,7 @@ export default function Login() {
 
           <button
             type="button"
+            className="fc-tap"
 
             onClick={() => {
               setMethod("phone");

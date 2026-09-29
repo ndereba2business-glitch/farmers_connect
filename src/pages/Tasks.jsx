@@ -266,6 +266,7 @@ export default function Tasks() {
         ].map(tab => (
           <button
             key={tab.key}
+            className="fc-tap"
             onClick={() => setActiveTab(tab.key)}
             style={{
               flex: 1, padding: "9px",

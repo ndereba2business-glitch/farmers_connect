@@ -85,6 +85,16 @@ img, svg, video {
   }
 }
 
+/* Opt-in 44px minimum touch height for compact controls (tabs, chips,
+   toggles). Applies on phones/tablets and on any touch screen; mouse-
+   driven desktops keep the compact look. Buttons centre their content
+   vertically on their own, so only the height changes. */
+@media (max-width: 1024px), (pointer: coarse) {
+  .fc-tap {
+    min-height: 44px;
+  }
+}
+
 /* ---------- Large desktop containment (1441px+) ---------- */
 /* Keeps content readable on ultrawide monitors instead of stretching
    edge-to-edge. Applied via .fc-page-container, opt-in per page so it

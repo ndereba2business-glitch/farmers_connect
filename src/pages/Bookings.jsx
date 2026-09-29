@@ -503,6 +503,7 @@ export default function Bookings() {
               {QUESTION_CATEGORIES.map(cat => (
                 <button
                   key={cat.label}
+                  className="fc-tap"
                   onClick={() => setSelectedCategory(cat.label)}
                   style={{
                     padding: "6px 14px", borderRadius: "20px",

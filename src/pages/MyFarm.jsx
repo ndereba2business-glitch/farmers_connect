@@ -235,6 +235,7 @@ export default function MyFarm() {
             ].map(tab => (
               <button
                 key={tab.key}
+                className="fc-tap"
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   padding: "8px 20px", borderRadius: "20px",
