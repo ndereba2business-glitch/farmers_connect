@@ -364,7 +364,9 @@ export default function VetProfileSetup() {
               );
             })}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          {/* Side by side when there's room; stacked on small phones, where
+              two time pickers can't shrink enough to fit in one row. */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 150px), 1fr))", gap: "12px" }}>
             <div>
               <label style={labelStyle}>Available From</label>
               <input

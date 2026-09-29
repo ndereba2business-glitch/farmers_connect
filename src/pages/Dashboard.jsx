@@ -631,14 +631,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── CONTENT GRID ── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: "18px"
-      }}
-      className="fc-dashboard-grid"
-      >
+      {/* ── CONTENT GRID ──
+          Columns live in Dashboard.css: an inline gridTemplateColumns
+          here would override its single-column rule for phones. */}
+      <div className="fc-dashboard-grid">
 
         {/* PENDING TASKS */}
         <div style={{
@@ -731,13 +727,14 @@ export default function Dashboard() {
             <h2 style={{ marginTop: 0, marginBottom: "18px", fontSize: "var(--fs-h3, 18px)", fontWeight: "700", color: "#111827" }}>
               Quick Actions
             </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
               {quickActions.map(({ icon, label, path, bg }) => (
                 <button
                   key={label}
                   onClick={() => navigate(path)}
                   style={{
-                    height: "80px", borderRadius: "18px",
+                    minHeight: "80px", minWidth: 0, padding: "10px 8px",
+                    borderRadius: "18px", textAlign: "center",
                     border: "1px solid rgba(226,232,240,0.8)",
                     background: bg || "#fff",
                     display: "flex", flexDirection: "column",
@@ -754,7 +751,7 @@ export default function Dashboard() {
                   }}
                 >
                   {icon}
-                  <span style={{ fontSize: "var(--fs-tiny, 12px)", fontWeight: "600", color: "#374151" }}>
+                  <span style={{ fontSize: "var(--fs-tiny, 12px)", fontWeight: "600", color: "#374151", overflowWrap: "anywhere" }}>
                     {label}
                   </span>
                 </button>
