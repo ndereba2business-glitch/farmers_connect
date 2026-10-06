@@ -2,8 +2,12 @@
 // Supabase project in .env, with two real test accounts:
 //
 //   1. Sign up in the app: one account as a supplier, one as a farmer.
-//   2. Copy .env.test.local.example to .env.test.local and fill in their
-//      logins. The file is gitignored (*.local); never commit it.
+//   2. Create .env.test.local in the project root with their logins. It
+//      is gitignored (*.local); never commit it.
+//        TEST_SUPPLIER_EMAIL=
+//        TEST_SUPPLIER_PASSWORD=
+//        TEST_FARMER_EMAIL=
+//        TEST_FARMER_PASSWORD=
 //   3. npm run test:live
 //
 // Skips (does not fail) until .env.test.local is filled in.
