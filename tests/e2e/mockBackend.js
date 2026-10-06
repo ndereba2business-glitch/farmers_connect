@@ -22,7 +22,12 @@ export function createMockBackend() {
     products: [],
     contact_events: [],
     writes: [],
-    googleEnabled: false       // what /auth/v1/settings reports
+    googleEnabled: false,      // what /auth/v1/settings reports
+    // Any other table a test wants to fill, as { table_name: [rows] }.
+    // Reads return the rows matching the request's filters; rows with a
+    // user_email are only visible to that user, like the owner-only
+    // policies on the real tables.
+    tables: {}
   };
 
   // newUser: true means the account has not seen the onboarding tour yet.
@@ -200,6 +205,11 @@ export function createMockBackend() {
         if (row.product_id && !product) return reply(400, []);
         db.contact_events.push({ ...row, supplier_id: product ? product.supplier_id : row.supplier_id, by: current?.id });
         return reply(201, []);
+      }
+
+      if (db.tables[table] && method === "GET") {
+        const rows = db.tables[table].filter(r => !("user_email" in r) || r.user_email === current?.email);
+        return reply(200, rows.filter(r => matches(r, params)));
       }
 
       if (method === "GET" || method === "HEAD") return reply(200, []);
