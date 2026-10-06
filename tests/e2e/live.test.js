@@ -36,7 +36,7 @@ const env = readEnvFile(".env");
 const SUPPLIER = { email: creds.TEST_SUPPLIER_EMAIL, password: creds.TEST_SUPPLIER_PASSWORD };
 const FARMER = { email: creds.TEST_FARMER_EMAIL, password: creds.TEST_FARMER_PASSWORD };
 const missing = [SUPPLIER.email, SUPPLIER.password, FARMER.email, FARMER.password].some(v => !v) || !env.VITE_SUPABASE_URL;
-const skip = missing ? "fill in .env.test.local (see .env.test.local.example) to run the live tests" : false;
+const skip = missing ? "create .env.test.local with TEST_SUPPLIER_EMAIL, TEST_SUPPLIER_PASSWORD, TEST_FARMER_EMAIL and TEST_FARMER_PASSWORD to run the live tests" : false;
 
 const PRODUCT = `E2E live ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
 
