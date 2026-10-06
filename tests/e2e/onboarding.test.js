@@ -27,6 +27,13 @@ async function open(user, path = "/", viewport = { width: 360, height: 760 }) {
 
 const tour = (page) => page.locator('[role="dialog"].ot-card');
 
+// The tour opens and closes at once and saves in the background, so give
+// the save a moment to reach the backend before checking it.
+async function assertSaved(user, expected, message) {
+  for (let i = 0; i < 50 && user.hasSeenOnboarding !== expected; i++) await new Promise(r => setTimeout(r, 100));
+  assert.equal(user.hasSeenOnboarding, expected, message);
+}
+
 // Walks every step, returning the step titles in order.
 async function walk(page) {
   await page.click('button:has-text("Start tour")');
@@ -60,7 +67,7 @@ for (const { role, first, mustNotMention, cta, lands } of ROLES) {
     await page.click(`button:has-text("${cta}")`);
     await tour(page).waitFor({ state: "detached" });
     await page.waitForURL(u => u.pathname === lands);
-    assert.equal(user.hasSeenOnboarding, true, "finishing is saved to the account");
+    await assertSaved(user, true, "finishing is saved to the account");
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1200);
@@ -77,16 +84,16 @@ test("skipping and Escape both close the tour, and Replay Tour brings it back", 
   await tour(page).waitFor();
   await page.click('button:has-text("Skip tour")');
   await tour(page).waitFor({ state: "detached" });
-  assert.equal(user.hasSeenOnboarding, true);
+  await assertSaved(user, true, "skipping is saved");
 
   await page.click('button:has-text("Replay Tour")');
   await tour(page).waitFor();
   assert.match(await page.locator("#ot-title").innerText(), /Welcome/, "a replay starts from the beginning");
-  assert.equal(user.hasSeenOnboarding, false);
+  await assertSaved(user, false, "replaying is saved");
 
   await page.keyboard.press("Escape");
   await tour(page).waitFor({ state: "detached" });
-  assert.equal(user.hasSeenOnboarding, true);
+  await assertSaved(user, true, "closing with Escape is saved");
   await context.close();
 });
 
