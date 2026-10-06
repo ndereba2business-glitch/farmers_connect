@@ -2,8 +2,12 @@
 // Supabase project in .env, with two real test accounts:
 //
 //   1. Sign up in the app: one account as a supplier, one as a farmer.
-//   2. Copy .env.test.local.example to .env.test.local and fill in their
-//      logins. The file is gitignored (*.local); never commit it.
+//   2. Create .env.test.local in the project root with their logins. It
+//      is gitignored (*.local); never commit it.
+//        TEST_SUPPLIER_EMAIL=
+//        TEST_SUPPLIER_PASSWORD=
+//        TEST_FARMER_EMAIL=
+//        TEST_FARMER_PASSWORD=
 //   3. npm run test:live
 //
 // Skips (does not fail) until .env.test.local is filled in.
@@ -36,7 +40,7 @@ const env = readEnvFile(".env");
 const SUPPLIER = { email: creds.TEST_SUPPLIER_EMAIL, password: creds.TEST_SUPPLIER_PASSWORD };
 const FARMER = { email: creds.TEST_FARMER_EMAIL, password: creds.TEST_FARMER_PASSWORD };
 const missing = [SUPPLIER.email, SUPPLIER.password, FARMER.email, FARMER.password].some(v => !v) || !env.VITE_SUPABASE_URL;
-const skip = missing ? "fill in .env.test.local (see .env.test.local.example) to run the live tests" : false;
+const skip = missing ? "create .env.test.local with TEST_SUPPLIER_EMAIL, TEST_SUPPLIER_PASSWORD, TEST_FARMER_EMAIL and TEST_FARMER_PASSWORD to run the live tests" : false;
 
 const PRODUCT = `E2E live ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
 

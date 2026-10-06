@@ -25,3 +25,6 @@ dist-ssr
 
 # open .gitignore and add this line if not already there
 .env
+
+# Supabase CLI cache (machine-specific; stays on disk, not in git)
+supabase/.temp/
