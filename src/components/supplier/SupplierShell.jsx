@@ -8,6 +8,7 @@ import { IN_APP_ORDERING } from "../../config/features";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import NotificationsBell from "../NotificationsBell";
+import OnboardingTour from "../OnboardingTour";
 import { SupplierContext } from "./supplierContext";
 import { VERIFICATION_META, initialsOf } from "./supplierFormat";
 import "./SupplierShell.css";
@@ -183,6 +184,7 @@ export default function SupplierShell() {
   return (
     <SupplierContext.Provider value={contextValue}>
       <div className="ss-root">
+        <OnboardingTour />
         {drawerOpen && <div className="ss-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />}
 
         <aside className={`ss-sidebar${drawerOpen ? " ss-sidebar--open" : ""}`} aria-label="Supplier navigation">

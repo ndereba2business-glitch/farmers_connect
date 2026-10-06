@@ -24,8 +24,9 @@ export function createMockBackend() {
     writes: []
   };
 
-  function addUser({ email, password = "secret123", role = "farmer" }) {
-    const user = { id: newId("user"), email, password, role };
+  // newUser: true means the account has not seen the onboarding tour yet.
+  function addUser({ email, password = "secret123", role = "farmer", newUser = false }) {
+    const user = { id: newId("user"), email, password, role, hasSeenOnboarding: !newUser };
     db.users.set(email, user);
     return user;
   }
@@ -126,7 +127,11 @@ export function createMockBackend() {
       if (method !== "GET" && method !== "HEAD") db.writes.push({ method, table, search: url.search, user: current?.email });
 
       if (table === "farmer_profiles") {
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + current.role, has_seen_onboarding: true }] : []);
+        if (method === "PATCH" && current) {
+          const [changes] = body();
+          if ("has_seen_onboarding" in changes) current.hasSeenOnboarding = changes.has_seen_onboarding;
+        }
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + current.role, has_seen_onboarding: current.hasSeenOnboarding }] : []);
       }
 
       if (table === "supplier_profiles") {

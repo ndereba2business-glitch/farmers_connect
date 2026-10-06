@@ -155,48 +155,44 @@ export function AuthProvider({ children }) {
   // COMPLETE ONBOARDING TOUR
   // Called when the user finishes or skips the OnboardingTour.
   // Persists to the DB (not localStorage) so it follows the user
-  // across devices, and updates local state so the tour doesn't
-  // flash again before the next profile refetch.
+  // across devices. Local state changes first so the tour closes at
+  // once even on a bad connection; if the save fails the user simply
+  // sees the tour again next time they sign in.
   // -----------------------------
   async function completeOnboarding() {
     const identity = identityOf(user);
     if (!identity) return;
+
+    setProfile(prev => prev ? { ...prev, has_seen_onboarding: true } : prev);
 
     const { error } = await supabase
       .from("farmer_profiles")
       .update({ has_seen_onboarding: true })
       .eq("user_email", identity);
 
-    if (error) {
-      console.error("completeOnboarding: update failed —", error.message);
-      return;
-    }
-
-    setProfile(prev => prev ? { ...prev, has_seen_onboarding: true } : prev);
+    if (error) console.error("completeOnboarding: update failed —", error.message);
   }
 
   // -----------------------------
   // REPLAY ONBOARDING TOUR
-  // Flips has_seen_onboarding back to false in the DB and in local
-  // state. Layout.jsx watches `profile.has_seen_onboarding` and will
-  // reopen the OnboardingTour overlay automatically — no navigation
-  // needed, works from wherever the user triggers it (e.g. Profile).
+  // Flips has_seen_onboarding back to false. OnboardingTour (mounted by
+  // Layout.jsx and SupplierShell.jsx) watches that flag and opens by
+  // itself, so this works from wherever it's triggered (e.g. Profile).
+  // Local state changes first so the tour opens even if the save is
+  // slow or fails; finishing the tour writes the flag again anyway.
   // -----------------------------
   async function replayOnboarding() {
     const identity = identityOf(user);
     if (!identity) return;
+
+    setProfile(prev => prev ? { ...prev, has_seen_onboarding: false } : prev);
 
     const { error } = await supabase
       .from("farmer_profiles")
       .update({ has_seen_onboarding: false })
       .eq("user_email", identity);
 
-    if (error) {
-      console.error("replayOnboarding: update failed —", error.message);
-      return;
-    }
-
-    setProfile(prev => prev ? { ...prev, has_seen_onboarding: false } : prev);
+    if (error) console.error("replayOnboarding: update failed —", error.message);
   }
 
   return (

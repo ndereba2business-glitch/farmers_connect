@@ -10,6 +10,14 @@ export async function login(page, baseUrl, { email, password }) {
   await page.fill('input[type="password"]', password);
   await page.click('button:has-text("Login")');
   await page.waitForURL(u => !u.pathname.startsWith("/login"), { timeout: TIMEOUT });
+  await skipTourIfShown(page);
+}
+
+// A brand-new account is greeted by the onboarding tour, which covers the
+// page. Skipping it is remembered on the account, so this only does
+// something the first time a test account signs in.
+export async function skipTourIfShown(page) {
+  await page.locator(".ot-skip").click({ timeout: 2500 }).catch(() => {});
 }
 
 // Creates the supplier profile if the account doesn't have one yet.
