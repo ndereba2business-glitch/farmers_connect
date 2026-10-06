@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import GoogleButton from "../components/GoogleButton";
 
 export default function Signup() {
 
@@ -573,6 +574,8 @@ export default function Signup() {
           </button>
 
         </form>
+
+        <GoogleButton role={role} label="Sign up with Google" />
 
         {/* LOGIN LINK */}
         <p

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
+import GoogleButton from "../components/GoogleButton";
 
 export default function Login() {
 
@@ -377,6 +378,8 @@ export default function Login() {
             ? "Logging in..."
             : "Login"}
         </button>
+
+        <GoogleButton />
 
         {/* SIGNUP */}
         <p

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { clearPendingRole, readPendingRole } from "../lib/googleSignIn";
 
 const AuthContext = createContext();
 
@@ -27,6 +28,34 @@ export function extractRole(user) {
   return claimed === "admin" ? "farmer" : (claimed || "farmer");
 }
 
+// Google sign-up can't carry the role picked on the sign-up page through
+// the trip to Google and back, so the page parks it (googleSignIn.js)
+// and it's applied here once, to an account that has no role yet. Only
+// farmer/vet/supplier can be parked, the same self-selected roles the
+// email sign-up form writes; it can never produce an admin.
+let savingPendingRole = false;
+
+function roleFor(user) {
+  const role = extractRole(user);
+  if (!user || user.user_metadata?.role || role === "admin") return role;
+
+  const pending = readPendingRole();
+  if (!pending) return role;
+
+  if (!savingPendingRole) {
+    savingPendingRole = true;
+    // Deferred: Supabase forbids calling auth methods from inside its own
+    // onAuthStateChange callback.
+    setTimeout(async () => {
+      const { error } = await supabase.auth.updateUser({ data: { role: pending } });
+      if (error) console.error("roleFor: saving the chosen role failed —", error.message);
+      else clearPendingRole();
+      savingPendingRole = false;
+    }, 0);
+  }
+  return pending;
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -36,7 +65,8 @@ export function AuthProvider({ children }) {
   // -----------------------------
   // FETCH FARMER PROFILE
   // -----------------------------
-  async function fetchProfile(identity) {
+  async function fetchProfile(currentUser) {
+    const identity = identityOf(currentUser);
     if (!identity) return;
     try {
       const { data, error } = await supabase
@@ -57,14 +87,16 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      // No profile row yet for this identity — create one.
+      // No profile row yet for this identity — create one. Google
+      // accounts arrive with a name and photo, so start from those.
+      const meta = currentUser.user_metadata || {};
       const { data: newProfile, error: insertError } = await supabase
         .from("farmer_profiles")
         .insert([{
           user_email: identity,
-          full_name: "Farmer",
+          full_name: meta.full_name || meta.name || "Farmer",
           county: "",
-          avatar_url: ""
+          avatar_url: meta.avatar_url || meta.picture || ""
         }])
         .select()
         .single();
@@ -106,10 +138,10 @@ export function AuthProvider({ children }) {
       const { data } = await withTimeout(supabase.auth.getSession());
       const currentUser = data?.session?.user || null;
       setUser(currentUser);
-      setRole(extractRole(currentUser));
+      setRole(roleFor(currentUser));
 
       // Not awaited — runs in background, never blocks loading
-      fetchProfile(identityOf(currentUser));
+      fetchProfile(currentUser);
 
     } catch (err) {
       console.error("getSession: failed or timed out —", err.message);
@@ -131,8 +163,8 @@ export function AuthProvider({ children }) {
       async (_event, session) => {
         const currentUser = session?.user || null;
         setUser(currentUser);
-        setRole(extractRole(currentUser));
-        fetchProfile(identityOf(currentUser));
+        setRole(roleFor(currentUser));
+        fetchProfile(currentUser);
       }
     );
 
