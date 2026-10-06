@@ -1,0 +1,341 @@
+/* Feed calculator. Mobile first; two-column form from 560px. */
+
+.fd-page { max-width: 800px; }
+
+.fd-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.fd-head h1 {
+  margin: 0;
+  font-size: var(--fs-display, 28px);
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+.fd-lead {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.fd-tabs {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.fd-tab {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.fd-tab--active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.fd-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+.fd-card h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+}
+.fd-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.fd-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.fd-field label,
+.fd-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+.fd-field input,
+.fd-field select {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: #111827;
+  font-size: 16px; /* 16px stops phones zooming in on focus */
+  box-sizing: border-box;
+}
+.fd-field input:focus,
+.fd-field select:focus {
+  outline: 2px solid #22c55e;
+  outline-offset: 1px;
+}
+.fd-hint {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.fd-prices {
+  margin-bottom: 16px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 0 14px;
+}
+.fd-prices summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+.fd-prices[open] { padding-bottom: 14px; }
+
+.fd-error {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.fd-primary {
+  width: 100%;
+  min-height: 50px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.25);
+}
+
+/* ---------- results ---------- */
+
+.fd-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.fd-stat {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 14px 8px;
+  text-align: center;
+  min-width: 0;
+}
+.fd-stat-value {
+  font-size: clamp(18px, 5.5vw, 24px);
+  font-weight: 800;
+  color: #16a34a;
+  overflow-wrap: anywhere;
+}
+.fd-stat-value--amber { color: #b45309; }
+.fd-stat-value--plain { color: #111827; }
+.fd-stat-label {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.fd-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.fd-note--amber {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.fd-phase {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #f3f4f6;
+}
+.fd-phase:first-of-type { border-top: none; }
+.fd-phase-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+.fd-phase-feed {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+.fd-phase-buy {
+  text-align: right;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #374151;
+}
+.fd-phase-buy strong {
+  display: block;
+  font-size: 15px;
+  color: #b45309;
+}
+
+.fd-weeks {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.fd-weeks th {
+  padding: 8px 4px;
+  text-align: right;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+.fd-weeks td {
+  padding: 9px 4px;
+  text-align: right;
+  color: #111827;
+  border-bottom: 1px solid #f3f4f6;
+}
+.fd-weeks th:first-child,
+.fd-weeks td:first-child { text-align: left; }
+.fd-weeks small {
+  display: block;
+  color: #6b7280;
+  font-size: 11.5px;
+}
+
+.fd-more {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fd-tips {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.fd-tips li + li { margin-top: 6px; }
+
+/* ---------- saved list ---------- */
+
+.fd-saved {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+.fd-saved-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+.fd-saved-meta {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+.fd-saved-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.fd-load,
+.fd-delete {
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+.fd-load {
+  padding: 0 14px;
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+.fd-delete {
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fd-empty {
+  text-align: center;
+  padding: 48px 20px;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+@media (min-width: 560px) {
+  .fd-card { padding: 24px; }
+  .fd-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .fd-stats--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fd-stats--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fd-tabs { width: fit-content; }
+  .fd-tab { flex: none; padding: 8px 20px; }
+}

@@ -23,10 +23,10 @@ export function createMockBackend() {
     contact_events: [],
     writes: [],
     googleEnabled: false,      // what /auth/v1/settings reports
-    // Any other table a test wants to fill, as { table_name: [rows] }.
-    // Reads return the rows matching the request's filters; rows with a
-    // user_email are only visible to that user, like the owner-only
-    // policies on the real tables.
+    // Any other table a test wants to use, as { table_name: [rows] }
+    // (an empty list is enough to switch it on). Rows with a user_email
+    // can only be read, added or deleted by that user, like the
+    // owner-only policies on the real tables.
     tables: {}
   };
 
@@ -207,9 +207,21 @@ export function createMockBackend() {
         return reply(201, []);
       }
 
-      if (db.tables[table] && method === "GET") {
-        const rows = db.tables[table].filter(r => !("user_email" in r) || r.user_email === current?.email);
-        return reply(200, rows.filter(r => matches(r, params)));
+      if (db.tables[table]) {
+        const mine = (r) => !("user_email" in r) || r.user_email === current?.email;
+        if (method === "GET") return reply(200, db.tables[table].filter(mine).filter(r => matches(r, params)));
+        if (method === "POST") {
+          const rows = body();
+          if (rows.some(r => !mine(r))) return reply(403, []);
+          const added = rows.map(r => ({ id: newId(table), created_at: new Date().toISOString(), ...r }));
+          db.tables[table].push(...added);
+          return reply(201, added);
+        }
+        if (method === "DELETE") {
+          const gone = db.tables[table].filter(mine).filter(r => matches(r, params));
+          db.tables[table] = db.tables[table].filter(r => !gone.includes(r));
+          return reply(200, gone);
+        }
       }
 
       if (method === "GET" || method === "HEAD") return reply(200, []);
