@@ -21,10 +21,12 @@ export function createMockBackend() {
     supplier_profiles: [],
     products: [],
     contact_events: [],
-    writes: []
+    writes: [],
+    googleEnabled: false       // what /auth/v1/settings reports
   };
 
   // newUser: true means the account has not seen the onboarding tour yet.
+  // role: null is an account with no chosen role, like one Google just created.
   function addUser({ email, password = "secret123", role = "farmer", newUser = false }) {
     const user = { id: newId("user"), email, password, role, hasSeenOnboarding: !newUser };
     db.users.set(email, user);
@@ -34,7 +36,7 @@ export function createMockBackend() {
   function authUser(user) {
     return {
       id: user.id, aud: "authenticated", role: "authenticated", email: user.email, phone: "",
-      app_metadata: {}, user_metadata: { role: user.role }, created_at: "2026-09-01T00:00:00Z"
+      app_metadata: {}, user_metadata: user.role ? { role: user.role } : {}, created_at: "2026-09-01T00:00:00Z"
     };
   }
 
@@ -86,7 +88,15 @@ export function createMockBackend() {
         return json(200, session(user));
       }
       if (url.pathname.endsWith("/logout")) { current = null; return route.fulfill({ status: 204, body: "" }); }
-      if (url.pathname.endsWith("/user")) return current ? json(200, authUser(current)) : json(401, { message: "not signed in" });
+      if (url.pathname.endsWith("/settings")) return json(200, { external: { google: db.googleEnabled, email: true, phone: true } });
+      if (url.pathname.endsWith("/user")) {
+        if (!current) return json(401, { message: "not signed in" });
+        if (req.method() === "PUT") {
+          const { data } = JSON.parse(req.postData() || "{}");
+          if (data?.role) current.role = data.role;
+        }
+        return json(200, authUser(current));
+      }
       return json(200, {});
     });
 
@@ -131,7 +141,7 @@ export function createMockBackend() {
           const [changes] = body();
           if ("has_seen_onboarding" in changes) current.hasSeenOnboarding = changes.has_seen_onboarding;
         }
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + current.role, has_seen_onboarding: current.hasSeenOnboarding }] : []);
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding }] : []);
       }
 
       if (table === "supplier_profiles") {
