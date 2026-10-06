@@ -1,697 +1,437 @@
 import { useEffect, useState } from "react";
+import { Calculator, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import { Calculator, Egg, Info, Clock, Trash2 } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { BIRD_TYPES, birdTypeForBatch, buildFeedPlan, planProblem } from "../lib/feedPlan";
+import "./FeedCalculator.css";
 
-const BROILER_PHASES = [
-  { name: "Starter", days: [1, 14], gPerBird: 13, feedType: "High-protein starter (22% CP)", meals: 2 },
-  { name: "Grower", days: [15, 28], gPerBird: 50, feedType: "Grower mash (20% CP)", meals: 3 },
-  { name: "Finisher", days: [29, 42], gPerBird: 90, feedType: "Finisher pellets (18% CP)", meals: 3 },
-];
+const PRICES_KEY = "fc_feed_prices";
+const WEEKS_SHOWN = 8;
 
-const LAYER_PHASES = [
-  { name: "Chick", days: [1, 42], gPerBird: 20, feedType: "Chick mash (22% CP)", meals: 2 },
-  { name: "Grower", days: [43, 126], gPerBird: 60, feedType: "Grower mash (18% CP)", meals: 3 },
-  { name: "Pre-layer", days: [127, 154], gPerBird: 80, feedType: "Pre-layer mash (16% CP)", meals: 3 },
-  { name: "Layer", days: [155, 365], gPerBird: 110, feedType: "Layer mash (16% CP)", meals: 3 },
-];
-
-const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+const TARGET_HINTS = {
+  broiler: "Broilers are usually sold at 35-42 days.",
+  layer: "Pullets start laying at about 126 days (18 weeks). A laying cycle runs to about 560 days.",
+  kienyeji: "Improved kienyeji reach market weight at about 120-150 days."
 };
 
-const labelStyle = {
-  display: "block", fontSize: "13px", fontWeight: "600",
-  color: "#374151", marginBottom: "6px"
-};
+const kg = (n) => `${n.toLocaleString(undefined, { maximumFractionDigits: 1 })} kg`;
+const kes = (n) => `KES ${Math.round(n).toLocaleString()}`;
 
-function getPhase(chickenType, ageDay) {
-  const phases = chickenType === "layer" ? LAYER_PHASES : BROILER_PHASES;
-  return phases.find(p => ageDay >= p.days[0] && ageDay <= p.days[1])
-    || phases[phases.length - 1];
+// Bag prices are remembered on this phone only, as a convenience.
+function loadPrices() {
+  try { return JSON.parse(localStorage.getItem(PRICES_KEY) || "{}") || {}; } catch { return {}; }
+}
+function savePrices(prices) {
+  try { localStorage.setItem(PRICES_KEY, JSON.stringify(prices)); } catch { /* storage unavailable */ }
 }
 
-function calcTotalFeed(chickenType, currentAge, targetAge, numBirds) {
-  const phases = chickenType === "layer" ? LAYER_PHASES : BROILER_PHASES;
-  let totalGrams = 0;
-  const phaseBreakdown = [];
-
-  phases.forEach(phase => {
-    const startDay = Math.max(phase.days[0], currentAge);
-    const endDay = Math.min(phase.days[1], targetAge);
-    if (endDay < startDay) return;
-    const days = endDay - startDay + 1;
-    const grams = days * phase.gPerBird * numBirds;
-    totalGrams += grams;
-    phaseBreakdown.push({
-      ...phase,
-      days,
-      totalKg: (grams / 1000).toFixed(1),
-      bags50: Math.ceil(grams / 1000 / 50),
-      bags70: Math.ceil(grams / 1000 / 70),
-    });
-  });
-
-  return {
-    totalKg: (totalGrams / 1000).toFixed(1),
-    bags50: Math.ceil(totalGrams / 1000 / 50),
-    bags70: Math.ceil(totalGrams / 1000 / 70),
-    phaseBreakdown: phaseBreakdown.filter(p => p.days > 0)
-  };
-}
-
-// ✅ Build daily tracking from current to target age
-function buildDailyPlan(chickenType, currentAge, targetAge, numBirds) {
-  const plan = [];
-  for (let day = currentAge; day <= targetAge; day++) {
-    const phase = getPhase(chickenType, day || 1);
-    const totalKgToday = (phase.gPerBird * numBirds) / 1000;
-    plan.push({
-      day,
-      phase: phase.name,
-      feedType: phase.feedType,
-      gPerBird: phase.gPerBird,
-      totalKgToday: totalKgToday.toFixed(2),
-      meals: phase.meals,
-      perMeal: (totalKgToday / phase.meals).toFixed(2)
-    });
+// One row per week of age, which is how the amounts change.
+function weeklyRows(days) {
+  const rows = [];
+  for (const d of days) {
+    const week = Math.floor((d.day - 1) / 7) + 1;
+    const last = rows[rows.length - 1];
+    if (last && last.week === week) {
+      last.to = d.day;
+      last.kg += d.kg;
+    } else {
+      rows.push({ week, from: d.day, to: d.day, phase: d.phase, gPerBird: d.gPerBird, kgPerDay: d.kg, kg: d.kg });
+    }
   }
-  return plan;
+  return rows;
 }
 
 export default function FeedCalculator() {
   const { userEmail } = useAuth();
+  const toast = useToast();
+
+  const [tab, setTab] = useState("new");
   const [batches, setBatches] = useState([]);
-  const [savedCalculations, setSavedCalculations] = useState([]);
+  const [saved, setSaved] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState("manual");
-  const [results, setResults] = useState(null);
-  const [dailyPlan, setDailyPlan] = useState([]);
-  const [showDailyPlan, setShowDailyPlan] = useState(false);
-  const [activeCalcTab, setActiveCalcTab] = useState("new");
-  const [form, setForm] = useState({
-    chickenType: "broiler",
-    numBirds: 100,
-    currentAge: 0,
-    targetAge: 42
-  });
+  const [form, setForm] = useState({ type: "broiler", birds: "100", currentAge: "0", targetAge: "42", wastagePct: "5" });
+  const [prices, setPrices] = useState(loadPrices);
+  const [plan, setPlan] = useState(null);
+  const [problem, setProblem] = useState("");
+  const [showAllWeeks, setShowAllWeeks] = useState(false);
 
   useEffect(() => {
-    loadBatches();
-    loadSavedCalculations();
+    if (!userEmail) return undefined;
+    let cancelled = false;
+
+    async function load() {
+      const [batchResult, savedResult] = await Promise.all([
+        supabase.from("farm_batches")
+          .select("id, batch_name, batch_type, hatch_date, current_count, quantity")
+          .eq("user_email", userEmail).eq("status", "active"),
+        supabase.from("feed_calculations")
+          .select("id, batch_id, batch_name, chicken_type, num_birds, current_age, target_age, total_kg, bags_50, created_at")
+          .eq("user_email", userEmail).order("created_at", { ascending: false }).limit(10)
+      ]);
+      if (cancelled) return;
+      // The calculator works without either list, so a failed load only
+      // means "enter the numbers yourself".
+      if (batchResult.error) console.error("FeedCalculator: loading batches failed —", batchResult.error.message);
+      if (savedResult.error) console.error("FeedCalculator: loading saved plans failed —", savedResult.error.message);
+      setBatches(batchResult.data || []);
+      setSaved(savedResult.data || []);
+    }
+
+    load();
+    return () => { cancelled = true; };
   }, [userEmail]);
 
-  async function loadBatches() {
-    if (!userEmail) return;
-    const { data } = await supabase
-      .from("farm_batches")
-      .select("*")
-      .eq("user_email", userEmail)
-      .eq("status", "active");
-    setBatches(data || []);
+  const profile = BIRD_TYPES[form.type];
+
+  function update(changes) {
+    setForm(current => ({ ...current, ...changes }));
+    setProblem("");
   }
 
-  async function loadSavedCalculations() {
-    if (!userEmail) return;
-    const { data } = await supabase
-      .from("feed_calculations")
-      .select("*")
-      .eq("user_email", userEmail)
-      .order("created_at", { ascending: false })
-      .limit(10);
-    setSavedCalculations(data || []);
+  function chooseType(type) {
+    update({ type, targetAge: String(BIRD_TYPES[type].defaultTarget) });
   }
 
-  function handleBatchSelect(batchId) {
+  function chooseBatch(batchId) {
     setSelectedBatch(batchId);
-    if (batchId === "manual") return;
     const batch = batches.find(b => b.id === batchId);
     if (!batch) return;
-    const ageInDays = Math.floor(
-      (new Date() - new Date(batch.hatch_date)) / (1000 * 60 * 60 * 24)
-    );
-    const maxAge = batch.batch_type === "layer" ? 365 : 42;
-    setForm({
-      chickenType: batch.batch_type === "layer" ? "layer" : "broiler",
-      numBirds: batch.current_count || batch.quantity,
-      currentAge: Math.max(0, ageInDays),
-      targetAge: maxAge
+    const type = birdTypeForBatch(batch.batch_type);
+    const age = Math.max(0, Math.floor((Date.now() - new Date(batch.hatch_date).getTime()) / 86400000));
+    const { defaultTarget, maxAge } = BIRD_TYPES[type];
+    update({
+      type,
+      birds: String(batch.current_count || batch.quantity || ""),
+      currentAge: String(Math.min(age, maxAge)),
+      // an older batch is planned one more week ahead rather than backwards
+      targetAge: String(age < defaultTarget ? defaultTarget : Math.min(age + 7, maxAge))
     });
+  }
+
+  function setPrice(phaseName, value) {
+    const next = { ...prices, [phaseName]: value };
+    setPrices(next);
+    savePrices(next);
+  }
+
+  function inputsFrom(source) {
+    return {
+      type: source.type,
+      birds: Number(source.birds),
+      currentAge: Number(source.currentAge),
+      targetAge: Number(source.targetAge),
+      wastagePct: Number(source.wastagePct),
+      prices
+    };
   }
 
   async function calculate() {
-    const { chickenType, numBirds, currentAge, targetAge } = form;
-    if (!numBirds || currentAge > targetAge) return;
+    const inputs = inputsFrom(form);
+    const issue = planProblem(inputs);
+    if (issue) {
+      setProblem(issue);
+      setPlan(null);
+      return;
+    }
 
-    const todayPhase = getPhase(chickenType, currentAge || 1);
-    const totalFeedToday = (todayPhase.gPerBird * numBirds) / 1000;
-    const perMeal = totalFeedToday / todayPhase.meals;
-    const totals = calcTotalFeed(chickenType, Math.max(1, currentAge), targetAge, numBirds);
-    const plan = buildDailyPlan(chickenType, Math.max(1, currentAge), targetAge, numBirds);
+    const result = buildFeedPlan(inputs);
+    setPlan(result);
+    setShowAllWeeks(false);
 
-    const calcResults = {
-      todayPhase, totalFeedToday, perMeal, ...totals,
-      numBirds, currentAge, targetAge, chickenType
-    };
-
-    setResults(calcResults);
-    setDailyPlan(plan);
-
-    // ✅ Save to database
-    const selectedBatchObj = batches.find(b => b.id === selectedBatch);
-    await supabase.from("feed_calculations").insert([{
+    const batch = batches.find(b => b.id === selectedBatch);
+    const { data, error } = await supabase.from("feed_calculations").insert([{
       user_email: userEmail,
-      batch_id: selectedBatch !== "manual" ? selectedBatch : null,
-      batch_name: selectedBatchObj?.batch_name || "Manual Entry",
-      chicken_type: chickenType,
-      num_birds: numBirds,
-      current_age: currentAge,
-      target_age: targetAge,
-      total_kg: Number(totals.totalKg),
-      bags_50: totals.bags50,
-      bags_70: totals.bags70
-    }]);
+      batch_id: batch ? batch.id : null,
+      batch_name: batch?.batch_name || "Manual entry",
+      chicken_type: result.type,
+      num_birds: result.birds,
+      current_age: result.currentAge,
+      target_age: result.targetAge,
+      total_kg: result.totalKg,
+      bags_50: result.bags50,
+      bags_70: result.bags70
+    }]).select("id, batch_id, batch_name, chicken_type, num_birds, current_age, target_age, total_kg, bags_50, created_at");
 
-    loadSavedCalculations();
+    // The plan is already on screen; only the saved copy is affected.
+    if (error) toast.error("Your plan is shown below, but it couldn't be saved to your list. Check your connection.");
+    else if (data?.[0]) setSaved(current => [data[0], ...current].slice(0, 10));
   }
 
-  function loadSavedCalc(calc) {
-    setForm({
-      chickenType: calc.chicken_type,
-      numBirds: calc.num_birds,
-      currentAge: calc.current_age,
-      targetAge: calc.target_age
-    });
-    setSelectedBatch(calc.batch_id || "manual");
-    setActiveCalcTab("new");
-    // Auto calculate
-    setTimeout(() => {
-      const todayPhase = getPhase(calc.chicken_type, calc.current_age || 1);
-      const totalFeedToday = (todayPhase.gPerBird * calc.num_birds) / 1000;
-      const totals = calcTotalFeed(calc.chicken_type, Math.max(1, calc.current_age), calc.target_age, calc.num_birds);
-      const plan = buildDailyPlan(calc.chicken_type, Math.max(1, calc.current_age), calc.target_age, calc.num_birds);
-      setResults({
-        todayPhase, totalFeedToday,
-        perMeal: totalFeedToday / todayPhase.meals,
-        ...totals,
-        numBirds: calc.num_birds,
-        currentAge: calc.current_age,
-        targetAge: calc.target_age,
-        chickenType: calc.chicken_type
-      });
-      setDailyPlan(plan);
-    }, 100);
+  function openSaved(calc) {
+    const type = BIRD_TYPES[calc.chicken_type] ? calc.chicken_type : "broiler";
+    const next = {
+      type,
+      birds: String(calc.num_birds),
+      currentAge: String(calc.current_age),
+      targetAge: String(Math.min(calc.target_age, BIRD_TYPES[type].maxAge)),
+      wastagePct: form.wastagePct
+    };
+    setForm(next);
+    setSelectedBatch(batches.some(b => b.id === calc.batch_id) ? calc.batch_id : "manual");
+    setProblem("");
+    // Recalculated with today's tables, so an old saved plan shows the
+    // corrected amounts rather than the totals stored at the time.
+    setPlan(buildFeedPlan(inputsFrom(next)));
+    setShowAllWeeks(false);
+    setTab("new");
   }
 
-  async function deleteCalc(id) {
-    await supabase.from("feed_calculations").delete().eq("id", id);
-    loadSavedCalculations();
+  async function deleteSaved(id) {
+    const { error } = await supabase.from("feed_calculations").delete().eq("id", id);
+    if (error) {
+      toast.error("That plan couldn't be deleted. Check your connection and try again.");
+      return;
+    }
+    setSaved(current => current.filter(c => c.id !== id));
   }
 
-  const maxAge = form.chickenType === "layer" ? 365 : 42;
+  const weeks = plan ? weeklyRows(plan.days) : [];
+  const visibleWeeks = showAllWeeks ? weeks : weeks.slice(0, WEEKS_SHOWN);
 
   return (
-    <div style={{ maxWidth: "800px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-        <Calculator size={28} color="#22c55e" />
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
-          Feed Calculator
-        </h1>
+    <div className="fd-page">
+      <div className="fd-head">
+        <Calculator size={26} color="#22c55e" aria-hidden="true" />
+        <h1>Feed Calculator</h1>
       </div>
-      <p style={{ color: "#6b7280", fontSize: "15px", marginBottom: "24px" }}>
-        Estimate total feed needed and daily feeding amounts for healthy growth.
-      </p>
+      <p className="fd-lead">Work out how much feed to give each day and how much to buy.</p>
 
-      {/* TABS */}
-      <div style={{
-        display: "flex", background: "#f3f4f6",
-        borderRadius: "12px", padding: "4px",
-        marginBottom: "20px", width: "fit-content"
-      }}>
-        {[
-          { key: "new", label: "New Calculation" },
-          { key: "saved", label: `Saved (${savedCalculations.length})` }
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveCalcTab(tab.key)}
-            style={{
-              padding: "8px 20px", borderRadius: "9px",
-              border: "none", cursor: "pointer",
-              fontWeight: "600", fontSize: "13px",
-              background: activeCalcTab === tab.key ? "#fff" : "transparent",
-              color: activeCalcTab === tab.key ? "#111827" : "#9ca3af",
-              boxShadow: activeCalcTab === tab.key ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-              transition: "all 0.2s"
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="fd-tabs">
+        <button className={`fd-tab${tab === "new" ? " fd-tab--active" : ""}`} aria-pressed={tab === "new"} onClick={() => setTab("new")}>
+          New plan
+        </button>
+        <button className={`fd-tab${tab === "saved" ? " fd-tab--active" : ""}`} aria-pressed={tab === "saved"} onClick={() => setTab("saved")}>
+          Saved ({saved.length})
+        </button>
       </div>
 
-      {/* ====== SAVED CALCULATIONS ====== */}
-      {activeCalcTab === "saved" && (
-        <div>
-          {savedCalculations.length === 0 ? (
-            <div style={{
-              textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
-            }}>
-              <Calculator size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "15px" }}>
-                No saved calculations yet. Run your first calculation above.
-              </p>
+      {tab === "saved" && (
+        saved.length === 0 ? (
+          <div className="fd-empty">No saved plans yet. Each plan you calculate is kept here.</div>
+        ) : (
+          saved.map(calc => (
+            <div key={calc.id} className="fd-saved">
+              <div style={{ minWidth: 0 }}>
+                <p className="fd-saved-title">{calc.batch_name}</p>
+                <p className="fd-saved-meta">
+                  {calc.num_birds} {(BIRD_TYPES[calc.chicken_type] || BIRD_TYPES.broiler).label.toLowerCase()} birds · day {calc.current_age} to {calc.target_age}
+                </p>
+                <p className="fd-saved-meta">{new Date(calc.created_at).toLocaleDateString()}</p>
+              </div>
+              <div className="fd-saved-actions">
+                <button className="fd-load" onClick={() => openSaved(calc)}>Open</button>
+                <button className="fd-delete" onClick={() => deleteSaved(calc.id)} aria-label={`Delete saved plan for ${calc.batch_name}`}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {savedCalculations.map(calc => (
-                <div key={calc.id} style={{
-                  background: "#fff", borderRadius: "16px",
-                  border: "1px solid #e5e7eb", padding: "16px 20px",
-                  display: "flex", alignItems: "center",
-                  justifyContent: "space-between", gap: "16px"
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                      <span style={{
-                        background: calc.chicken_type === "layer" ? "#edf9f1" : "#fff7e6",
-                        color: calc.chicken_type === "layer" ? "#16a34a" : "#d97706",
-                        fontSize: "11px", fontWeight: "700",
-                        padding: "2px 8px", borderRadius: "20px", textTransform: "capitalize"
-                      }}>
-                        {calc.chicken_type}
-                      </span>
-                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#111827" }}>
-                        {calc.batch_name}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "12px", color: "#9ca3af" }}>
-                        🐔 {calc.num_birds} birds
-                      </span>
-                      <span style={{ fontSize: "12px", color: "#9ca3af" }}>
-                        📅 Day {calc.current_age} → {calc.target_age}
-                      </span>
-                      <span style={{ fontSize: "12px", color: "#22c55e", fontWeight: "600" }}>
-                        📦 {calc.total_kg}kg total
-                      </span>
-                      <span style={{ fontSize: "12px", color: "#f59e0b", fontWeight: "600" }}>
-                        🛍 {calc.bags_50} bags (50kg)
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "4px" }}>
-                      <Clock size={11} color="#9ca3af" />
-                      <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                        {new Date(calc.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      onClick={() => loadSavedCalc(calc)}
-                      style={{
-                        padding: "8px 14px", background: "#f0fdf4",
-                        border: "1px solid #dcfce7", borderRadius: "8px",
-                        cursor: "pointer", fontWeight: "600",
-                        fontSize: "12px", color: "#16a34a"
-                      }}
-                    >
-                      Load
-                    </button>
-                    <button
-                      onClick={() => deleteCalc(calc.id)}
-                      style={{
-                        width: "34px", height: "34px", borderRadius: "8px",
-                        border: "1px solid #fee2e2", background: "#fff",
-                        cursor: "pointer", display: "flex",
-                        alignItems: "center", justifyContent: "center"
-                      }}
-                    >
-                      <Trash2 size={14} color="#ef4444" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          ))
+        )
       )}
 
-      {/* ====== NEW CALCULATION ====== */}
-      {activeCalcTab === "new" && (
+      {tab === "new" && (
         <>
-          {/* INPUTS */}
-          <div style={{
-            background: "#fff", borderRadius: "20px",
-            border: "1px solid #e5e7eb", padding: "28px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "20px"
-          }}>
-            <h2 style={{ margin: "0 0 20px", fontSize: "16px", fontWeight: "700", color: "#111827" }}>
-              Calculator Inputs
-            </h2>
+          <div className="fd-card">
+            <h2>Your birds</h2>
+            <p className="fd-sub">Pick one of your batches, or enter the numbers yourself.</p>
 
-            <div style={{ marginBottom: "20px" }}>
-              <label style={labelStyle}>Select Batch</label>
-              <select
-                value={selectedBatch}
-                onChange={e => handleBatchSelect(e.target.value)}
-                style={{ ...inputStyle, appearance: "none", border: "1.5px solid #22c55e" }}
-              >
-                <option value="manual">Manual Entry</option>
-                {batches.map(b => (
-                  <option key={b.id} value={b.id}>{b.batch_name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
-              <div>
-                <label style={labelStyle}>Chicken Type</label>
-                <select
-                  value={form.chickenType}
-                  onChange={e => setForm({
-                    ...form, chickenType: e.target.value,
-                    targetAge: e.target.value === "layer" ? 365 : 42
-                  })}
-                  style={{ ...inputStyle, appearance: "none" }}
-                >
-                  <option value="broiler">Broiler</option>
-                  <option value="layer">Layer</option>
+            <div className="fd-grid">
+              <div className="fd-field">
+                <label htmlFor="fd-batch">Batch</label>
+                <select id="fd-batch" value={selectedBatch} onChange={e => chooseBatch(e.target.value)}>
+                  <option value="manual">Enter manually</option>
+                  {batches.map(b => <option key={b.id} value={b.id}>{b.batch_name}</option>)}
                 </select>
               </div>
-              <div>
-                <label style={labelStyle}>Number of Birds</label>
-                <input
-                  type="number" min="1"
-                  value={form.numBirds}
-                  onChange={e => setForm({ ...form, numBirds: Number(e.target.value) })}
-                  style={inputStyle}
-                />
+              <div className="fd-field">
+                <label htmlFor="fd-type">Type of bird</label>
+                <select id="fd-type" value={form.type} onChange={e => chooseType(e.target.value)}>
+                  {Object.entries(BIRD_TYPES).map(([value, t]) => <option key={value} value={value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div className="fd-field">
+                <label htmlFor="fd-birds">Number of birds</label>
+                <input id="fd-birds" type="number" inputMode="numeric" min="1" value={form.birds} onChange={e => update({ birds: e.target.value })} />
+              </div>
+              <div className="fd-field">
+                <label htmlFor="fd-margin">Safety margin</label>
+                <select id="fd-margin" value={form.wastagePct} onChange={e => update({ wastagePct: e.target.value })}>
+                  <option value="0">None</option>
+                  <option value="5">5% (recommended)</option>
+                  <option value="10">10%</option>
+                </select>
+                <p className="fd-hint">Extra feed for spillage and for birds that eat more than average.</p>
+              </div>
+              <div className="fd-field">
+                <label htmlFor="fd-age">Age today (days)</label>
+                <input id="fd-age" type="number" inputMode="numeric" min="0" max={profile.maxAge} value={form.currentAge} onChange={e => update({ currentAge: e.target.value })} />
+              </div>
+              <div className="fd-field">
+                <label htmlFor="fd-target">Plan up to (days)</label>
+                <input id="fd-target" type="number" inputMode="numeric" min="1" max={profile.maxAge} value={form.targetAge} onChange={e => update({ targetAge: e.target.value })} />
+                <p className="fd-hint">{TARGET_HINTS[form.type]}</p>
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
-              <div>
-                <label style={labelStyle}>Current Age (days)</label>
-                <input
-                  type="number" min="0" max={maxAge}
-                  value={form.currentAge}
-                  onChange={e => setForm({ ...form, currentAge: Number(e.target.value) })}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Target Age (days)</label>
-                <input
-                  type="number" min="1" max={maxAge}
-                  value={form.targetAge}
-                  onChange={e => setForm({ ...form, targetAge: Number(e.target.value) })}
-                  style={inputStyle}
-                />
-                <p style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-                  Max maturity: {maxAge} days
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={calculate}
-              style={{
-                width: "100%", padding: "14px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)",
-                color: "#fff", border: "none", borderRadius: "12px",
-                fontWeight: "700", fontSize: "15px", cursor: "pointer",
-                boxShadow: "0 6px 20px rgba(34,197,94,0.25)"
-              }}
-            >
-              Calculate Feed
-            </button>
-          </div>
-
-          {/* RESULTS */}
-          {results && (
-            <>
-              {/* TODAY'S GUIDE */}
-              <div style={{
-                background: "#fff", borderRadius: "20px",
-                border: "1px solid #e5e7eb", padding: "24px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "16px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                  <Egg size={20} color="#22c55e" />
-                  <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#111827" }}>
-                    Today's Feeding Guide (Day {results.currentAge})
-                  </h2>
-                </div>
-                <p style={{ margin: "0 0 20px", fontSize: "13px", color: "#9ca3af" }}>
-                  {results.todayPhase.name} phase — {results.todayPhase.feedType}
-                </p>
-
-                <div style={{
-                  display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "12px", marginBottom: "16px"
-                }}>
-                  {[
-                    { value: `${results.todayPhase.gPerBird}g`, label: "per bird/day", color: "#22c55e" },
-                    { value: `${results.totalFeedToday.toFixed(1)}kg`, label: "total today", color: "#22c55e" },
-                    { value: `${results.todayPhase.meals}x`, label: "meals/day", color: "#111827" },
-                  ].map(item => (
-                    <div key={item.label} style={{
-                      background: "#f9fafb", borderRadius: "14px",
-                      padding: "16px", textAlign: "center"
-                    }}>
-                      <div style={{ fontSize: "24px", fontWeight: "800", color: item.color }}>
-                        {item.value}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{
-                  background: "#fffbeb", border: "1px solid #fde68a",
-                  borderRadius: "10px", padding: "12px 14px",
-                  display: "flex", alignItems: "flex-start", gap: "8px"
-                }}>
-                  <Info size={14} color="#d97706" style={{ marginTop: "2px", flexShrink: 0 }} />
-                  <p style={{ margin: 0, fontSize: "13px", color: "#92400e" }}>
-                    Feed {results.perMeal.toFixed(2)}kg per meal, spread evenly.
-                    Ensure fresh clean water is always available.
-                  </p>
-                </div>
-              </div>
-
-              {/* FEED PURCHASE ESTIMATE */}
-              <div style={{
-                background: "#fff", borderRadius: "20px",
-                border: "1px solid #e5e7eb", padding: "24px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "16px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-                  <span style={{ fontSize: "18px" }}>📦</span>
-                  <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#111827" }}>
-                    Feed Purchase Estimate
-                  </h2>
-                </div>
-
-                <div style={{
-                  display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "12px", marginBottom: "16px"
-                }}>
-                  {[
-                    { value: `${results.totalKg}kg`, label: "Total Feed", color: "#22c55e" },
-                    { value: results.bags50, label: "Bags (50kg)", color: "#f59e0b" },
-                    { value: results.bags70, label: "Bags (70kg)", color: "#f59e0b" },
-                  ].map(item => (
-                    <div key={item.label} style={{
-                      background: "#f9fafb", borderRadius: "14px",
-                      padding: "16px", textAlign: "center"
-                    }}>
-                      <div style={{ fontSize: "28px", fontWeight: "800", color: item.color }}>
-                        {item.value}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>
-                  For <strong style={{ color: "#111827" }}>{results.numBirds} birds</strong> from
-                  day {results.currentAge} to day {results.targetAge} ({results.targetAge - results.currentAge} days)
-                </p>
-              </div>
-
-              {/* PHASE BREAKDOWN */}
-              <div style={{
-                background: "#fff", borderRadius: "20px",
-                border: "1px solid #e5e7eb", padding: "24px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "16px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-                  <span style={{ fontSize: "18px" }}>📈</span>
-                  <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#111827" }}>
-                    Phase Breakdown
-                  </h2>
-                </div>
-
-                {results.phaseBreakdown.map((phase, i) => (
-                  <div key={i} style={{
-                    display: "flex", justifyContent: "space-between",
-                    alignItems: "flex-start", padding: "16px 0",
-                    borderBottom: i < results.phaseBreakdown.length - 1
-                      ? "1px solid #f3f4f6" : "none"
-                  }}>
-                    <div>
-                      <p style={{ margin: "0 0 4px", fontWeight: "700", fontSize: "15px", color: "#111827" }}>
-                        {phase.name}
-                      </p>
-                      <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#9ca3af" }}>
-                        {phase.feedType}
-                      </p>
-                      <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
-                        {phase.days} days
-                      </p>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <p style={{ margin: "0 0 6px", fontWeight: "700", fontSize: "16px", color: "#111827" }}>
-                        {phase.totalKg} kg
-                      </p>
-                      <span style={{
-                        background: "#fef3c7", color: "#d97706",
-                        fontSize: "12px", fontWeight: "700",
-                        padding: "3px 10px", borderRadius: "20px"
-                      }}>
-                        {phase.bags50} bags
-                      </span>
-                    </div>
+            <details className="fd-prices">
+              <summary>Add feed prices to see the cost (optional)</summary>
+              <div className="fd-grid" style={{ marginBottom: 0 }}>
+                {profile.phases.map(phase => (
+                  <div key={phase.name} className="fd-field">
+                    <label htmlFor={`fd-price-${phase.name}`}>{phase.name} feed: price of a 50 kg bag (KES)</label>
+                    <input
+                      id={`fd-price-${phase.name}`}
+                      type="number" inputMode="numeric" min="0"
+                      placeholder="e.g. 3800"
+                      value={prices[phase.name] || ""}
+                      onChange={e => setPrice(phase.name, e.target.value)}
+                    />
                   </div>
                 ))}
               </div>
+            </details>
 
-              {/* DAILY PLAN */}
-              <div style={{
-                background: "#fff", borderRadius: "20px",
-                border: "1px solid #e5e7eb", padding: "24px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "16px"
-              }}>
-                <div style={{
-                  display: "flex", justifyContent: "space-between",
-                  alignItems: "center", marginBottom: "16px"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "18px" }}>📅</span>
-                    <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#111827" }}>
-                      Daily Feed Plan
-                    </h2>
+            {problem && <div className="fd-error" role="alert">{problem}</div>}
+
+            <button className="fd-primary" onClick={calculate}>Calculate feed</button>
+          </div>
+
+          {plan && (
+            <>
+              <div className="fd-card">
+                <h2>Today (day {plan.today.day})</h2>
+                <p className="fd-sub">{plan.today.phase.feed} · {plan.today.phase.protein}</p>
+                <div className="fd-stats fd-stats--4">
+                  <div className="fd-stat">
+                    <div className="fd-stat-value">{plan.today.gPerBird} g</div>
+                    <div className="fd-stat-label">per bird today</div>
                   </div>
-                  <button
-                    onClick={() => setShowDailyPlan(!showDailyPlan)}
-                    style={{
-                      padding: "8px 14px", background: "#f0fdf4",
-                      border: "1px solid #dcfce7", borderRadius: "8px",
-                      cursor: "pointer", fontWeight: "600",
-                      fontSize: "12px", color: "#16a34a"
-                    }}
-                  >
-                    {showDailyPlan ? "Hide" : "Show All Days"}
-                  </button>
+                  <div className="fd-stat">
+                    <div className="fd-stat-value">{kg(plan.today.kg)}</div>
+                    <div className="fd-stat-label">for all {plan.birds.toLocaleString()} birds</div>
+                  </div>
+                  <div className="fd-stat">
+                    <div className="fd-stat-value fd-stat-value--plain">{plan.today.feeds}×</div>
+                    <div className="fd-stat-label">feedings, {kg(plan.today.perFeedKg)} each</div>
+                  </div>
+                  <div className="fd-stat">
+                    <div className="fd-stat-value fd-stat-value--plain">{Math.round(plan.today.waterLitres).toLocaleString()} L</div>
+                    <div className="fd-stat-label">clean water, more in heat</div>
+                  </div>
                 </div>
+              </div>
 
-                <p style={{ margin: "0 0 14px", fontSize: "13px", color: "#9ca3af" }}>
-                  Day-by-day feeding guide from day {results.currentAge} to day {results.targetAge}
+              <div className="fd-card">
+                <h2>Feed to buy</h2>
+                <p className="fd-sub">
+                  Day {plan.today.day} to day {plan.targetAge}
+                  {plan.wastagePct > 0 ? `, including the ${plan.wastagePct}% safety margin` : ""}
                 </p>
-
-                {/* TABLE HEADER */}
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "60px 80px 1fr 80px 80px 80px",
-                  gap: "8px", padding: "8px 12px",
-                  background: "#f9fafb", borderRadius: "10px",
-                  fontSize: "11px", fontWeight: "700",
-                  color: "#9ca3af", textTransform: "uppercase",
-                  letterSpacing: "0.05em", marginBottom: "6px"
-                }}>
-                  <span>Day</span>
-                  <span>Phase</span>
-                  <span>Feed Type</span>
-                  <span>g/bird</span>
-                  <span>Total kg</span>
-                  <span>Meals</span>
+                <div className="fd-stats fd-stats--3">
+                  <div className="fd-stat">
+                    <div className="fd-stat-value">{kg(plan.totalKg)}</div>
+                    <div className="fd-stat-label">total feed</div>
+                  </div>
+                  <div className="fd-stat">
+                    <div className="fd-stat-value fd-stat-value--amber">{plan.bags50}</div>
+                    <div className="fd-stat-label">bags of 50 kg</div>
+                  </div>
+                  <div className="fd-stat">
+                    <div className="fd-stat-value fd-stat-value--plain">{plan.perBirdKg} kg</div>
+                    <div className="fd-stat-label">eaten per bird</div>
+                  </div>
+                  {plan.cost && (
+                    <>
+                      <div className="fd-stat">
+                        <div className="fd-stat-value fd-stat-value--amber">{kes(plan.cost.total)}</div>
+                        <div className="fd-stat-label">feed cost{plan.cost.complete ? "" : " so far"}</div>
+                      </div>
+                      <div className="fd-stat">
+                        <div className="fd-stat-value fd-stat-value--plain">{kes(plan.cost.perBird)}</div>
+                        <div className="fd-stat-label">feed cost per bird</div>
+                      </div>
+                    </>
+                  )}
+                  {plan.weightAtTarget && (
+                    <div className="fd-stat">
+                      <div className="fd-stat-value fd-stat-value--plain">{plan.weightAtTarget} kg</div>
+                      <div className="fd-stat-label">target weight at day {plan.targetAge}</div>
+                    </div>
+                  )}
                 </div>
 
-                {/* SHOW TODAY + next 6 days by default, all if expanded */}
-                {(showDailyPlan ? dailyPlan : dailyPlan.slice(0, 7)).map((day, i) => {
-                  const isToday = day.day === results.currentAge;
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "60px 80px 1fr 80px 80px 80px",
-                        gap: "8px", padding: "10px 12px",
-                        borderRadius: "10px",
-                        background: isToday ? "#f0fdf4" : i % 2 === 0 ? "#fff" : "#fafafa",
-                        border: isToday ? "1px solid #dcfce7" : "none",
-                        marginBottom: "4px", fontSize: "13px"
-                      }}
-                    >
-                      <span style={{ fontWeight: isToday ? "800" : "600", color: isToday ? "#16a34a" : "#374151" }}>
-                        {isToday ? "→" : ""} {day.day}
-                      </span>
-                      <span style={{
-                        fontSize: "11px", fontWeight: "600",
-                        color: day.phase === "Starter" ? "#3b82f6"
-                          : day.phase === "Grower" ? "#f59e0b"
-                          : day.phase === "Finisher" ? "#ef4444"
-                          : "#22c55e"
-                      }}>
-                        {day.phase}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                        {day.feedType}
-                      </span>
-                      <span style={{ color: "#374151", fontWeight: "600" }}>
-                        {day.gPerBird}g
-                      </span>
-                      <span style={{ color: "#22c55e", fontWeight: "700" }}>
-                        {day.totalKgToday}kg
-                      </span>
-                      <span style={{ color: "#374151" }}>
-                        {day.meals}x
-                      </span>
-                    </div>
-                  );
-                })}
-
-                {!showDailyPlan && dailyPlan.length > 7 && (
-                  <p style={{
-                    textAlign: "center", color: "#9ca3af",
-                    fontSize: "13px", marginTop: "10px"
-                  }}>
-                    + {dailyPlan.length - 7} more days — click "Show All Days"
+                {plan.cost && !plan.cost.complete && (
+                  <p className="fd-note fd-note--amber">Add a price for every feed above to see the full cost.</p>
+                )}
+                {plan.weightAtTarget && (
+                  <p className="fd-note">
+                    The target weight is what the breed reaches with good feed, housing and health.
+                    {plan.feedPerKgGain ? ` At that weight each bird has eaten about ${plan.feedPerKgGain} kg of feed for every kg it weighs.` : ""}
+                    {" "}If your birds are well below it, check feed quality, water and space before buying more feed.
                   </p>
                 )}
               </div>
 
-              {/* STORAGE TIP */}
-              <div style={{
-                background: "#eff6ff", border: "1px solid #bfdbfe",
-                borderRadius: "14px", padding: "14px 16px",
-                display: "flex", alignItems: "flex-start", gap: "10px"
-              }}>
-                <Info size={16} color="#3b82f6" style={{ marginTop: "2px", flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: "13px", color: "#1e40af", lineHeight: "1.5" }}>
-                  Add 5–10% buffer stock to account for spillage and wastage.
-                  Store feed in a cool, dry, rodent-proof area.
-                  Never feed mouldy or wet feed to birds.
-                </p>
+              <div className="fd-card">
+                <h2>By type of feed</h2>
+                <p className="fd-sub">Buy each feed separately. Bags are rounded up.</p>
+                {plan.phases.map(phase => (
+                  <div key={phase.name} className="fd-phase">
+                    <div style={{ minWidth: 0 }}>
+                      <p className="fd-phase-name">{phase.name}: {phase.feed}</p>
+                      <p className="fd-phase-feed">{phase.protein} · {phase.days} day{phase.days === 1 ? "" : "s"}</p>
+                    </div>
+                    <div className="fd-phase-buy">
+                      <strong>{phase.bags50} bag{phase.bags50 === 1 ? "" : "s"}</strong>
+                      {kg(phase.buyKg)}
+                      {phase.cost !== null && <div>{kes(phase.cost)}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="fd-card">
+                <h2>Week by week</h2>
+                <p className="fd-sub">The daily amount goes up each week as the birds grow.</p>
+                <table className="fd-weeks">
+                  <thead>
+                    <tr>
+                      <th scope="col">Week</th>
+                      <th scope="col">Per bird / day</th>
+                      <th scope="col">All birds / day</th>
+                      <th scope="col">Week total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleWeeks.map(row => (
+                      <tr key={row.week}>
+                        <td>
+                          Week {row.week}
+                          <small>{row.from === row.to ? `day ${row.from}` : `days ${row.from}-${row.to}`} · {row.phase}</small>
+                        </td>
+                        <td>{row.gPerBird} g</td>
+                        <td>{kg(row.kgPerDay)}</td>
+                        <td>{kg(row.kg)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {weeks.length > WEEKS_SHOWN && (
+                  <button className="fd-more" onClick={() => setShowAllWeeks(v => !v)}>
+                    {showAllWeeks ? "Show fewer weeks" : `Show all ${weeks.length} weeks`}
+                  </button>
+                )}
+              </div>
+
+              <div className="fd-card">
+                <h2>Good practice</h2>
+                <ul className="fd-tips">
+                  {plan.notes.map(note => <li key={note}>{note}</li>)}
+                  <li>Give clean water at all times. Birds that can't drink stop eating.</li>
+                  <li>Store feed off the floor in a dry place and use it within a month. Damp or mouldy feed makes birds sick.</li>
+                  <li>These amounts are breed targets for healthy birds. If yours eat much less, look for heat, illness or poor feed, and ask a vet.</li>
+                </ul>
               </div>
             </>
           )}
