@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
+import OnboardingTour from "./OnboardingTour";
 import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
@@ -81,6 +82,8 @@ export default function Layout() {
 
   return (
     <div className="fc-layout">
+
+      <OnboardingTour />
 
       {/* MOBILE BACKDROP OVERLAY */}
       {sidebarOpen && (
