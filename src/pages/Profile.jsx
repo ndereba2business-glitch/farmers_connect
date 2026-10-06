@@ -346,6 +346,7 @@ export default function Profile() {
               paddingTop: "44px", flexWrap: "wrap"
             }}>
               <button
+                className="fc-tap"
                 onClick={() => setEditing(!editing)}
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
@@ -359,6 +360,7 @@ export default function Profile() {
                 {editing ? "Cancel" : "Edit"}
               </button>
               <button
+                className="fc-tap"
                 onClick={handleReplayTour}
                 disabled={replayingTour}
                 style={{
@@ -374,6 +376,7 @@ export default function Profile() {
                 {replayingTour ? "Loading..." : "Replay Tour"}
               </button>
               <button
+                className="fc-tap"
                 onClick={handleLogout}
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",

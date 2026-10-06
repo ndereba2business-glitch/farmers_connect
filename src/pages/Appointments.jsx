@@ -547,6 +547,7 @@ export default function Appointments() {
         {TABS.map(tab => (
           <button
             key={tab.key}
+            className="fc-tap"
             onClick={() => setActiveTab(tab.key)}
             style={{
               padding: "9px 18px", borderRadius: "20px",

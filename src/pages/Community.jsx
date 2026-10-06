@@ -260,7 +260,8 @@ export default function Community() {
               </button>
             </div>
 
-            <button 
+            <button
+              className="fc-tap"
               onClick={createPost}
               disabled={uploading || !content.trim()}
               style={{

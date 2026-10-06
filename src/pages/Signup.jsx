@@ -209,7 +209,7 @@ export default function Signup() {
 
       }, 1500);
 
-    } catch (err) {
+    } catch {
 
       setError(
         "Something went wrong. Please try again."
@@ -280,6 +280,7 @@ export default function Signup() {
 
           <button
             type="button"
+            className="fc-tap"
 
             onClick={() =>
               setMethod("email")
@@ -307,6 +308,7 @@ export default function Signup() {
 
           <button
             type="button"
+            className="fc-tap"
 
             onClick={() =>
               setMethod("phone")
@@ -459,6 +461,7 @@ export default function Signup() {
                   key={r}
 
                   type="button"
+                  className="fc-tap"
 
                   onClick={() =>
                     setRole(r)

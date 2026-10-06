@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
   Stethoscope, Search, AlertTriangle, X, Send, Upload, MapPin,
-  Calendar, Clock, CalendarPlus, CheckCircle2, XCircle, FileText
+  Calendar, Clock, CalendarPlus, FileText
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 import FarmerMessagesPanel from "../components/FarmerMessagesPanel";
@@ -360,18 +360,24 @@ export default function Bookings() {
         </button>
       </div>
 
-      {/* TABS */}
+      {/* TABS — one row on wider screens; wraps onto a second row on
+          small phones so every tab stays visible and the page never
+          scrolls sideways. */}
       <div style={{
-        display: "flex", background: "#f3f4f6",
+        display: "flex", flexWrap: "wrap", gap: "2px",
+        background: "#f3f4f6",
         borderRadius: "14px", padding: "4px",
         marginBottom: "24px"
       }}>
         {TABS.map(tab => (
           <button
             key={tab.key}
+            className="fc-tap"
+            aria-pressed={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
             style={{
-              flex: 1, padding: "10px",
+              flex: "1 0 auto", padding: "10px",
+              whiteSpace: "nowrap",
               borderRadius: "10px", border: "none",
               cursor: "pointer", fontWeight: "600", fontSize: "13px",
               background: activeTab === tab.key ? "#fff" : "transparent",
@@ -497,6 +503,7 @@ export default function Bookings() {
               {QUESTION_CATEGORIES.map(cat => (
                 <button
                   key={cat.label}
+                  className="fc-tap"
                   onClick={() => setSelectedCategory(cat.label)}
                   style={{
                     padding: "6px 14px", borderRadius: "20px",

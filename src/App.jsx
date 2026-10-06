@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
 // multi-megabyte bundle for the whole app.
@@ -16,7 +16,6 @@ const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Orders = lazy(() => import("./pages/Orders"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
-const Wallet = lazy(() => import("./pages/Wallet"));
 const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
 const SupplierDashboard = lazy(() => import("./pages/SupplierDashboard"));
 const SupplierProfileSetup = lazy(() => import("./pages/SupplierProfileSetup"));
@@ -178,7 +177,14 @@ function AppRoutes() {
 
           <Route path="/suppliers" element={<Suppliers />} />
 
-          <Route path="/wallet" element={<Wallet />} />
+          {/* Retired: there is no in-app payment system yet (contact-first
+              MVP) and nothing ever created wallet rows, so the page sat on
+              "Loading..." forever. The wallets table is kept for when
+              payments are built. Old links go to the user's own home. */}
+          <Route
+            path="/wallet"
+            element={<Navigate to={role === "supplier" ? "/supplier" : role === "vet" ? "/vet" : role === "admin" ? "/admin" : "/"} replace />}
+          />
 
           <Route path="/feed-calculator" element={<FeedCalculator />} />
 

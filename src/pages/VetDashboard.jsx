@@ -7,8 +7,8 @@ import FarmerPicker from "../components/FarmerPicker";
 import MedicalRecordModal from "../components/MedicalRecordModal";
 import VetMessagesModal from "../components/VetMessagesModal";
 import {
-  Stethoscope, Calendar, AlertTriangle, FileText, Users, Wallet,
-  MessageCircle, X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
+  Stethoscope, Calendar, AlertTriangle, Users, Wallet,
+  X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
   CalendarPlus, CheckCircle2
 } from "lucide-react";
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { createNotification } from "../lib/notifications";
-import { CheckSquare, Plus, Trash2, Clock, X } from "lucide-react";
+import { CheckSquare, Plus, Trash2, Clock } from "lucide-react";
 
 const PRIORITIES = [
   { value: "high", label: "High", color: "#ef4444", bg: "#fef2f2" },
@@ -266,6 +266,7 @@ export default function Tasks() {
         ].map(tab => (
           <button
             key={tab.key}
+            className="fc-tap"
             onClick={() => setActiveTab(tab.key)}
             style={{
               flex: 1, padding: "9px",

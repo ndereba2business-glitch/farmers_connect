@@ -25,7 +25,6 @@ const FARMER_NAV = [
   { name: "Tasks", path: "/tasks", icon: CheckSquare },
   { name: "Gallery", path: "/gallery", icon: Image },
   { name: "Profile", path: "/profile", icon: UserCircle },
-  { name: "Admin Panel", path: "/admin", icon: Shield },
 ];
 
 const VET_NAV = [
@@ -52,7 +51,7 @@ const ADMIN_NAV = [
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, role, userEmail, profile, logout } = useAuth();
+  const { role, userEmail, profile, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   async function handleLogout() {
@@ -60,6 +59,10 @@ export default function Layout() {
     navigate("/login");
   }
 
+  // Each role sees only its own menu. The admin links live in ADMIN_NAV,
+  // which only a role of "admin" gets; that role comes from app_metadata
+  // (see extractRole in AuthContext), and the admin routes are still
+  // guarded by ProtectedRoute either way.
   const navItems =
     role === "admin" ? ADMIN_NAV :
     role === "vet" ? VET_NAV :
