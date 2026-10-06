@@ -134,10 +134,18 @@ function AppRoutes() {
           path="/"
           element={user ? <Layout /> : <LandingPage />}
         >
+          {/* Only farmers live at "/". Everyone else is sent to their own
+              home, which matters after Google sign-in: Google always
+              returns people to "/" whatever their role. */}
           {user && (
             <Route
               index
-              element={role === "supplier" ? <Navigate to="/supplier" replace /> : <Dashboard />}
+              element={
+                role === "supplier" ? <Navigate to="/supplier" replace /> :
+                role === "vet" ? <Navigate to="/vet" replace /> :
+                role === "admin" ? <Navigate to="/admin" replace /> :
+                <Dashboard />
+              }
             />
           )}
         </Route>
