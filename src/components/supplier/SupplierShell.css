@@ -304,20 +304,8 @@
   .ss-sidebar--open { transition: none; }
 }
 
-/* NotificationsBell is shared and draws a white icon, so it needs a dark
-   tile on this light header. The tile also gives it a 44px touch target. */
-.ss-bell {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #0f2a1d;
-}
-.ss-bell > div { display: block; width: 100%; height: 100%; }
-.ss-bell button {
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-}
+/* NotificationsBell draws its own 44px tile (NotificationsBell.css). */
+.ss-bell { display: flex; }
 
 /* every page already has its own H1 on desktop; keep the header title for
    the small screens where the page heading has scrolled away */

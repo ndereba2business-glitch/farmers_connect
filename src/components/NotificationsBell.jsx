@@ -1,226 +1,172 @@
-import { useEffect, useState, useRef } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
+import { badgeText, categoryColour, timeAgo } from "../lib/notificationHelpers";
+import "./NotificationsBell.css";
+
+const COLUMNS = "id, type, category, title, message, link, read, created_at";
+const SYNCED_KEY = "fc_reminders_synced";
+
+// Reminders (vaccinations due, visits tomorrow...) are worked out by the
+// database when the app is opened. Once per day per browser tab session is
+// enough; the function itself is safe to call more often.
+function remindersDueForSync(userEmail) {
+  const stamp = `${userEmail}:${new Date().toDateString()}`;
+  try {
+    if (sessionStorage.getItem(SYNCED_KEY) === stamp) return false;
+    sessionStorage.setItem(SYNCED_KEY, stamp);
+  } catch { /* storage unavailable: sync every time */ }
+  return true;
+}
 
 export default function NotificationsBell({ userEmail }) {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  // What was unread when the panel was opened stays highlighted while it
+  // is open, even though opening marks everything as read.
+  const [freshIds, setFreshIds] = useState([]);
+  const rootRef = useRef(null);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unread = notifications.filter(n => !n.read).length;
 
-  async function fetchNotifications() {
-    if (!userEmail) return;
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_email", userEmail)
-      .order("created_at", { ascending: false })
-      .limit(20);
+  useEffect(() => {
+    if (!userEmail) return undefined;
+    let cancelled = false;
 
-    if (!error && data) setNotifications(data);
+    async function load() {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select(COLUMNS)
+        .eq("user_email", userEmail)
+        .is("cleared_at", null)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (cancelled) return;
+      if (error) console.error("NotificationsBell: load failed —", error.message);
+      else setNotifications(data || []);
+    }
+
+    async function start() {
+      if (remindersDueForSync(userEmail)) {
+        const { error } = await supabase.rpc("sync_my_reminders");
+        if (error) console.error("NotificationsBell: reminder sync failed —", error.message);
+      }
+      if (!cancelled) load();
+    }
+
+    start();
+
+    const channel = supabase
+      .channel(`notifications-${userEmail}`)
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_email=eq.${userEmail}` },
+        load)
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [userEmail]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function onPointerDown(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  async function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    setFreshIds(notifications.filter(n => !n.read).map(n => n.id));
+    setOpen(true);
+    if (!unread) return;
+    setNotifications(current => current.map(n => ({ ...n, read: true })));
+    const { error } = await supabase.from("notifications")
+      .update({ read: true }).eq("user_email", userEmail).eq("read", false);
+    if (error) console.error("NotificationsBell: marking read failed —", error.message);
   }
 
-  async function markAllRead() {
-    if (!userEmail) return;
-    await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("user_email", userEmail)
-      .eq("read", false);
-    fetchNotifications();
-  }
-
-  async function markOneRead(id) {
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
-    fetchNotifications();
+  function openNotification(notification) {
+    setOpen(false);
+    if (notification.link) navigate(notification.link);
   }
 
   async function clearAll() {
-    if (!userEmail) return;
-    await supabase.from("notifications").delete().eq("user_email", userEmail);
+    const before = notifications;
     setNotifications([]);
-  }
-
-  useEffect(() => {
-    fetchNotifications();
-
-    const channel = supabase
-      .channel("notifications-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_email=eq.${userEmail}`,
-        },
-        () => fetchNotifications()
-      )
-      .subscribe();
-
-    return () => supabase.removeChannel(channel);
-  }, [userEmail]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+    // hidden, not deleted: the database uses these rows to avoid announcing
+    // the same thing twice
+    const { error } = await supabase.from("notifications")
+      .update({ cleared_at: new Date().toISOString(), read: true })
+      .eq("user_email", userEmail).is("cleared_at", null);
+    if (error) {
+      console.error("NotificationsBell: clearing failed —", error.message);
+      setNotifications(before);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  function timeAgo(timestamp) {
-    const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
   }
 
-  const typeColors = {
-    task: "#f59e0b",
-    chat: "#3b82f6",
-    marketplace: "#10b981",
-    vet: "#ef4444",
-    community: "#8b5cf6",
-    general: "#6b7280",
-  };
+  const count = badgeText(unread);
 
   return (
-    <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
-      {/* Bell Button */}
+    <div className="nb-root" ref={rootRef}>
       <button
-        onClick={() => { setOpen(!open); if (!open) markAllRead(); }}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          position: "relative",
-          padding: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+        className="nb-btn"
+        onClick={toggle}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}
       >
-        <Bell size={24} color="#fff" />
-        {unreadCount > 0 && (
-          <span style={{
-            position: "absolute",
-            top: "2px",
-            right: "2px",
-            background: "#ef4444",
-            color: "#fff",
-            borderRadius: "50%",
-            width: "18px",
-            height: "18px",
-            fontSize: "11px",
-            fontWeight: "bold",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        )}
+        <Bell size={22} aria-hidden="true" />
+        {count && <span className="nb-count" aria-hidden="true">{count}</span>}
       </button>
 
-      {/* Dropdown */}
       {open && (
-        <div style={{
-          position: "absolute",
-          right: 0,
-          top: "44px",
-          width: "320px",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
-          zIndex: 9999,
-          overflow: "hidden",
-        }}>
-          {/* Header */}
-          <div style={{
-            padding: "14px 16px",
-            borderBottom: "1px solid #f0f0f0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}>
-            <span style={{ fontWeight: "700", fontSize: "15px", color: "#1a1a1a" }}>
-              Notifications {unreadCount > 0 && `(${unreadCount})`}
-            </span>
-            <button
-              onClick={clearAll}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#ef4444",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: "600",
-              }}
-            >
-              Clear All
-            </button>
+        <div className="nb-panel" role="dialog" aria-label="Notifications">
+          <div className="nb-head">
+            <h2>Notifications</h2>
+            {notifications.length > 0 && (
+              <button className="nb-link nb-link--danger" onClick={clearAll}>Clear all</button>
+            )}
           </div>
 
-          {/* List */}
-          <div style={{ maxHeight: "360px", overflowY: "auto" }}>
+          <div className="nb-list">
             {notifications.length === 0 ? (
-              <div style={{
-                padding: "32px 16px",
-                textAlign: "center",
-                color: "#9ca3af",
-                fontSize: "14px",
-              }}>
-                🔔 No notifications yet
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  onClick={() => markOneRead(n.id)}
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid #f9f9f9",
-                    cursor: "pointer",
-                    background: n.read ? "#fff" : "#f0f7ff",
-                    transition: "background 0.2s",
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: typeColors[n.type] || typeColors.general,
-                    marginTop: "6px",
-                    flexShrink: 0,
-                  }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontWeight: n.read ? "500" : "700",
-                      fontSize: "13px",
-                      color: "#1a1a1a",
-                      marginBottom: "2px",
-                    }}>
-                      {n.title}
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>
-                      {n.message}
-                    </div>
-                    <div style={{ fontSize: "11px", color: "#9ca3af" }}>
-                      {timeAgo(n.created_at)}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+              <p className="nb-empty">You're all caught up. Reminders and replies will appear here.</p>
+            ) : notifications.map(n => (
+              <button
+                key={n.id}
+                className={`nb-item${freshIds.includes(n.id) ? " nb-item--new" : ""}`}
+                onClick={() => openNotification(n)}
+              >
+                <span className="nb-dot" style={{ background: categoryColour(n.category) }} aria-hidden="true" />
+                <span className="nb-item-body">
+                  <span className="nb-item-title">{n.title}</span>
+                  {n.message && <span className="nb-item-text">{n.message}</span>}
+                  <span className="nb-item-time">{timeAgo(n.created_at)}{freshIds.includes(n.id) ? " · new" : ""}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="nb-foot">
+            <Link className="nb-link" to="/profile#notifications" onClick={() => setOpen(false)}>
+              Choose which notifications you get
+            </Link>
           </div>
         </div>
       )}

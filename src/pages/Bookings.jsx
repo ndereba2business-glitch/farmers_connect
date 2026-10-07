@@ -236,8 +236,6 @@ export default function Bookings() {
 
     setBookingSaving(true);
 
-    const requestedVet = verifiedVets.find(v => v.user_id === bookingForm.requested_vet_id);
-
     const { error } = await supabase.from("vet_appointments").insert([{
       farmer_id: user.id,
       farmer_email: userEmail,
@@ -262,17 +260,6 @@ export default function Bookings() {
       return;
     }
 
-    // Best-effort — only addressable when the farmer picked a specific vet
-    // (an open-pool request has no single recipient to notify).
-    if (requestedVet?.email) {
-      const { error: notifyError } = await supabase.from("notifications").insert([{
-        user_email: requestedVet.email,
-        type: "vet",
-        title: "New visit request",
-        message: `${bookingForm.farm_name} requested a visit on ${bookingForm.appointment_date}.`,
-      }]);
-      if (notifyError) console.error("Bookings: failed to notify vet —", notifyError.message);
-    }
 
     setBookingForm(EMPTY_BOOKING_FORM);
     setShowBookingForm(false);
@@ -292,16 +279,6 @@ export default function Bookings() {
     if (error) {
       toast.error("Failed to cancel: " + error.message);
       return;
-    }
-    if (data && data.length > 0 && data[0].vet_email) {
-      const cancelled = data[0];
-      const { error: notifyError } = await supabase.from("notifications").insert([{
-        user_email: cancelled.vet_email,
-        type: "vet",
-        title: "Visit cancelled",
-        message: `${cancelled.farm_name} cancelled their visit on ${cancelled.appointment_date}.`,
-      }]);
-      if (notifyError) console.error("Bookings: failed to notify vet —", notifyError.message);
     }
     if (!data || data.length === 0) {
       toast.error("This request can no longer be cancelled — its status already changed.");
