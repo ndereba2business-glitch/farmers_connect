@@ -55,21 +55,6 @@ async function hasConflictingAcceptedAppointment(vetId, appt) {
   return (data || []).length > 0;
 }
 
-// Best-effort status update for the farmer — reuses the existing
-// notifications table/NotificationsBell (src/components/NotificationsBell.jsx),
-// already wired up for every role. Never blocks or surfaces errors to the
-// vet: the appointment mutation already succeeded by the time this runs.
-async function notifyFarmer(appt, title, message) {
-  if (!appt.farmer_email) return;
-  const { error } = await supabase.from("notifications").insert([{
-    user_email: appt.farmer_email,
-    type: "vet",
-    title,
-    message,
-  }]);
-  if (error) console.error("Appointments: failed to notify farmer —", error.message);
-}
-
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
@@ -163,34 +148,11 @@ export default function Appointments() {
     setLoadError("");
     setAppointments(data || []);
     setLoading(false);
-    sendDueReminders(data || []); // fire-and-forget, doesn't block the UI
   }
 
-  // Phase 5 — appointment reminders, checked opportunistically whenever a
-  // vet loads their appointments (no scheduled job exists in this repo —
-  // see the Phase 5 plan). Sends once per appointment via reminder_sent.
-  async function sendDueReminders(list) {
-    const today = new Date().toISOString().split("T")[0];
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-
-    const due = list.filter(a =>
-      a.status === "accepted" && !a.reminder_sent &&
-      (a.appointment_date === today || a.appointment_date === tomorrow)
-    );
-    if (due.length === 0) return;
-
-    await Promise.all(due.map(async (appt) => {
-      await notifyFarmer(
-        appt,
-        "Upcoming visit reminder",
-        `Reminder: your visit for ${appt.farm_name} is on ${appt.appointment_date}${appt.appointment_time ? ` at ${appt.appointment_time}` : ""}.`
-      );
-      const { error: flagError } = await supabase.from("vet_appointments")
-        .update({ reminder_sent: true })
-        .eq("id", appt.id);
-      if (flagError) console.error("Appointments: failed to flag reminder sent —", flagError.message);
-    }));
-  }
+  // Visit reminders and status notifications are created by the database
+  // (sync_my_reminders() and the vet_appointments triggers), for the
+  // farmer and the vet alike.
 
   const isMine = (a) =>
     (user?.id && a.vet_id === user.id) || a.vet_email === userEmail;
@@ -266,8 +228,6 @@ export default function Appointments() {
     if (error) { toast.error("Failed to accept: " + error.message); return; }
     if (!data || data.length === 0) {
       toast.error("This appointment's status changed elsewhere and can no longer be accepted.");
-    } else {
-      notifyFarmer(appt, "Visit request accepted", `Your visit request for ${appt.farm_name} on ${appt.appointment_date} was accepted.`);
     }
     loadAppointments();
   }
@@ -294,8 +254,6 @@ export default function Appointments() {
     if (error) { toast.error("Failed to reject: " + error.message); return; }
     if (!data || data.length === 0) {
       toast.error("This appointment's status changed elsewhere and can no longer be rejected.");
-    } else {
-      notifyFarmer(rejectTarget, "Visit request declined", `Your visit request for ${rejectTarget.farm_name} on ${rejectTarget.appointment_date} was declined: ${rejectReason.trim()}`);
     }
     setRejectTarget(null);
     loadAppointments();
@@ -316,8 +274,6 @@ export default function Appointments() {
     if (error) { toast.error("Failed to cancel: " + error.message); return; }
     if (!data || data.length === 0) {
       toast.error("This appointment's status changed elsewhere and can no longer be cancelled.");
-    } else {
-      notifyFarmer(appt, "Visit cancelled", `Your visit for ${appt.farm_name} on ${appt.appointment_date} was cancelled by the vet.`);
     }
     loadAppointments();
   }
@@ -454,8 +410,6 @@ export default function Appointments() {
       // The appointment is already marked completed at this point — surface
       // this loudly rather than silently leaving a visit with no record.
       toast.error("Visit marked complete, but the clinical record failed to save: " + visitRecordError.message);
-    } else {
-      notifyFarmer(completeTarget, "Visit completed", `Your visit for ${completeTarget.farm_name} on ${completeTarget.appointment_date} has been marked complete.`);
     }
     setCompleteTarget(null);
     loadAppointments();
