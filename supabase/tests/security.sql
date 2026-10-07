@@ -250,6 +250,17 @@ begin
   select count(*) into n from public.notifications where user_email = email_a and dedupe_key = 'appt-new:' || appt_n;
   if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N13 vet not told about the visit request; '; end if;
 
+  -- a request addressed to a vet by account id (how the booking form
+  -- sends it) reaches that vet too
+  reset role;
+  insert into public.vet_appointments (farmer_email, requested_vet_id, farm_name, appointment_date, status)
+    values (email_f, sup_b, 'sec-test farm 2', current_date + 3, 'pending') returning id into appt_n;
+  perform set_config('request.jwt.claims', claims_b, true);
+  set local role authenticated;
+  select count(*) into n from public.notifications where user_email = email_b and dedupe_key = 'appt-new:' || appt_n;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N15 requested vet not told about the visit request; '; end if;
+  perform set_config('request.jwt.claims', claims_a, true);
+
   -- the supplier was told a farmer got in touch (check F6 above), but not who
   select count(*), bool_or(message like '%' || email_f || '%') into n, b
     from public.notifications where user_email = email_a and dedupe_key like 'contact:' || prod_a || ':%';

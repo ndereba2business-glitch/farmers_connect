@@ -326,10 +326,9 @@ declare
   farm text := coalesce(nullif(btrim(new.farm_name), ''), 'A farmer');
   day text := to_char(new.appointment_date, 'DD Mon');
 begin
-  vet := coalesce(
-    new.vet_email,
-    public.identity_of_user((select v.user_id from public.vet_profiles v where v.id = coalesce(new.vet_id, new.requested_vet_id)))
-  );
+  -- vet_id and requested_vet_id are the vet's account id (auth.users),
+  -- as written by the booking form
+  vet := coalesce(new.vet_email, public.identity_of_user(coalesce(new.vet_id, new.requested_vet_id)));
 
   if tg_op = 'INSERT' then
     -- an open request has no single vet to tell; vets see those in Appointments
