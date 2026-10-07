@@ -1,3 +1,4 @@
+import NotificationSettings from "../components/NotificationSettings";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -582,6 +583,8 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      <NotificationSettings />
 
       {/* ======================== TABS ======================== */}
       <div style={{
