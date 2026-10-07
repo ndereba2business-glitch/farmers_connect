@@ -219,7 +219,6 @@ export default function Profile() {
     await supabase.from("farmer_profiles").delete().eq("user_email", userEmail);
     await supabase.from("farm_tasks").delete().eq("user_email", userEmail);
     await supabase.from("farm_finances").delete().eq("user_email", userEmail);
-    await supabase.from("community_posts").delete().eq("user_email", userEmail);
     await supabase.auth.signOut();
     navigate("/login");
   }

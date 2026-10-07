@@ -19,11 +19,13 @@ Three signed-in roles plus admin:
 - **Admin** — verifications, community moderation (reports, paused members, blocked words), platform stats
 
 Things that are easy to get wrong because they were deliberately changed:
-- **Community is one group chat** (`community_chat`, at `/community`). The old posts feed and the separate "Messages" chat are gone; `community_posts` and `community_comments` are unused. Members only insert; the database sets the sender's name, badge and reply preview, refuses blocked words, and removal goes through `community_remove_message()`
+- **Community is one group chat** (`community_chat`, at `/community`). The old posts feed and the separate "Messages" chat are gone, and their tables were dropped. Members only insert; the database sets the sender's name, badge and reply preview, refuses blocked words, and removal goes through `community_remove_message()`
 - **Notifications are created by the database**, not the browser: triggers for events, and `sync_my_reminders()` (called by the bell) for vaccinations, tasks and visits that are due. The browser may only write to the signed-in person's own inbox, so a notification for someone else must be a trigger. Each person's switches live in `notification_preferences` and are enforced by an insert guard. In-app only: no push, no SMS
 - **Clucky is a real AI model** behind the `clucky` edge function (`supabase/functions/clucky/`). The Anthropic key is the function secret `ANTHROPIC_API_KEY`; the model is `claude-opus-5-5` unless `CLUCKY_MODEL` says otherwise, and `CLUCKY_DAILY_LIMIT` (default 30) caps questions per account per day
 - **Google sign-in** only shows once the Google provider is enabled in Supabase; the button checks `/auth/v1/settings`
 - **Feed amounts** come from week-by-week tables in `src/lib/feedPlan.js`. Don't replace them with a flat amount per phase
+- **Visitors who are not signed in have no database access at all**, and anonymous sign-in sessions are refused on every table by a restrictive rule named `block_anonymous_sessions`. The public landing page must not query Supabase
+- **The Revenue page and the vet "earnings" figure were removed**: no money moves through the app. They are planned to return with payments (version 2.1)
 
 The marketplace is **contact-first**: farmers contact suppliers by phone or
 WhatsApp. In-app ordering and payments exist in code but are switched off by
@@ -53,7 +55,8 @@ losing their input.
 - Supabase schema changes always go through `supabase\migrations\` as versioned files — never edit schema directly in the dashboard and call it done
 - Never edit or delete an existing migration. Add a new one
 - Dry-run every migration inside a transaction that rolls back before applying it to the linked project
-- Every new table gets row-level security in the same migration, plus a check in `supabase/tests/security.sql`
+- Every new table gets, in the same migration: row-level security, the `block_anonymous_sessions` restrictive policy (copy it from `20261010090000_security_hardening.sql`), rules written `to authenticated` with `(select auth.uid())` / `(select public.request_identity())`, a `comment on table`, and a check in `supabase/tests/security.sql`. Check H14 there fails if a table is missing the first two
+- New database functions are not callable by anyone until granted: grant `execute` to `authenticated` only for functions the app calls. A `security definer` function must set `search_path = ''` and check who is calling
 - Secrets (API keys for AI, SMS, etc.) live only in Supabase function secrets. Anything prefixed `VITE_` is shipped to every browser, so it must never hold a secret
 - Every new screen/component must be checked for responsiveness — see Responsiveness section below — before it's considered done
 - Don't drop unused database tables or rename route paths without being asked
@@ -90,6 +93,7 @@ This app is for farmers likely using mid-range/low-end Android phones on mobile 
 - Build (run before every Vercel push): `npm run build`
 - Tests (no database needed): `npm test` = `npm run test:unit` (pure logic in `src/lib` and the Clucky prompt) + `npm run test:e2e` (the real app in Chromium against an in-memory mock of Supabase, including 320/360/768/1280px layout and accessibility checks). A new end-to-end file must be added to the `test:e2e` script in `package.json`; the mock (`tests/e2e/mockBackend.js`) serves any table seeded in `backend.db.tables`
 - Security rules against the linked database (rolls back, leaves no data): `npm run test:security`
+- Supabase's own security and performance advisor: `supabase db advisors --linked`. Run it after any migration that adds tables, functions or policies
 - Real-login journeys against the live project: `npm run test:live` (skips until `.env.test.local` holds `TEST_SUPPLIER_EMAIL`, `TEST_SUPPLIER_PASSWORD`, `TEST_FARMER_EMAIL`, `TEST_FARMER_PASSWORD`)
 - Secret leak check of the production build: `npm run check:secrets`
 - Apply migrations to the linked project: `supabase db push` (after a rolled-back dry run of the SQL)
@@ -118,6 +122,9 @@ Follow conventional commits, since this repo is also a portfolio piece:
 - **`select("*")` with no limit** on tables that grow (posts, messages, notifications). Select the columns needed and add a limit
 - **Realtime needs the table in the publication.** Subscribing to a table that isn't in `supabase_realtime` fails silently: the page loads and never updates. Add the table in a migration
 - **A white icon on a white bar.** The notification bell was invisible on three of the four layouts for this reason. Shared components must carry their own contrast, and a screenshot check beats a measurement
+- **One value, three gatekeepers.** Vets could never decline a visit: the app saved `rejected` while a check constraint and a trigger only knew `declined`. When adding or renaming a status, change the app, the check constraint and the transition trigger together, and test the write against the database
+- **A rule on a table cannot read that same table** (Postgres reports infinite recursion). Put the lookup in a `security definer` helper function
+- **`git add <path>` fails on a file whose deletion is already staged**, and the commit is silently skipped while later commands carry on. Use `git add -u`, and check `git status` is clean and the build passes before merging
 - **Stopping tracking a file deletes it for everyone who pulls.** `git rm --cached` followed by a pull removed `supabase/.temp` and unlinked the CLI; restore untracked files after such a change
 
 ## Style

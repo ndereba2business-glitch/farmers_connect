@@ -28,3 +28,6 @@ dist-ssr
 
 # Supabase CLI cache (machine-specific; stays on disk, not in git)
 supabase/.temp/
+
+# Local data backups taken before destructive migrations (may hold personal data)
+supabase/backups/

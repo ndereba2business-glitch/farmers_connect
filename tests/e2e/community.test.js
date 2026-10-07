@@ -16,6 +16,15 @@ const BOB = { email: "bob@group.test", role: "farmer" };
 const ADMIN = { email: "admin@group.test", role: "farmer", admin: true };
 
 const minutesAgo = (n) => new Date(Date.now() - n * 60000).toISOString();
+const secondsAgo = (n) => new Date(Date.now() - n * 1000).toISOString();
+// Noon yesterday in local time, so "Yesterday" holds whatever time the
+// tests run (a fixed "24 hours ago" becomes two days ago just after midnight).
+function yesterdayAt(hour, minute = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  d.setHours(hour, minute, 0, 0);
+  return d.toISOString();
+}
 
 let app;
 let backend;
@@ -37,10 +46,10 @@ beforeEach(() => {
   backend = createMockBackend();
   for (const user of [ALICE, BOB, ADMIN]) backend.addUser(user);
   backend.db.tables.community_chat = [
-    message("m1", BOB, "My layers have stopped laying, any ideas?", minutesAgo(24 * 60 + 30)),
-    message("m2", ALICE, "Check the feed, mine did that on poor mash.", minutesAgo(24 * 60 + 20)),
-    message("m3", BOB, "Thanks, I changed supplier and they are back.", minutesAgo(3)),
-    message("m4", BOB, "Anyone selling day-old kienyeji chicks in Nakuru?", minutesAgo(2))
+    message("m1", BOB, "My layers have stopped laying, any ideas?", yesterdayAt(12, 0)),
+    message("m2", ALICE, "Check the feed, mine did that on poor mash.", yesterdayAt(12, 10)),
+    message("m3", BOB, "Thanks, I changed supplier and they are back.", secondsAgo(4)),
+    message("m4", BOB, "Anyone selling day-old kienyeji chicks in Nakuru?", secondsAgo(3))
   ];
   backend.db.tables.message_reactions = [{ id: "r1", message_id: "m1", user_email: BOB.email, user_name: "Bob Otieno", emoji: "👍" }];
   backend.db.tables.community_reports = [];
@@ -154,7 +163,7 @@ test("off-topic adverts are refused and the text is kept", { timeout: 60000 }, a
 });
 
 test("I can delete my own message, and replies to it lose the quote", { timeout: 60000 }, async () => {
-  chat().push(message("m5", BOB, "Good tip Alice.", minutesAgo(1), { reply_to_id: "m2", reply_to_user: "Alice Wanjiru", reply_to_message: "Check the feed, mine did that on poor mash." }));
+  chat().push(message("m5", BOB, "Good tip Alice.", secondsAgo(2), { reply_to_id: "m2", reply_to_user: "Alice Wanjiru", reply_to_message: "Check the feed, mine did that on poor mash." }));
   const { context, page } = await openGroup(ALICE);
 
   await bubble(page, "Check the feed, mine did that").first().click();
@@ -256,7 +265,7 @@ test("the old Messages address opens the group, and the menu has one entry", { t
 
 for (const width of [320, 360, 768, 1280]) {
   test(`the group fits the screen and meets the layout rules at ${width}px`, { timeout: 60000 }, async () => {
-    chat().push(message("long", BOB, "Averyveryverylongwordwithoutanyspaces".repeat(6), minutesAgo(1)));
+    chat().push(message("long", BOB, "Averyveryverylongwordwithoutanyspaces".repeat(6), secondsAgo(2)));
     const { context, page } = await openGroup(ALICE, { width, height: 700 });
 
     const fit = await page.evaluate(() => {
