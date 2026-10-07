@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Inbox, Package, ShoppingBag, Store, UserCircle,
+  LayoutDashboard, Inbox, Package, ShoppingBag, Store, UserCircle, Users,
   Menu, X, LogOut
 } from "lucide-react";
 import { IN_APP_ORDERING } from "../../config/features";
@@ -21,6 +21,7 @@ const NAV = [
   ...(IN_APP_ORDERING ? [ORDERS_LINK] : []),
   { to: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/supplier-profile", label: "Supplier profile", icon: Store },
+  { to: "/community", label: "Community", icon: Users },
   { to: "/profile", label: "Account", icon: UserCircle }
 ];
 
@@ -41,6 +42,7 @@ const TITLES = [
   ["/supplier-profile", "Supplier profile"],
   ["/supplier", "Dashboard"],
   ["/marketplace", "Marketplace"],
+  ["/community", "Community"],
   ["/profile", "Account"],
   ["/suppliers", "Supplier directory"]
 ];
