@@ -32,7 +32,11 @@ export function createMockBackend() {
     shared: new Set(["community_chat", "message_reactions"]),
     // Whole words the community refuses, standing in for community_blocked_terms.
     blockedWords: ["betting", "bitcoin"],
-    rpcCalls: []                // { name, user } for every database function called
+    rpcCalls: [],               // { name, user } for every database function called
+    // How the Clucky function behaves: "answer" streams `reply` back;
+    // any other value is the problem code it reports instead
+    // (not_configured, daily_limit, declined, busy, cut_off).
+    clucky: { mode: "answer", reply: "Give them clean water and keep the brooder warm.", asked: [] }
   };
 
   // newUser: true means the account has not seen the onboarding tour yet.
@@ -115,6 +119,44 @@ export function createMockBackend() {
         return json(200, authUser(current));
       }
       return json(200, {});
+    });
+
+    // The clucky edge function: newline-delimited events, as the real one sends.
+    await context.route(`${MOCK_SUPABASE_URL}/functions/v1/clucky`, async route => {
+      const req = route.request();
+      const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+      if (req.method() === "OPTIONS") return route.fulfill({ status: 200, headers: cors, body: "ok" });
+      const problem = (status, code, extra = {}) =>
+        route.fulfill({ status, headers: cors, contentType: "application/json", body: JSON.stringify({ code, ...extra }) });
+      if (!current) return problem(401, "not_signed_in");
+
+      const { message } = JSON.parse(req.postData() || "{}");
+      const { mode, reply } = db.clucky;
+      db.clucky.asked.push({ user: current.email, message });
+      if (mode === "not_configured") return problem(503, "not_configured");
+      if (mode === "daily_limit") return problem(429, "daily_limit", { limit: 30 });
+
+      const events = [];
+      if (mode === "declined") {
+        events.push({ t: "delta", text: "I can't help" }, { t: "error", code: "declined" });
+      } else if (mode === "busy") {
+        events.push({ t: "error", code: "busy" });
+      } else {
+        // sent in pieces, with a hand-over first, to exercise the reader
+        events.push({ t: "delta", text: "discarded draft" }, { t: "reset" });
+        for (const word of reply.split(/(?<= )/)) events.push({ t: "delta", text: word });
+        if (mode !== "cut_off") events.push({ t: "done", truncated: false });
+        const store = db.tables.clucky_messages;
+        if (store) {
+          const at = Date.now();
+          store.push({ id: newId("ck"), user_email: current.email, role: "user", content: message, created_at: new Date(at).toISOString() });
+          store.push({ id: newId("ck"), user_email: current.email, role: "assistant", content: reply, created_at: new Date(at + 1).toISOString() });
+        }
+      }
+      return route.fulfill({
+        status: 200, headers: cors, contentType: "application/x-ndjson; charset=utf-8",
+        body: events.map(e => JSON.stringify(e)).join("\n") + "\n"
+      });
     });
 
     await context.route(`${MOCK_SUPABASE_URL}/storage/v1/**`, route =>

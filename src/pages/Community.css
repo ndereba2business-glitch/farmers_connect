@@ -2,10 +2,10 @@
 
 .cm-page {
   /* phones: edge to edge, cancelling the layout's 16px padding */
-  --cm-bleed: 16px;
+  --fill-bleed: 16px;
   display: flex;
   flex-direction: column;
-  margin: calc(-1 * var(--cm-bleed));
+  margin: calc(-1 * var(--fill-bleed));
   min-height: 360px;
   overflow: hidden;
   background: #efeae2;
@@ -538,7 +538,7 @@
 
 @media (min-width: 640px) {
   .cm-page {
-    --cm-bleed: 0px;
+    --fill-bleed: 0px;
     max-width: 860px;
     margin: 0 auto;
     border: 1px solid #e5e7eb;
