@@ -407,9 +407,10 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
+# Requires a sign-in, and the function itself only serves admins.
 [functions.send-vaccine-reminder]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 import_map = "./functions/send-vaccine-reminder/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
