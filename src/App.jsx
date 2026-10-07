@@ -27,7 +27,6 @@ const Profile = lazy(() => import("./pages/Profile"));
 const FarmGallery = lazy(() => import("./pages/FarmGallery"));
 const VerificationRequests = lazy(() => import("./pages/VerificationRequests"));
 const Community = lazy(() => import("./pages/Community"));
-const CommunityChat = lazy(() => import("./pages/CommunityChat"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
@@ -199,10 +198,9 @@ function AppRoutes() {
           {/* COMMUNITY */}
           <Route path="/community" element={<Community />} />
 
-          <Route
-            path="/community-chat"
-            element={<CommunityChat />}
-          />
+          {/* The separate "Messages" chat and the posts feed were merged
+              into one group at /community; the old address still works. */}
+          <Route path="/community-chat" element={<Navigate to="/community" replace />} />
 
           {/* BOOKINGS */}
           <Route path="/bookings" element={<Bookings />} />
@@ -212,7 +210,7 @@ function AppRoutes() {
 
           {/* Retired anonymous chat room (no owner on messages, so nothing could
               be moderated or attributed). Community chat replaced it. */}
-          <Route path="/chat" element={<Navigate to="/community-chat" replace />} />
+          <Route path="/chat" element={<Navigate to="/community" replace />} />
 
           {/* VERIFICATIONS */}
           <Route

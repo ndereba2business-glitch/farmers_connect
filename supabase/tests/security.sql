@@ -1,4 +1,5 @@
--- Supplier dashboard security checks, run against the linked database.
+-- Security checks for the supplier dashboard and the community group,
+-- run against the linked database.
 --
 --   npm run test:security
 --
@@ -14,7 +15,7 @@ begin;
 do $$
 declare
   sup_a uuid; email_a text; sup_b uuid; email_b text; farmer uuid; email_f text; farmer_profile uuid;
-  sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid;
+  sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
   claims_a text; claims_b text; claims_f text;
   n int; v text; b boolean;
   passed int := 0; failed int := 0; report text := '';
@@ -156,6 +157,118 @@ begin
   exception when others then passed := passed + 1;
   end;
 
+  -- ============================ community group chat ==================
+  -- still acting as the farmer
+  insert into public.community_chat (user_email, user_name, message)
+    values (email_f, 'Site Admin', '  sec-test hello, which feed is Better for layers?  ') returning id into msg_f;
+  select (user_email = email_f and message = 'sec-test hello, which feed is Better for layers?'
+          and user_name <> 'Site Admin' and sender_badge is null) into b
+    from public.community_chat where id = msg_f;
+  if coalesce(b, false) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C1 message not cleaned, or sender chose own name/badge; '; end if;
+
+  insert into public.community_chat (user_email, user_name, message) values (email_a, 'x', 'sec-test spoof');
+  select count(*) into n from public.community_chat where message = 'sec-test spoof' and user_email = email_a;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C2 posted as another member; '; end if;
+
+  begin
+    insert into public.community_chat (user_email, user_name, message) values (email_f, 'x', 'Join our BETTING group today');
+    failed := failed + 1; report := report || 'FAIL C3 blocked word accepted; ';
+  exception when raise_exception then
+    if sqlerrm = 'community_blocked' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL C3 wrong error %s; ', sqlerrm); end if;
+  end;
+
+  begin
+    update public.community_chat set message = 'edited' where id = msg_f;
+    get diagnostics n = row_count;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C4 member rewrote a message directly; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    delete from public.community_chat where id = msg_f;
+    get diagnostics n = row_count;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C5 member hard-deleted a message; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  insert into public.message_reactions (message_id, user_email, user_name, emoji) values (msg_f, email_f, 'x', '👍');
+  begin
+    insert into public.message_reactions (message_id, user_email, user_name, emoji) values (msg_f, email_f, 'x', '❤️');
+    failed := failed + 1; report := report || 'FAIL C6 two reactions from one person on one message; ';
+  exception when unique_violation then passed := passed + 1;
+  end;
+
+  insert into public.message_reactions (message_id, user_email, user_name, emoji) values (msg_f, email_f, 'x', '🙏')
+    on conflict (message_id, user_email) do update set emoji = excluded.emoji;
+  select count(*), max(emoji) into n, v from public.message_reactions where message_id = msg_f and user_email = email_f;
+  if n = 1 and v = '🙏' then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C7 changing a reaction did not replace it; '; end if;
+
+  -- another member
+  perform set_config('request.jwt.claims', claims_b, true);
+
+  begin
+    perform public.community_remove_message(msg_f);
+    failed := failed + 1; report := report || 'FAIL C8 member removed a message that is not theirs; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  insert into public.community_reports (message_id, reporter, reason) values (msg_f, email_b, 'sec-test report');
+  begin
+    insert into public.community_reports (message_id, reporter, reason) values (msg_f, email_a, 'as someone else');
+    failed := failed + 1; report := report || 'FAIL C9 report filed in another member name; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    insert into public.community_mutes (user_email, muted_until) values (email_f, now() + interval '1 day');
+    failed := failed + 1; report := report || 'FAIL C10 member muted another member; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  select count(*) into n from public.community_blocked_terms;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C11 member read the blocked-word list; '; end if;
+
+  -- a third member cannot see the report
+  perform set_config('request.jwt.claims', claims_a, true);
+  select count(*) into n from public.community_reports where message_id = msg_f;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C12 member read a report filed by someone else; '; end if;
+
+  -- sending too fast: the 9th message inside a minute is refused
+  for i in 1..8 loop
+    insert into public.community_chat (user_email, user_name, message) values (email_a, 'x', 'sec-test burst ' || i);
+  end loop;
+  begin
+    insert into public.community_chat (user_email, user_name, message) values (email_a, 'x', 'sec-test burst 9');
+    failed := failed + 1; report := report || 'FAIL C13 no rate limit; ';
+  exception when raise_exception then
+    if sqlerrm = 'community_too_fast' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL C13 wrong error %s; ', sqlerrm); end if;
+  end;
+
+  -- an admin (app_metadata, not self-declared) removes a member message
+  select id into msg_a from public.community_chat where message = 'sec-test burst 1' and user_email = email_a;
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_b, 'email', email_b, 'phone', '', 'role', 'authenticated',
+    'app_metadata', json_build_object('role', 'admin'))::text, true);
+  select public.community_remove_message(msg_a) into b;
+  select count(*) into n from public.community_chat where id = msg_a and message = '' and removed_by = 'admin';
+  if b and n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C14 admin could not remove a message; '; end if;
+
+  insert into public.community_mutes (user_email, muted_until, reason) values (email_f, now() + interval '1 day', 'sec-test');
+
+  -- the author removes their own message; its reactions and the open report go too
+  perform set_config('request.jwt.claims', claims_f, true);
+  select public.community_remove_message(msg_f) into b;
+  select count(*) into n from public.message_reactions where message_id = msg_f;
+  select removed_by into v from public.community_chat where id = msg_f;
+  if b and n = 0 and v = 'author' then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL C15 author could not remove own message; '; end if;
+
+  -- and, being muted now, cannot post
+  begin
+    insert into public.community_chat (user_email, user_name, message) values (email_f, 'x', 'sec-test while muted');
+    failed := failed + 1; report := report || 'FAIL C16 muted member posted; ';
+  exception when raise_exception then
+    if sqlerrm = 'community_muted' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL C16 wrong error %s; ', sqlerrm); end if;
+  end;
+
   -- ============================ anonymous (not signed in) =============
   reset role;
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
@@ -177,6 +290,12 @@ begin
   begin
     select count(*) into n from public.supplier_profiles;
     if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL A3 anonymous user read supplier profiles; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    select count(*) into n from public.community_chat;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL A4 anonymous user read the community; '; end if;
   exception when insufficient_privilege then passed := passed + 1;
   end;
 
