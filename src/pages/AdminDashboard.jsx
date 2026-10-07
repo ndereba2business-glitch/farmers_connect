@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import CommunityModeration from "../components/CommunityModeration";
 import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall } from "lucide-react";
 
 const VET_STATUS_META = {
@@ -23,6 +24,15 @@ export default function AdminDashboard() {
   const [supplierProfiles, setSupplierProfiles] = useState([]);
   const [supplierFilter, setSupplierFilter] = useState("pending");
   const [updatingSupplierId, setUpdatingSupplierId] = useState(null);
+  const [openReports, setOpenReports] = useState(0);
+
+  // The badge on the Community tab, before that tab has been opened.
+  useEffect(() => {
+    let cancelled = false;
+    supabase.from("community_reports").select("id", { count: "exact", head: true }).eq("status", "open")
+      .then(({ count }) => { if (!cancelled) setOpenReports(count || 0); });
+    return () => { cancelled = true; };
+  }, []);
 
   async function loadData() {
     setLoading(true);
@@ -38,7 +48,7 @@ export default function AdminDashboard() {
       supabase.from("farmer_profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("farm_batches").select("*").order("created_at", { ascending: false }),
-      supabase.from("community_posts").select("*", { count: "exact", head: true }),
+      supabase.from("community_chat").select("id", { count: "exact", head: true }).is("removed_at", null),
       supabase.from("vet_profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("supplier_profiles").select("*").order("created_at", { ascending: false }),
       // counts only; admin-checked in the database
@@ -112,7 +122,7 @@ export default function AdminDashboard() {
     { title: "Pending Supplier Reviews", value: stats.pendingSuppliers, icon: Store, color: "#fef3c7", iconColor: "#d97706" },
     { title: "Total Products", value: stats.products, icon: ShoppingBag, color: "#fff7e6", iconColor: "#f59e0b" },
     { title: "Chick Batches", value: stats.batches, icon: Egg, color: "#fff0eb", iconColor: "#f97316" },
-    { title: "Community Posts", value: stats.posts, icon: MessageSquare, color: "#edf5ff", iconColor: "#3b82f6" },
+    { title: "Community Messages", value: stats.posts, icon: MessageSquare, color: "#edf5ff", iconColor: "#3b82f6" },
   ];
 
   const filteredVets = vetFilter === "all"
@@ -173,9 +183,11 @@ export default function AdminDashboard() {
         background: "#f3f4f6", borderRadius: "12px",
         padding: "4px", marginBottom: "20px", width: "fit-content", flexWrap: "wrap"
       }}>
-        {["vets", "suppliers", "users", "products", "batches"].map(tab => (
+        {["vets", "suppliers", "community", "users", "products", "batches"].map(tab => (
           <button
             key={tab}
+            className="fc-tap"
+            aria-pressed={activeTab === tab}
             onClick={() => setActiveTab(tab)}
             style={{
               padding: "8px 20px", borderRadius: "9px",
@@ -206,10 +218,25 @@ export default function AdminDashboard() {
                 {stats.pendingSuppliers}
               </span>
             )}
+            {tab === "community" && openReports > 0 && (
+              <span
+                aria-label={`${openReports} reported`}
+                style={{
+                  background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800",
+                  minWidth: "16px", height: "16px", padding: "0 4px", borderRadius: "8px",
+                  display: "flex", alignItems: "center", justifyContent: "center"
+                }}
+              >
+                {openReports}
+              </span>
+            )}
             {tab}
           </button>
         ))}
       </div>
+
+      {/* ═══════════ COMMUNITY TAB ═══════════ */}
+      {activeTab === "community" && <CommunityModeration onOpenCount={setOpenReports} />}
 
       {/* ═══════════ VETS TAB ═══════════ */}
       {activeTab === "vets" && (
