@@ -6,7 +6,7 @@ import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
   Users, Shield,
-  BarChart3, ClipboardList, UserCircle, ChevronRight,
+  ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
   Package, Calculator, Menu, X, CalendarClock
 } from "lucide-react";
@@ -42,7 +42,6 @@ const SupplierShell = lazy(() => import("./supplier/SupplierShell"));
 
 const ADMIN_NAV = [
   { name: "Admin Panel", path: "/admin", icon: Shield },
-  { name: "Revenue", path: "/revenue", icon: BarChart3 },
   { name: "Verifications", path: "/verifications", icon: ClipboardList },
   { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
   { name: "Community", path: "/community", icon: Users },

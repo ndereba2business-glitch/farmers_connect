@@ -15,7 +15,6 @@ const Suppliers = lazy(() => import("./pages/Suppliers"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Orders = lazy(() => import("./pages/Orders"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const RevenueDashboard = lazy(() => import("./pages/RevenueDashboard"));
 const SupplierOrders = lazy(() => import("./pages/SupplierOrders"));
 const SupplierDashboard = lazy(() => import("./pages/SupplierDashboard"));
 const SupplierProfileSetup = lazy(() => import("./pages/SupplierProfileSetup"));
@@ -169,7 +168,7 @@ function AppRoutes() {
           <Route path="/finance" element={<Finance />} />
 
           {/* Retired: its totals came from unused tables (bookings, the old
-              suppliers table). The admin dashboard and /revenue cover this. */}
+              suppliers table). The admin dashboard covers this. */}
           <Route path="/analytics" element={<Navigate to={role === "admin" ? "/admin" : "/"} replace />} />
 
           {/* PROFILE */}
@@ -333,14 +332,11 @@ function AppRoutes() {
             }
           />
 
-          <Route
-            path="/revenue"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <RevenueDashboard />
-              </ProtectedRoute>
-            }
-          />
+          {/* Retired for now: the app takes no commission and in-app ordering
+              is switched off, so there is no revenue to report. Planned to
+              return with payments in version 2.1 (the old page is in git
+              history as src/pages/RevenueDashboard.jsx). */}
+          <Route path="/revenue" element={<Navigate to={role === "admin" ? "/admin" : "/"} replace />} />
 
         </Route>
 
