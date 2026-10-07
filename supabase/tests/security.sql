@@ -18,7 +18,7 @@ declare
   sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
   msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid;
   claims_a text; claims_b text; claims_f text;
-  n int; i int; v text; b boolean;
+  n int; i int; v text; b boolean; rec record;
   passed int := 0; failed int := 0; report text := '';
 begin
   select u.id, u.email, f.id into farmer, email_f, farmer_profile
@@ -411,6 +411,159 @@ begin
   exception when raise_exception then
     if sqlerrm = 'community_muted' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL C16 wrong error %s; ', sqlerrm); end if;
   end;
+
+  -- ============================ hardening (2026-10 review) =============
+  -- sup_b plays a verified vet for these checks. Set up as the database
+  -- owner with no signed-in user, or the self-verification guards would
+  -- (rightly) turn "verified" back into "pending".
+  reset role;
+  perform set_config('request.jwt.claims', '', true);
+  if exists (select 1 from public.vet_profiles where user_id = sup_b) then
+    update public.vet_profiles set verification_status = 'verified', email = email_b where user_id = sup_b;
+  else
+    insert into public.vet_profiles (user_id, full_name, email, verification_status) values (sup_b, 'sec-test vet', email_b, 'verified');
+  end if;
+  insert into public.vet_questions (user_email, question, is_emergency, status)
+    values (email_f, 'sec-test birds dying fast', true, 'pending') returning id into msg_a;
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+
+  -- a farmer cannot pose as a vet to another farmer
+  begin
+    insert into public.vet_farmer_messages (vet_email, farmer_email, sender_email, message) values (email_f, email_a, email_f, 'sec-test I am your vet');
+    failed := failed + 1; report := report || 'FAIL H1 farmer messaged another farmer as their vet; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- but can write to a verified vet
+  insert into public.vet_farmer_messages (vet_email, farmer_email, sender_email, message) values (email_b, email_f, email_f, 'sec-test hello doctor');
+  select count(*) into n from public.vet_farmer_messages where message = 'sec-test hello doctor';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL H2 farmer could not message a verified vet; '; end if;
+
+  -- a farmer cannot write a finished visit onto someone else's record
+  begin
+    insert into public.vet_appointments (farmer_email, vet_email, vet_id, farm_name, appointment_date, status, fee)
+      values (email_a, email_f, farmer, 'sec-test', current_date, 'completed', 99999);
+    failed := failed + 1; report := report || 'FAIL H3 farmer created a completed visit as the vet; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- nor ask for a visit that is already accepted or priced
+  begin
+    insert into public.vet_appointments (farmer_email, farmer_id, farm_name, appointment_date, status, fee)
+      values (email_f, farmer, 'sec-test', current_date + 5, 'accepted', 0);
+    failed := failed + 1; report := report || 'FAIL H4 farmer created a pre-accepted visit; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- an ordinary request still works
+  insert into public.vet_appointments (farmer_email, farmer_id, requested_vet_id, farm_name, appointment_date, status)
+    values (email_f, farmer, sup_b, 'sec-test farm 3', current_date + 5, 'pending') returning id into appt_n;
+
+  -- only verified vets, in their own folder, may add lab results
+  begin
+    insert into storage.objects (bucket_id, name, owner) values ('lab-results', farmer::text || '/sec-test.pdf', farmer);
+    failed := failed + 1; report := report || 'FAIL H5 non-vet uploaded a lab result; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- the vet
+  perform set_config('request.jwt.claims', claims_b, true);
+
+  -- as the app does: claim the request, then decline it
+  update public.vet_appointments set vet_id = sup_b, vet_email = email_b where id = appt_n and vet_id is null;
+  update public.vet_appointments set status = 'rejected', rejection_reason = 'sec-test fully booked' where id = appt_n;
+  select status into v from public.vet_appointments where id = appt_n;
+  if v = 'rejected' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H6 vet could not decline a visit (status %s); ', v); end if;
+
+  begin
+    update public.vet_appointments set status = 'accepted' where id = appt_n;
+    failed := failed + 1; report := report || 'FAIL H7 a declined visit was reopened; ';
+  exception when raise_exception then passed := passed + 1;
+  end;
+
+  -- the vet can reply to the farmer who wrote first
+  insert into public.vet_farmer_messages (vet_id, vet_email, farmer_email, sender_email, message) values (sup_b, email_b, email_f, email_b, 'sec-test reply');
+  select count(*) into n from public.vet_farmer_messages where message = 'sec-test reply';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL H8 vet could not reply to a farmer; '; end if;
+
+  -- answering an emergency keeps the question and its owner intact
+  update public.vet_questions set answer = 'sec-test isolate them', status = 'answered', user_email = email_b, question = 'rewritten' where id = msg_a;
+  select (answer = 'sec-test isolate them' and user_email = email_f and question = 'sec-test birds dying fast') into b from public.vet_questions where id = msg_a;
+  if coalesce(b, false) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL H9 vet answer did not save, or rewrote the question; '; end if;
+
+  begin
+    insert into storage.objects (bucket_id, name, owner) values ('lab-results', farmer::text || '/sec-test.pdf', sup_b);
+    failed := failed + 1; report := report || 'FAIL H10 vet uploaded outside own folder; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  insert into storage.objects (bucket_id, name, owner) values ('lab-results', sup_b::text || '/sec-test.pdf', sup_b);
+  passed := passed + 1;
+
+  -- an anonymous session (no account) gets nothing and can do nothing.
+  -- (sup_b's id, so it is not the owner of the product it tries to contact:
+  -- owners tapping their own listing are skipped before any rule runs.)
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', sup_b, 'email', '', 'phone', '', 'role', 'authenticated', 'is_anonymous', true)::text, true);
+  select (select count(*) from public.community_chat) + (select count(*) from public.supplier_profiles)
+       + (select count(*) from public.products) + (select count(*) from public.vet_profiles) into n;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H11 anonymous session read %s rows; ', n); end if;
+
+  begin
+    insert into public.contact_events (product_id, channel) values (prod_a, 'call');
+    failed := failed + 1; report := report || 'FAIL H12 anonymous session recorded a contact; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    insert into storage.objects (bucket_id, name, owner) values ('avatars', sup_b::text || '/sec-test.jpg', sup_b);
+    failed := failed + 1; report := report || 'FAIL H13 anonymous session uploaded a file; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- structure: every table is locked the same way
+  reset role;
+  select count(*) into n from pg_class c
+   where c.relnamespace = 'public'::regnamespace and c.relkind = 'r'
+     and (not c.relrowsecurity
+          or not exists (select 1 from pg_policy p where p.polrelid = c.oid and p.polname = 'block_anonymous_sessions')
+          or has_table_privilege('anon', c.oid, 'select') or has_table_privilege('anon', c.oid, 'insert'));
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H14 %s table(s) without row-level security, the anonymous-session rule, or still open to visitors; ', n); end if;
+
+  select count(*) into n from pg_proc p
+   where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute');
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H15 %s function(s) callable without signing in; ', n); end if;
+
+  -- a phone sign-up gets a profile under its phone number, not a blank one
+  begin
+    insert into auth.users (id, instance_id, aud, role, phone, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
+      values (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '254700000999',
+              '{"full_name": "sec-test phone farmer"}', '{}', now(), now());
+    select count(*) into n from public.farmer_profiles where user_email = '254700000999' and full_name = 'sec-test phone farmer';
+    select count(*) into i from public.farmer_profiles where coalesce(user_email, '') = '';
+    if n = 1 and i = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H16 phone sign-up profile: %s named, %s blank; ', n, i); end if;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL H16 could not simulate a sign-up: %s; ', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+
+  -- removing default access must not lock real users out: a signed-in
+  -- farmer can query every table (the rules decide which rows come back).
+  -- contact_events is the one exception: it is write-only on purpose, so
+  -- nobody can read who contacted whom (check F6).
+  n := 0;
+  for rec in select c.relname from pg_class c
+              where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and c.relname <> 'contact_events' loop
+    begin
+      execute format('select count(*) from public.%I', rec.relname) into i;
+    exception when insufficient_privilege then
+      n := n + 1; report := report || format('(no access to %s) ', rec.relname);
+    end;
+  end loop;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H17 signed-in user locked out of %s table(s); ', n); end if;
 
   -- ============================ anonymous (not signed in) =============
   reset role;
