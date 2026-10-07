@@ -5,7 +5,7 @@ import OnboardingTour from "./OnboardingTour";
 import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
-  Users, MessageCircle, Shield,
+  Users, Shield,
   BarChart3, ClipboardList, UserCircle, ChevronRight,
   Bot, Image, CheckSquare, LogOut,
   Package, Calculator, Menu, X, CalendarClock
@@ -20,7 +20,6 @@ const FARMER_NAV = [
   { name: "My Farm", path: "/my-farm", icon: Egg },
   { name: "Ask Vet", path: "/bookings", icon: Stethoscope },
   { name: "Community", path: "/community", icon: Users },
-  { name: "Messages", path: "/community-chat", icon: MessageCircle },
   { name: "Clucky AI", path: "/clucky", icon: Bot },
   { name: "Feed Calculator", path: "/feed-calculator", icon: Calculator },
   { name: "Tasks", path: "/tasks", icon: CheckSquare },

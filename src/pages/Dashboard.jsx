@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import "./Dashboard.css";
 import {
   Egg, Syringe, ShoppingBag, Users, ArrowUpRight,
-  Plus, MessageCircle, CheckCircle2,
+  Plus, Stethoscope, CheckCircle2,
   AlertTriangle, X, TrendingUp, TrendingDown, DollarSign, Wallet
 } from "lucide-react";
 import {
@@ -95,7 +95,7 @@ export default function Dashboard() {
       supabase.from("farm_batches").select("*", { count: "exact", head: true })
         .eq("user_email", userEmail).eq("status", "active"),
       supabase.from("products").select("*", { count: "exact", head: true }),
-      supabase.from("community_posts").select("*", { count: "exact", head: true }),
+      supabase.from("community_chat").select("id", { count: "exact", head: true }).is("removed_at", null),
       supabase.from("farm_tasks").select("*", { count: "exact", head: true })
         .eq("user_email", userEmail).eq("completed", false),
       supabase.from("farm_tasks").select("*")
@@ -210,14 +210,14 @@ export default function Dashboard() {
     { title: "Active Batches", value: stats.batches, icon: Egg, color: "#edf9f1", iconColor: "#22c55e", path: "/my-farm" },
     { title: "Pending Vaccines", value: stats.vaccines, icon: Syringe, color: "#fff7e6", iconColor: "#f59e0b", path: "/my-farm" },
     { title: "Active Listings", value: stats.listings, icon: ShoppingBag, color: "#fff0eb", iconColor: "#f97316", path: "/marketplace" },
-    { title: "Community Posts", value: stats.posts, icon: Users, color: "#edf5ff", iconColor: "#3b82f6", path: "/community" },
+    { title: "Community Messages", value: stats.posts, icon: Users, color: "#edf5ff", iconColor: "#3b82f6", path: "/community" },
   ];
 
   const quickActions = [
     { icon: <ShoppingBag size={20} color="#f97316" />, label: "List Product", path: "/marketplace", bg: "#fff0eb" },
     { icon: <Egg size={20} color="#22c55e" />, label: "Add Batch", path: "/my-farm", bg: "#edf9f1" },
     { icon: <Users size={20} color="#3b82f6" />, label: "Community", path: "/community", bg: "#edf5ff" },
-    { icon: <MessageCircle size={20} color="#8b5cf6" />, label: "Messages", path: "/community-chat", bg: "#f3f0ff" },
+    { icon: <Stethoscope size={20} color="#8b5cf6" />, label: "Ask Vet", path: "/bookings", bg: "#f3f0ff" },
   ];
 
   const greetingHour = new Date().getHours();
