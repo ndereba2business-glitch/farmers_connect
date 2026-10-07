@@ -31,7 +31,8 @@ export function createMockBackend() {
     // Tables everyone signed in can read, whoever wrote the row.
     shared: new Set(["community_chat", "message_reactions"]),
     // Whole words the community refuses, standing in for community_blocked_terms.
-    blockedWords: ["betting", "bitcoin"]
+    blockedWords: ["betting", "bitcoin"],
+    rpcCalls: []                // { name, user } for every database function called
   };
 
   // newUser: true means the account has not seen the onboarding tour yet.
@@ -39,7 +40,7 @@ export function createMockBackend() {
   // admin: true gives the account the app_metadata role the real project
   // sets from the dashboard; it can't be self-declared.
   function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false }) {
-    const user = { id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser };
+    const user = { id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser, notificationsEnabled: true };
     db.users.set(email, user);
     return user;
   }
@@ -147,6 +148,7 @@ export function createMockBackend() {
         return route.fulfill({ status: 200, contentType: "application/json", body: "true" });
       }
 
+      if (table.startsWith("rpc/")) db.rpcCalls.push({ name: table.slice(4), user: current?.email });
       if (table.startsWith("rpc/")) {
         if (table === "rpc/supplier_contact_summary") {
           const mine = ownProfileIds(current);
@@ -168,8 +170,9 @@ export function createMockBackend() {
         if (method === "PATCH" && current) {
           const [changes] = body();
           if ("has_seen_onboarding" in changes) current.hasSeenOnboarding = changes.has_seen_onboarding;
+          if ("notifications_enabled" in changes) current.notificationsEnabled = changes.notifications_enabled;
         }
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding }] : []);
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled }] : []);
       }
 
       if (table === "supplier_profiles") {
