@@ -27,13 +27,19 @@ export function createMockBackend() {
     // (an empty list is enough to switch it on). Rows with a user_email
     // can only be read, added or deleted by that user, like the
     // owner-only policies on the real tables.
-    tables: {}
+    tables: {},
+    // Tables everyone signed in can read, whoever wrote the row.
+    shared: new Set(["community_chat", "message_reactions"]),
+    // Whole words the community refuses, standing in for community_blocked_terms.
+    blockedWords: ["betting", "bitcoin"]
   };
 
   // newUser: true means the account has not seen the onboarding tour yet.
   // role: null is an account with no chosen role, like one Google just created.
-  function addUser({ email, password = "secret123", role = "farmer", newUser = false }) {
-    const user = { id: newId("user"), email, password, role, hasSeenOnboarding: !newUser };
+  // admin: true gives the account the app_metadata role the real project
+  // sets from the dashboard; it can't be self-declared.
+  function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false }) {
+    const user = { id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser };
     db.users.set(email, user);
     return user;
   }
@@ -41,7 +47,7 @@ export function createMockBackend() {
   function authUser(user) {
     return {
       id: user.id, aud: "authenticated", role: "authenticated", email: user.email, phone: "",
-      app_metadata: {}, user_metadata: user.role ? { role: user.role } : {}, created_at: "2026-09-01T00:00:00Z"
+      app_metadata: user.admin ? { role: "admin" } : {}, user_metadata: user.role ? { role: user.role } : {}, created_at: "2026-09-01T00:00:00Z"
     };
   }
 
@@ -63,6 +69,11 @@ export function createMockBackend() {
       const value = rest.join(".");
       if (op === "eq" && String(row[key]) !== value) return false;
       if (op === "in" && !value.replace(/^\(|\)$/g, "").split(",").includes(String(row[key]))) return false;
+      if (op === "is" && value === "null" && row[key] != null) return false;
+      if (op === "lt" && !(String(row[key]) < value)) return false;
+      if (op === "lte" && !(String(row[key]) <= value)) return false;
+      if (op === "gt" && !(String(row[key]) > value)) return false;
+      if (op === "gte" && !(String(row[key]) >= value)) return false;
     }
     return true;
   }
@@ -123,6 +134,18 @@ export function createMockBackend() {
       };
       const body = () => { const b = JSON.parse(req.postData() || "{}"); return Array.isArray(b) ? b : [b]; };
       const params = [...url.searchParams.entries()];
+
+      if (table === "rpc/community_remove_message") {
+        const { p_message_id } = JSON.parse(req.postData() || "{}");
+        const message = (db.tables.community_chat || []).find(m => m.id === p_message_id && !m.removed_at);
+        if (!message) return route.fulfill({ status: 200, contentType: "application/json", body: "false" });
+        const who = message.user_email === current?.email ? "author" : current?.admin ? "admin" : null;
+        if (!who) return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ code: "42501", message: "only the author or an admin can remove a message" }) });
+        Object.assign(message, { message: "", image_url: null, removed_at: new Date().toISOString(), removed_by: who });
+        db.tables.message_reactions = (db.tables.message_reactions || []).filter(r => r.message_id !== message.id);
+        for (const r of db.tables.community_reports || []) if (r.message_id === message.id && r.status === "open") r.status = "removed";
+        return route.fulfill({ status: 200, contentType: "application/json", body: "true" });
+      }
 
       if (table.startsWith("rpc/")) {
         if (table === "rpc/supplier_contact_summary") {
@@ -207,15 +230,72 @@ export function createMockBackend() {
         return reply(201, []);
       }
 
+      // The community group: what the insert guard and the unique rule on
+      // reactions do in the real database.
+      if (table === "community_chat" && method === "POST" && db.tables.community_chat) {
+        const refuse = (code) => route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ code: "P0001", message: code }) });
+        const [row] = body();
+        if (!current) return reply(401, []);
+        const mute = (db.tables.community_mutes || []).find(m => m.user_email === current.email);
+        if (mute && new Date(mute.muted_until) > new Date()) return refuse("community_muted");
+        const text = (row.message || "").trim();
+        if (!text && !row.image_url) return refuse("community_empty");
+        if (db.blockedWords.some(w => new RegExp(`\\b${w}\\b`, "i").test(text))) return refuse("community_blocked");
+        const parent = row.reply_to_id ? db.tables.community_chat.find(m => m.id === row.reply_to_id && !m.removed_at) : null;
+        const message = {
+          id: newId("msg"), user_email: current.email, user_name: "Test " + (current.role || "farmer"),
+          message: text, image_url: row.image_url || null,
+          sender_badge: current.admin ? "admin" : null, created_at: new Date().toISOString(),
+          reply_to_id: parent ? parent.id : null, reply_to_user: parent ? parent.user_name : null,
+          reply_to_message: parent ? (parent.message || "Photo").slice(0, 140) : null,
+          removed_at: null, removed_by: null
+        };
+        db.tables.community_chat.push(message);
+        return reply(201, [message]);
+      }
+
       if (db.tables[table]) {
-        const mine = (r) => !("user_email" in r) || r.user_email === current?.email;
-        if (method === "GET") return reply(200, db.tables[table].filter(mine).filter(r => matches(r, params)));
+        const shared = db.shared.has(table);
+        const mine = (r) => shared || current?.admin
+          || ("reporter" in r ? r.reporter === current?.email : !("user_email" in r) || r.user_email === current?.email);
+        if (method === "GET") {
+          let rows = db.tables[table].filter(mine).filter(r => matches(r, params));
+          const order = url.searchParams.get("order");
+          if (order) {
+            const [column, direction] = order.split(".");
+            rows = [...rows].sort((a, b) => String(a[column]).localeCompare(String(b[column])) * (direction === "desc" ? -1 : 1));
+          }
+          const limit = Number(url.searchParams.get("limit"));
+          if (limit) rows = rows.slice(0, limit);
+          if (table === "community_reports" && (url.searchParams.get("select") || "").includes("message:")) {
+            rows = rows.map(r => ({ ...r, message: (db.tables.community_chat || []).find(c => c.id === r.message_id) || null }));
+          }
+          if (table === "community_chat" && (url.searchParams.get("select") || "").includes("reactions:")) {
+            rows = rows.map(m => ({ ...m, reactions: (db.tables.message_reactions || []).filter(r => r.message_id === m.id).map(r => ({ user_email: r.user_email, emoji: r.emoji })) }));
+          }
+          return reply(200, rows);
+        }
         if (method === "POST") {
           const rows = body();
-          if (rows.some(r => !mine(r))) return reply(403, []);
-          const added = rows.map(r => ({ id: newId(table), created_at: new Date().toISOString(), ...r }));
-          db.tables[table].push(...added);
+          // a member writes rows in their own name only; mutes are for admins
+          if (rows.some(r => "user_email" in r && r.user_email !== current?.email && !current?.admin)) return reply(403, []);
+          if (table === "community_mutes" && !current?.admin) return reply(403, []);
+          // upsert: replace the row that matches the conflict columns
+          const conflict = (url.searchParams.get("on_conflict") || "").split(",").filter(Boolean);
+          const added = rows.map(r => {
+            const existing = conflict.length ? db.tables[table].find(x => conflict.every(c => x[c] === r[c])) : null;
+            if (existing) return Object.assign(existing, r);
+            const created = { id: newId(table), created_at: new Date().toISOString(), ...r };
+            db.tables[table].push(created);
+            return created;
+          });
           return reply(201, added);
+        }
+        if (method === "PATCH") {
+          const [changes] = body();
+          const targets = db.tables[table].filter(mine).filter(r => matches(r, params));
+          for (const r of targets) Object.assign(r, changes);
+          return reply(200, targets);
         }
         if (method === "DELETE") {
           const gone = db.tables[table].filter(mine).filter(r => matches(r, params));
