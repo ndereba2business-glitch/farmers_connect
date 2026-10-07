@@ -417,3 +417,11 @@ entrypoint = "./functions/send-vaccine-reminder/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-vaccine-reminder/*.html" ]
+
+# Clucky AI. verify_jwt stays on: only signed-in users can reach it, and
+# the function checks who they are again before spending on an answer.
+[functions.clucky]
+enabled = true
+verify_jwt = true
+import_map = "./functions/clucky/deno.json"
+entrypoint = "./functions/clucky/index.ts"
