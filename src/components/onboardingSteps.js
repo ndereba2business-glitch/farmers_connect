@@ -156,6 +156,12 @@ const SUPPLIER = {
       tip: "👀 Search for your own product to see it as a farmer would."
     },
     {
+      icon: Users, color: "#ea580c",
+      title: "Community: talk with farmers",
+      body: "Join the farmers' group chat. Answer questions about feed, chicks and equipment, and say when you have stock. Verified suppliers show a Supplier badge next to their name.",
+      tip: "🌍 Helpful answers bring more customers than adverts. Keep it about poultry."
+    },
+    {
       icon: UserCircle, color: "#0891b2",
       title: "Account: your personal details",
       body: "Your own name, photo and notification choices live under Account, separate from your business profile.",

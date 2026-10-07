@@ -7,7 +7,7 @@ import FarmerPicker from "../components/FarmerPicker";
 import MedicalRecordModal from "../components/MedicalRecordModal";
 import VetMessagesModal from "../components/VetMessagesModal";
 import {
-  Stethoscope, Calendar, AlertTriangle, Users, Wallet,
+  Stethoscope, Calendar, AlertTriangle, Users,
   X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
   CalendarPlus, CheckCircle2
 } from "lucide-react";
@@ -73,7 +73,7 @@ export default function VetDashboard() {
   const [vetProfileStatus, setVetProfileStatus] = useState(null);
   const [stats, setStats] = useState({
     todayVisits: 0, emergencies: 0, pendingReports: 0,
-    totalFarmers: 0, monthlyEarnings: 0, unreadMessages: 0,
+    totalFarmers: 0, unreadMessages: 0,
     upcomingVisits: 0, pendingRequests: 0, completedVisits: 0 // NEW
   });
   const [showScheduleForm, setShowScheduleForm] = useState(false);
@@ -103,8 +103,6 @@ export default function VetDashboard() {
   async function loadDashboard() {
     setLoading(true);
     const today = new Date().toISOString().split("T")[0];
-    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-      .toISOString().split("T")[0];
 
     // NEW — Phase 2.1: bounded upcoming-visits window (today + next 7 days)
     const upcomingCutoffDate = new Date();
@@ -127,7 +125,7 @@ export default function VetDashboard() {
         .order("appointment_date", { ascending: true })
         .order("appointment_time", { ascending: true })
         .limit(15),
-      supabase.from("vet_appointments").select("farmer_email, fee, status, appointment_date")
+      supabase.from("vet_appointments").select("farmer_email, status, appointment_date")
         .eq("vet_email", userEmail),
       supabase.from("vet_questions").select("*")
         .eq("is_emergency", true).eq("status", "pending")
@@ -158,10 +156,6 @@ export default function VetDashboard() {
     setVetProfileStatus(vetProfileData?.verification_status || "missing");
 
     const uniqueFarmers = new Set((allAppts || []).map(a => a.farmer_email).filter(Boolean));
-    const monthlyEarnings = (allAppts || [])
-      .filter(a => a.status === "completed" && a.appointment_date >= monthStart)
-      .reduce((sum, a) => sum + Number(a.fee || 0), 0);
-
     // NEW — Phase 2.1 dashboard stats
     const pendingRequests = (allAppts || []).filter(a => a.status === "pending").length;
     const completedVisits = (allAppts || []).filter(a => a.status === "completed").length;
@@ -173,7 +167,6 @@ export default function VetDashboard() {
       emergencies: (emergencyData || []).length,
       pendingReports: pendingCount || 0,
       totalFarmers: uniqueFarmers.size,
-      monthlyEarnings,
       unreadMessages: 0, // no vet-farmer messaging system yet — see roadmap note below
       upcomingVisits: upcomingVisitsCount, // NEW
       pendingRequests, // NEW
@@ -366,7 +359,6 @@ export default function VetDashboard() {
     { label: "Pending Requests", value: stats.pendingRequests + stats.pendingReports, icon: ClipboardList, color: "#fff7e6", iconColor: "#f59e0b" },
     { label: "Completed Visits", value: stats.completedVisits, icon: CheckCircle2, color: "#ecfdf5", iconColor: "#059669" },
     { label: "Emergencies", value: stats.emergencies, icon: AlertTriangle, color: "#fef2f2", iconColor: "#ef4444" },
-    { label: "Monthly Earnings", value: `KES ${stats.monthlyEarnings.toLocaleString()}`, icon: Wallet, color: "#f3f0ff", iconColor: "#8b5cf6" },
   ];
 
   const QUICK_ACTIONS = [
