@@ -1,4 +1,4 @@
--- Security checks for the supplier dashboard, notifications and the community group,
+-- Security checks for the supplier dashboard, Clucky, notifications and the community group,
 -- run against the linked database.
 --
 --   npm run test:security
@@ -18,7 +18,7 @@ declare
   sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
   msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid;
   claims_a text; claims_b text; claims_f text;
-  n int; v text; b boolean;
+  n int; i int; v text; b boolean;
   passed int := 0; failed int := 0; report text := '';
 begin
   select u.id, u.email, f.id into farmer, email_f, farmer_profile
@@ -157,6 +157,38 @@ begin
     failed := failed + 1; report := report || 'FAIL F7 non-admin read platform stats; ';
   exception when others then passed := passed + 1;
   end;
+
+  -- ============================ Clucky AI conversations ================
+  -- only the edge function (service role) writes; people read and clear their own
+  reset role;
+  insert into public.clucky_messages (user_email, role, content)
+    values (email_f, 'user', 'sec-test my question'), (email_a, 'user', 'sec-test their question');
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+
+  begin
+    insert into public.clucky_messages (user_email, role, content) values (email_f, 'assistant', 'sec-test forged answer');
+    failed := failed + 1; report := report || 'FAIL K1 member wrote a Clucky message directly; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  select count(*) filter (where user_email = email_f), count(*) filter (where user_email <> email_f) into n, i
+    from public.clucky_messages where content like 'sec-test%';
+  if n = 1 and i = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K2 Clucky conversations not private; '; end if;
+
+  begin
+    update public.clucky_messages set content = 'edited' where user_email = email_f;
+    failed := failed + 1; report := report || 'FAIL K3 member edited Clucky history; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  delete from public.clucky_messages;
+  reset role;
+  select count(*) filter (where user_email = email_f), count(*) filter (where user_email = email_a) into n, i
+    from public.clucky_messages where content like 'sec-test%';
+  if n = 0 and i = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K4 clearing a chat touched the wrong rows; '; end if;
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
 
   -- ============================ notifications ==========================
   -- still acting as the farmer; make sure the borrowed account has them on
