@@ -3,6 +3,7 @@ import { Ban, Copy, CornerUpLeft, Flag, Image as ImageIcon, Info, Reply, Send, T
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useFillHeight } from "../lib/useFillHeight";
 import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import {
   BADGE_LABELS, GROUP_RULES, MESSAGE_MAX_LENGTH, QUICK_EMOJIS,
@@ -16,34 +17,6 @@ const COLUMNS =
 const WITH_REACTIONS = `${COLUMNS}, reactions:message_reactions(user_email, emoji)`;
 const PAGE_SIZE = 40;
 const REPORT_REASONS = ["Not about poultry", "Insulting or abusive", "Spam or a scam", "Something else"];
-
-// The chat fills the screen below the app's top bar, like a chat app,
-// instead of growing down the page. Measured rather than hard-coded
-// because the two layout shells have different bars and paddings.
-function useFillHeight(ref) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    function fit() {
-      const main = el.closest("main");
-      // On phones the chat cancels the layout's side padding to run edge
-      // to edge (--cm-bleed in Community.css), so it reclaims the same
-      // amount at the bottom.
-      const bleed = parseFloat(getComputedStyle(el).getPropertyValue("--cm-bleed")) || 0;
-      const padding = main ? parseFloat(getComputedStyle(main).paddingBottom) || 0 : 0;
-      const bottomGap = Math.max(0, padding - bleed);
-      const viewport = window.visualViewport?.height || window.innerHeight;
-      el.style.height = `${Math.max(360, viewport - el.getBoundingClientRect().top - bottomGap)}px`;
-    }
-    fit();
-    window.addEventListener("resize", fit);
-    window.visualViewport?.addEventListener("resize", fit);
-    return () => {
-      window.removeEventListener("resize", fit);
-      window.visualViewport?.removeEventListener("resize", fit);
-    };
-  }, [ref]);
-}
 
 function Sheet({ title, onClose, children }) {
   const ref = useRef(null);
