@@ -1,4 +1,4 @@
--- Security checks for the supplier dashboard and the community group,
+-- Security checks for the supplier dashboard, notifications and the community group,
 -- run against the linked database.
 --
 --   npm run test:security
@@ -16,6 +16,7 @@ do $$
 declare
   sup_a uuid; email_a text; sup_b uuid; email_b text; farmer uuid; email_f text; farmer_profile uuid;
   sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
+  msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid;
   claims_a text; claims_b text; claims_f text;
   n int; v text; b boolean;
   passed int := 0; failed int := 0; report text := '';
@@ -156,6 +157,105 @@ begin
     failed := failed + 1; report := report || 'FAIL F7 non-admin read platform stats; ';
   exception when others then passed := passed + 1;
   end;
+
+  -- ============================ notifications ==========================
+  -- still acting as the farmer; make sure the borrowed account has them on
+  update public.farmer_profiles set notifications_enabled = true where id = farmer_profile;
+
+  begin
+    insert into public.notifications (user_email, type, title, message) values (email_a, 'general', 'sec-test', 'for someone else');
+    failed := failed + 1; report := report || 'FAIL N1 wrote a notification into another inbox; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    perform public.push_notification(email_a, 'general', 'sec-test', 'direct call');
+    failed := failed + 1; report := report || 'FAIL N2 member called push_notification; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  insert into public.community_chat (user_email, user_name, message) values (email_f, 'x', 'sec-test notify me') returning id into msg_n;
+
+  -- another member replies and reacts
+  perform set_config('request.jwt.claims', claims_b, true);
+  insert into public.community_chat (user_email, user_name, message, reply_to_id) values (email_b, 'x', 'sec-test a reply', msg_n) returning id into reply_n;
+  insert into public.message_reactions (message_id, user_email, user_name, emoji) values (msg_n, email_b, 'x', '👍');
+  update public.message_reactions set emoji = '🔥' where message_id = msg_n and user_email = email_b;
+  select count(*) into n from public.notifications where user_email = email_f;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N3 member read another inbox; '; end if;
+
+  begin
+    insert into public.notification_preferences (user_email, community) values (email_f, false);
+    failed := failed + 1; report := report || 'FAIL N4 member changed another member preferences; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- back to the farmer: exactly one notification each for the reply and the reaction
+  perform set_config('request.jwt.claims', claims_f, true);
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'reply:' || reply_n and category = 'community';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL N5 reply produced %s notifications; ', n); end if;
+
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key like 'react:' || msg_n || ':%';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL N6 reaction (then changed) produced %s notifications; ', n); end if;
+
+  -- clearing hides it without deleting, and only in my own inbox
+  update public.notifications set cleared_at = now(), read = true where user_email = email_f and dedupe_key = 'reply:' || reply_n;
+  get diagnostics n = row_count;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N7 could not clear own notification; '; end if;
+
+  -- community switched off: the next reply is not announced
+  insert into public.notification_preferences (user_email, community) values (email_f, false)
+    on conflict (user_email) do update set community = false;
+  perform set_config('request.jwt.claims', claims_b, true);
+  insert into public.community_chat (user_email, user_name, message, reply_to_id) values (email_b, 'x', 'sec-test second reply', msg_n) returning id into reply_n;
+  perform set_config('request.jwt.claims', claims_f, true);
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'reply:' || reply_n;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N8 notified although community is switched off; '; end if;
+
+  -- reminders: many overdue vaccinations become one line, and running it twice adds nothing
+  reset role;
+  insert into public.farm_batches (user_email, batch_name, batch_type, status, hatch_date, quantity, current_count)
+    values (email_f, 'sec-test batch', 'broiler', 'active', current_date - 30, 50, 50) returning id into batch_n;
+  insert into public.vaccination_tasks (batch_id, user_email, vaccine_name, day_number, scheduled_date, completed)
+    values (batch_n, email_f, 'sec-test NCD', 7, current_date - 20, false),
+           (batch_n, email_f, 'sec-test Gumboro', 14, current_date - 14, false),
+           (batch_n, email_f, 'sec-test IB', 21, current_date - 7, false);
+  insert into public.vet_appointments (farmer_email, vet_email, farm_name, appointment_date, status)
+    values (email_f, email_a, 'sec-test farm', current_date + 1, 'pending') returning id into appt_n;
+  update public.vet_appointments set status = 'accepted' where id = appt_n;
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+
+  perform public.sync_my_reminders();
+  perform public.sync_my_reminders();
+  select count(*), max(title) into n, v from public.notifications where user_email = email_f and dedupe_key like 'vacc-overdue:%';
+  if n = 1 and v like '%vaccinations are overdue' then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL N9 overdue reminders: %s rows, title %s; ', n, v); end if;
+
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'appt:' || appt_n || ':accepted';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N10 farmer not told the visit was accepted; '; end if;
+
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key like 'appt-soon:' || appt_n || ':%';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N11 no reminder for the visit tomorrow; '; end if;
+
+  -- master switch off: nothing at all, including account notices
+  update public.farmer_profiles set notifications_enabled = false where id = farmer_profile;
+  select count(*) into n from public.notifications where user_email = email_f;
+  insert into public.notifications (user_email, type, title, message) values (email_f, 'general', 'sec-test', 'while off');
+  select count(*) - n into n from public.notifications where user_email = email_f;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N12 notified although notifications are off; '; end if;
+  update public.farmer_profiles set notifications_enabled = true where id = farmer_profile;
+
+  -- the vet was told about the request, in their own inbox
+  perform set_config('request.jwt.claims', claims_a, true);
+  select count(*) into n from public.notifications where user_email = email_a and dedupe_key = 'appt-new:' || appt_n;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL N13 vet not told about the visit request; '; end if;
+
+  -- the supplier was told a farmer got in touch (check F6 above), but not who
+  select count(*), bool_or(message like '%' || email_f || '%') into n, b
+    from public.notifications where user_email = email_a and dedupe_key like 'contact:' || prod_a || ':%';
+  if n = 1 and not b then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL N14 supplier contact notification: %s rows; ', n); end if;
+
+  perform set_config('request.jwt.claims', claims_f, true);
 
   -- ============================ community group chat ==================
   -- still acting as the farmer
