@@ -5,7 +5,7 @@ import { useToast } from "../context/ToastContext";
 import {
   Users, Search, Phone, MapPin, Calendar,
   MessageSquare, Stethoscope, History, X, FileText,
-  Pill, Syringe, Beaker, ExternalLink
+  Pill, Syringe, Beaker, ExternalLink, Siren
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 
@@ -331,7 +331,7 @@ export default function MyFarmers() {
                         fontSize: "11px", fontWeight: "700",
                         padding: "2px 9px", borderRadius: "20px"
                       }}>
-                        🚨 Urgent
+                        <Siren size={14} aria-hidden="true" /> Urgent
                       </span>
                     )}
                   </div>

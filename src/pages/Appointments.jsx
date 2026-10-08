@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
-  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban, AlertTriangle
+  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban, AlertTriangle, MapPin, Bird
 } from "lucide-react";
 import { VisitReportFields } from "../components/VisitReportModal";
 
@@ -598,8 +598,8 @@ export default function Appointments() {
                         <Clock size={12} /> {appt.appointment_time}
                       </span>
                     )}
-                    {appt.county && <span>📍 {appt.county}</span>}
-                    {appt.bird_count && <span>🐔 {appt.bird_count} birds</span>}
+                    {appt.county && <span><MapPin size={14} aria-hidden="true" /> {appt.county}</span>}
+                    {appt.bird_count && <span><Bird size={14} aria-hidden="true" /> {appt.bird_count} birds</span>}
                     {activeTab === "completed" && (
                       <span style={{ color: "#16a34a", fontWeight: "700" }}>
                         KES {Number(appt.fee || 0).toLocaleString()}
@@ -673,7 +673,7 @@ export default function Appointments() {
                 color: "#dc2626", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
-                ⚠️ {newFormError}
+                <AlertTriangle size={14} aria-hidden="true" /> {newFormError}
               </div>
             )}
             <SubmitButton saving={saving} label="Create Appointment" />
@@ -692,7 +692,7 @@ export default function Appointments() {
                 color: "#dc2626", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
-                ⚠️ {editFormError}
+                <AlertTriangle size={14} aria-hidden="true" /> {editFormError}
               </div>
             )}
             <SubmitButton saving={saving} label="Save Changes" />

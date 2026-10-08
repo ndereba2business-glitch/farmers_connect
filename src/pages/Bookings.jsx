@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
   Stethoscope, Search, AlertTriangle, X, Send, Upload, MapPin,
-  Calendar, Clock, CalendarPlus, FileText
+  Calendar, Clock, CalendarPlus, FileText, Siren, Check, Bird, Bug, Syringe, Wheat, Egg, TrendingDown, TrendingUp, MessageCircleQuestion, CalendarDays, Mail, Store
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 import FarmerMessagesPanel from "../components/FarmerMessagesPanel";
@@ -14,14 +14,14 @@ function todayISO() {
 }
 
 const QUESTION_CATEGORIES = [
-  { label: "Disease Symptoms", emoji: "🦠" },
-  { label: "Vaccination", emoji: "💉" },
-  { label: "Feeding", emoji: "🌾" },
-  { label: "Egg Production", emoji: "🥚" },
-  { label: "Chick Mortality", emoji: "💀" },
-  { label: "Broiler Growth", emoji: "📈" },
-  { label: "Layers", emoji: "🐔" },
-  { label: "Emergency", emoji: "🚨" },
+  { label: "Disease Symptoms", icon: Bug },
+  { label: "Vaccination", icon: Syringe },
+  { label: "Feeding", icon: Wheat },
+  { label: "Egg Production", icon: Egg },
+  { label: "Chick Mortality", icon: TrendingDown },
+  { label: "Broiler Growth", icon: TrendingUp },
+  { label: "Layers", icon: Bird },
+  { label: "Emergency", icon: Siren },
 ];
 
 const KENYA_COUNTIES = [
@@ -287,11 +287,11 @@ export default function Bookings() {
   }
 
   const TABS = [
-    { key: "vets", label: "Vets", icon: "🩺" },
-    { key: "ask", label: "Ask", icon: "💬" },
-    { key: "bookings", label: "Bookings", icon: "📅" },
-    { key: "messages", label: "Messages", icon: "✉️" },
-    { key: "suppliers", label: "Suppliers", icon: "🏪" },
+    { key: "vets", label: "Vets", icon: Stethoscope },
+    { key: "ask", label: "Ask", icon: MessageCircleQuestion },
+    { key: "bookings", label: "Bookings", icon: CalendarDays },
+    { key: "messages", label: "Messages", icon: Mail },
+    { key: "suppliers", label: "Suppliers", icon: Store },
   ];
 
   function urgencyMeta(value) {
@@ -333,7 +333,7 @@ export default function Bookings() {
             gap: "8px", boxShadow: "0 6px 20px rgba(239,68,68,0.3)"
           }}
         >
-          🚨 Emergency
+          <Siren size={14} aria-hidden="true" /> Emergency
         </button>
       </div>
 
@@ -365,7 +365,7 @@ export default function Bookings() {
               transition: "all 0.2s"
             }}
           >
-            {tab.icon} {tab.label}
+            <tab.icon size={16} aria-hidden="true" /> {tab.label}
           </button>
         ))}
       </div>
@@ -437,7 +437,7 @@ export default function Bookings() {
                   }}>
                     {vet.avatar_url ? (
                       <img src={vet.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "14px" }} />
-                    ) : "👨‍⚕️"}
+                    ) : <Stethoscope size={24} color="#15803d" aria-hidden="true" />}
                   </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: "0 0 4px", fontWeight: "700", fontSize: "15px", color: "#111827" }}>
@@ -454,7 +454,7 @@ export default function Bookings() {
                     fontSize: "11px", fontWeight: "700",
                     padding: "3px 10px", borderRadius: "20px"
                   }}>
-                    ✔ Verified
+                    <Check size={14} aria-hidden="true" /> Verified
                   </span>
                 </div>
               ))}
@@ -491,7 +491,7 @@ export default function Bookings() {
                     transition: "all 0.2s"
                   }}
                 >
-                  {cat.emoji} {cat.label}
+                  <cat.icon size={16} aria-hidden="true" /> {cat.label}
                 </button>
               ))}
             </div>
@@ -569,7 +569,7 @@ export default function Bookings() {
                         fontSize: "12px", fontWeight: "600",
                         padding: "3px 10px", borderRadius: "20px"
                       }}>
-                        {q.is_emergency ? "🚨 Emergency" : q.category}
+                        {q.is_emergency ? "Emergency" : q.category}
                       </span>
                       <span style={{
                         background: q.status === "answered" ? "#dcfce7" : "#f3f4f6",
@@ -723,8 +723,8 @@ export default function Bookings() {
                               <Clock size={11} /> {b.appointment_time}
                             </span>
                           )}
-                          {b.county && <span>📍 {b.county}</span>}
-                          {b.bird_count && <span>🐔 {b.bird_count} birds</span>}
+                          {b.county && <span><MapPin size={14} aria-hidden="true" /> {b.county}</span>}
+                          {b.bird_count && <span><Bird size={14} aria-hidden="true" /> {b.bird_count} birds</span>}
                         </div>
                         {b.reason && (
                           <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#6b7280" }}>{b.reason}</p>
@@ -783,7 +783,7 @@ export default function Bookings() {
           textAlign: "center", padding: "60px 20px",
           background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
         }}>
-          <span style={{ fontSize: "48px", display: "block", marginBottom: "12px" }}>🏪</span>
+          <Store size={40} color="#9ca3af" aria-hidden="true" style={{ display: "block", margin: "0 auto 12px" }} />
           <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
             Verified Suppliers Coming Soon
           </h3>
@@ -937,7 +937,7 @@ export default function Bookings() {
                   color: "#dc2626", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
-                  ⚠️ {bookingError}
+                  <AlertTriangle size={14} aria-hidden="true" /> {bookingError}
                 </div>
               )}
 
@@ -1030,7 +1030,7 @@ export default function Bookings() {
                 justifyContent: "center", gap: "8px"
               }}
             >
-              {emergencySubmitting ? "Sending..." : "🚨 Send Emergency Request"}
+              {emergencySubmitting ? "Sending..." : "Send Emergency Request"}
             </button>
           </div>
         </div>

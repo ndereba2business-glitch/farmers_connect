@@ -9,7 +9,7 @@ import VetMessagesModal from "../components/VetMessagesModal";
 import {
   Stethoscope, Calendar, AlertTriangle, Users,
   X, Syringe, Pill, Beaker, Send, Clock, ClipboardList,
-  CalendarPlus, CheckCircle2
+  CalendarPlus, CheckCircle2, Siren, User, MapPin, Bird
 } from "lucide-react";
 
 function todayISO() {
@@ -455,7 +455,7 @@ export default function VetDashboard() {
         flexWrap: "wrap", gap: "16px"
       }}>
         <div>
-          <p style={{ margin: "0 0 6px", fontSize: "13px", opacity: 0.85 }}>✨ {greeting},</p>
+          <p style={{ margin: "0 0 6px", fontSize: "13px", opacity: 0.85 }}>{greeting},</p>
           <h2 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: "800" }}>
             Dr. {profile?.full_name || "Veterinarian"}
           </h2>
@@ -577,19 +577,19 @@ export default function VetDashboard() {
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px",
                               background: "#fef2f2", color: "#ef4444"
                             }}>
-                              🚨 From Emergency
+                              <Siren size={14} aria-hidden="true" /> From Emergency
                             </span>
                           )}
                         </div>
                         <div style={{ fontSize: "12px", color: "#9ca3af", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                          {appt.farmer_email && <span>👤 {appt.farmer_email}</span>}
+                          {appt.farmer_email && <span><User size={14} aria-hidden="true" /> {appt.farmer_email}</span>}
                           {appt.appointment_time && (
                             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                               <Clock size={11} /> {appt.appointment_time}
                             </span>
                           )}
-                          {appt.county && <span>📍 {appt.county}</span>}
-                          {appt.bird_count && <span>🐔 {appt.bird_count} birds</span>}
+                          {appt.county && <span><MapPin size={14} aria-hidden="true" /> {appt.county}</span>}
+                          {appt.bird_count && <span><Bird size={14} aria-hidden="true" /> {appt.bird_count} birds</span>}
                         </div>
                         {appt.reason && (
                           <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#6b7280" }}>{appt.reason}</p>
@@ -656,7 +656,7 @@ export default function VetDashboard() {
           ) : emergencies.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 10px" }}>
               <AlertTriangle size={36} color="#e5e7eb" style={{ marginBottom: "10px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "13px" }}>No active emergencies. 🎉</p>
+              <p style={{ color: "#9ca3af", fontSize: "13px" }}>No active emergencies.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -878,7 +878,7 @@ export default function VetDashboard() {
                   color: "#dc2626", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
-                  ⚠️ {scheduleError}
+                  <AlertTriangle size={14} aria-hidden="true" /> {scheduleError}
                 </div>
               )}
 
@@ -1007,7 +1007,7 @@ export default function VetDashboard() {
                   color: "#dc2626", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
-                  ⚠️ {escalateError}
+                  <AlertTriangle size={14} aria-hidden="true" /> {escalateError}
                 </div>
               )}
 

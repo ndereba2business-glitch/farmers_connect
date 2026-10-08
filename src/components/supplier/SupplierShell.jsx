@@ -1,3 +1,4 @@
+import BrandMark from "../BrandMark";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -192,7 +193,7 @@ export default function SupplierShell() {
         <aside className={`ss-sidebar${drawerOpen ? " ss-sidebar--open" : ""}`} aria-label="Supplier navigation">
           <div className="ss-sidebar-head">
             <div className="ss-brand">
-              <span className="ss-brand-mark" aria-hidden="true">🐔</span>
+              <BrandMark size={34} title="" />
               <span className="ss-brand-text">
                 Farmers <b>Connect</b>
               </span>

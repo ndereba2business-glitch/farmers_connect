@@ -125,6 +125,14 @@ h1, h2, h3, h4 {
 /* One stroke weight for every icon in the app. */
 svg.lucide {
   stroke-width: var(--fc-icon-stroke);
+  flex-shrink: 0;
+}
+/* An icon written inline before a word sits on the text, not above it. */
+span > svg.lucide:first-child,
+p > svg.lucide:first-child,
+td > svg.lucide:first-child,
+option > svg.lucide:first-child {
+  vertical-align: -0.15em;
 }
 
 /* ---------- shared building blocks ---------- */

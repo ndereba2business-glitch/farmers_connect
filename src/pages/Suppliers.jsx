@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Phone, MessageCircle, MapPin, Truck, Clock } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Truck, Clock, Check
+} from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { CATEGORIES, CATEGORY_LABELS, initialsOf } from "../components/supplier/supplierFormat";
 import { recordContact, supplierMessage, telHref, whatsappHref } from "../lib/contactSupplier";
@@ -130,7 +131,7 @@ export default function Suppliers() {
               <div style={{ fontWeight: "800", fontSize: "16px", color: "#111827", minWidth: 0, overflowWrap: "anywhere" }}>
                 {s.business_name}{" "}
                 <span style={{ fontSize: "11px", fontWeight: "700", color: "#16a34a", background: "#dcfce7", padding: "2px 8px", borderRadius: "20px", verticalAlign: "middle", whiteSpace: "nowrap" }}>
-                  ✔ Verified
+                  <Check size={14} aria-hidden="true" /> Verified
                 </span>
               </div>
             </div>

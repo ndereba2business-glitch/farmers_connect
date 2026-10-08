@@ -266,7 +266,7 @@ export default function Dashboard() {
                   Go to your farm to mark them done.
                 </span>
                 <div style={{ fontSize: "var(--fs-small, 12px)", color: "#ef4444", marginTop: "2px" }}>
-                  💉 {vaccine.vaccine_name}
+                  <Syringe size={14} aria-hidden="true" /> {vaccine.vaccine_name}
                   {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
                   {" "}· Due: {vaccine.scheduled_date}
                 </div>
@@ -308,7 +308,7 @@ export default function Dashboard() {
             Dashboard
           </h1>
           <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "var(--fs-greeting, 16px)" }}>
-            {greeting}, {profile?.full_name || "Farmer"} 👋 Welcome back to Farmers Connect
+            {greeting}, {profile?.full_name || "Farmer"} Welcome back to Farmers Connect
           </p>
         </div>
         <button

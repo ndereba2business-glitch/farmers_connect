@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import CommunityModeration from "../components/CommunityModeration";
-import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall } from "lucide-react";
+import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall, IdCard, MapPin, Siren, Package, Phone, Truck
+} from "lucide-react";
 
 const VET_STATUS_META = {
   unverified: { bg: "#f3f4f6", color: "#6b7280", label: "Unverified" },
@@ -299,15 +300,15 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                         <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
-                          {vet.license_number && <span>🪪 License: {vet.license_number}</span>}
+                          {vet.license_number && <span><IdCard size={14} aria-hidden="true" /> License: {vet.license_number}</span>}
                           {vet.service_counties?.length > 0 && (
-                            <span>📍 {vet.service_counties.join(", ")}</span>
+                            <span><MapPin size={14} aria-hidden="true" /> {vet.service_counties.join(", ")}</span>
                           )}
                           {vet.specializations?.length > 0 && (
-                            <span>🩺 {vet.specializations.join(", ")}</span>
+                            <span><Stethoscope size={14} aria-hidden="true" /> {vet.specializations.join(", ")}</span>
                           )}
                           {vet.accepts_emergency && (
-                            <span style={{ color: "#ef4444", fontWeight: "600" }}>🚨 Accepts emergencies</span>
+                            <span style={{ color: "#ef4444", fontWeight: "600" }}><Siren size={14} aria-hidden="true" /> Accepts emergencies</span>
                           )}
                           {vet.bio && (
                             <p style={{ margin: "6px 0 0", color: "#9ca3af", fontStyle: "italic" }}>
@@ -461,12 +462,12 @@ export default function AdminDashboard() {
                           </div>
                           <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
                             {(sup.product_categories || []).length > 0
-                              ? <span>📦 {sup.product_categories.join(", ")}</span>
-                              : sup.supplier_type && <span>📦 {sup.supplier_type}</span>}
-                            {sup.location_details && <span>🏪 {sup.location_details}</span>}
-                            {sup.county && <span>📍 {sup.county}</span>}
-                            {sup.phone && <span>📞 {sup.phone}</span>}
-                            {sup.delivery_available && <span>🚚 Delivers</span>}
+                              ? <span><Package size={14} aria-hidden="true" /> {sup.product_categories.join(", ")}</span>
+                              : sup.supplier_type && <span><Package size={14} aria-hidden="true" /> {sup.supplier_type}</span>}
+                            {sup.location_details && <span><Store size={14} aria-hidden="true" /> {sup.location_details}</span>}
+                            {sup.county && <span><MapPin size={14} aria-hidden="true" /> {sup.county}</span>}
+                            {sup.phone && <span><Phone size={14} aria-hidden="true" /> {sup.phone}</span>}
+                            {sup.delivery_available && <span><Truck size={14} aria-hidden="true" /> Delivers</span>}
                             {sup.description && (
                               <p style={{ margin: "6px 0 0", color: "#9ca3af", fontStyle: "italic" }}>
                                 "{sup.description}"

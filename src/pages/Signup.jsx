@@ -1,4 +1,6 @@
+import BrandMark from "../components/BrandMark";
 import { useState, useEffect } from "react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import GoogleButton from "../components/GoogleButton";
@@ -247,15 +249,20 @@ export default function Signup() {
       >
 
         {/* HEADER */}
+        <div style={{ marginBottom: "14px" }}>
+          <BrandMark size={48} />
+        </div>
+
         <h1
           style={{
-            fontSize: "28px",
+            margin: "0 0 4px",
+            fontSize: "24px",
             fontWeight: "700",
-            color: "#15803d",
-            marginBottom: "6px"
+            letterSpacing: "-0.02em",
+            color: "#111827"
           }}
         >
-          🐔 Farmers Connect
+          Create your account
         </h1>
 
         <p
@@ -265,7 +272,7 @@ export default function Signup() {
             marginBottom: "28px"
           }}
         >
-          Create your account and grow your farm
+          For poultry farmers, vets and suppliers
         </p>
 
         {/* METHOD TOGGLE */}
@@ -304,7 +311,7 @@ export default function Signup() {
                   : "#666"
             }}
           >
-            📧 Email
+            Email
           </button>
 
           <button
@@ -332,7 +339,7 @@ export default function Signup() {
                   : "#666"
             }}
           >
-            📱 Phone
+            Phone
           </button>
 
         </div>
@@ -522,7 +529,7 @@ export default function Signup() {
                   "14px"
               }}
             >
-              ⚠️ {error}
+              <AlertTriangle size={14} aria-hidden="true" /> {error}
             </div>
           )}
 
@@ -545,7 +552,7 @@ export default function Signup() {
                   "14px"
               }}
             >
-              ✅ {success}
+              <CheckCircle2 size={14} aria-hidden="true" /> {success}
             </div>
           )}
 

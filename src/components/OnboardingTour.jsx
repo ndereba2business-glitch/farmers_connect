@@ -1,6 +1,7 @@
+import BrandMark from "./BrandMark";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { tourFor } from "./onboardingSteps";
 import "./OnboardingTour.css";
@@ -43,13 +44,10 @@ function TourCard({ tour, onFinish }) {
         tabIndex={-1}
         ref={cardRef}
       >
-        <div
-          className="ot-header"
-          style={{ background: step ? step.color : "linear-gradient(135deg,#22c55e,#16a34a)" }}
-        >
+        <div className="ot-header">
           <div className="ot-header-top">
             <div className="ot-icon-box" aria-hidden="true">
-              {isWelcome ? "🐔" : isClosing ? "🎉" : <Icon size={26} color="#fff" />}
+              {isWelcome ? <BrandMark size={52} title="" /> : isClosing ? <Check size={24} /> : <Icon size={24} />}
             </div>
             <div>
               <p className="ot-eyebrow">

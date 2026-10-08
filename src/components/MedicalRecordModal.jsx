@@ -3,7 +3,8 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import FarmerPicker from "./FarmerPicker";
-import { X } from "lucide-react";
+import { X, AlertTriangle
+} from "lucide-react";
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "10px",
@@ -270,7 +271,7 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
               color: "#dc2626", padding: "10px 14px",
               borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
             }}>
-              ⚠️ {error}
+              <AlertTriangle size={14} aria-hidden="true" /> {error}
             </div>
           )}
 

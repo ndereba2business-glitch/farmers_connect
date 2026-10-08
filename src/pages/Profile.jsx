@@ -100,7 +100,7 @@ export default function Profile() {
     if (!userEmail) return;
     setSaving(true);
 
-    // ✅ First check if profile exists
+    // First check if profile exists
     const { data: existing } = await supabase
       .from("farmer_profiles")
       .select("id")
@@ -110,7 +110,7 @@ export default function Profile() {
     let error;
 
     if (existing) {
-      // ✅ Profile exists — UPDATE it
+      // Profile exists — UPDATE it
       const { error: updateError } = await supabase
         .from("farmer_profiles")
         .update({
@@ -125,7 +125,7 @@ export default function Profile() {
         .eq("user_email", userEmail);
       error = updateError;
     } else {
-      // ✅ No profile yet — INSERT one
+      // No profile yet — INSERT one
       const { error: insertError } = await supabase
         .from("farmer_profiles")
         .insert([{

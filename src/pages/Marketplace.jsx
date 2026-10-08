@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { createNotification } from "../lib/notifications";
 import {
   Search, Plus, MapPin, ShoppingBag,
-  ChevronDown, X, ShoppingCart, Phone, MessageCircle, BadgeCheck
+  ChevronDown, X, ShoppingCart, Phone, MessageCircle, BadgeCheck, Check, Pencil, Package, Trash2, ImagePlus
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -14,12 +14,12 @@ import "./Marketplace.css";
 
 const CATEGORIES = [
   { value: "all", label: "All Categories" },
-  { value: "chickens", label: "🐔 Chickens" },
-  { value: "eggs", label: "🥚 Eggs" },
-  { value: "feeds", label: "🌾 Feeds" },
-  { value: "equipment", label: "🔧 Equipment" },
-  { value: "medicine", label: "💊 Medicine" },
-  { value: "other", label: "📦 Other" },
+  { value: "chickens", label: "Chickens" },
+  { value: "eggs", label: "Eggs" },
+  { value: "feeds", label: "Feeds" },
+  { value: "equipment", label: "Equipment" },
+  { value: "medicine", label: "Medicine" },
+  { value: "other", label: "Other" },
 ];
 
 const UNITS = [
@@ -92,7 +92,7 @@ export default function Marketplace() {
         setCurrentUserId(data.user.id);
         setCurrentUserPhone(phone);
 
-        // 🟢 This auto-fills the form state instantly when the page loads!
+        // This auto-fills the form state instantly when the page loads!
         setForm(prev => ({ ...prev, seller_phone: phone }));
 
         // A supplier account tags its listings with its supplier profile so
@@ -172,7 +172,7 @@ export default function Marketplace() {
       unit: form.unit || "per_bird",
       image_url: imageUrl || "",
       description: form.description || "",
-      // 🟢 Uses the form text field, falls back to profile phone, or stays blank
+      // Uses the form text field, falls back to profile phone, or stays blank
       seller_phone: form.seller_phone || currentUserPhone || "",
       supplier_id: mySupplier?.id ?? null,
       is_verified: false,
@@ -190,7 +190,7 @@ export default function Marketplace() {
       await createNotification({
         userEmail: currentUserEmail,
         type: "marketplace",
-        title: "Product Listed 🛒",
+        title: "Product Listed",
         message: `"${form.product_name}" is now live on the marketplace.`,
         link: "/marketplace"
       });
@@ -274,7 +274,7 @@ function handleContactSeller(product) {
       await createNotification({
         userEmail: currentUserEmail,
         type: "marketplace",
-        title: "Order request sent ✅",
+        title: "Order request sent",
         message: `${placed} item(s) requested. The supplier will contact you on ${phone} to arrange payment and delivery.`,
         link: "/orders"
       });
@@ -429,7 +429,7 @@ function handleContactSeller(product) {
                 cursor: "pointer", fontSize: "14px", fontWeight: "600"
               }}
             >
-              ✔ Verified Only
+              <Check size={14} aria-hidden="true" /> Verified Only
             </button>
           </div>
 
@@ -708,7 +708,7 @@ function handleContactSeller(product) {
                     </div>
                   ) : (
                     <div>
-                      <div style={{ fontSize: "32px", marginBottom: "8px" }}>📷</div>
+                      <ImagePlus size={28} color="#9ca3af" aria-hidden="true" style={{ display: "block", margin: "0 auto 8px" }} />
                       <div style={{
                         fontWeight: "600", color: "#374151", fontSize: "14px"
                       }}>
@@ -982,9 +982,9 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
   );
 
   const categoryLabel = {
-    chickens: "🐔 Chickens", eggs: "🥚 Eggs",
-    feeds: "🌾 Feeds", equipment: "🔧 Equipment",
-    medicine: "💊 Medicine", other: "📦 Other"
+    chickens: "Chickens", eggs: "Eggs",
+    feeds: "Feeds", equipment: "Equipment",
+    medicine: "Medicine", other: "Other"
   }[product.category] || product.category;
 
   async function handleUpdateStock() {
@@ -1089,7 +1089,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
             padding: "4px 10px", fontSize: "11px",
             fontWeight: "700", color: "#fff"
           }}>
-            ✔ Verified
+            <Check size={14} aria-hidden="true" /> Verified
           </div>
         )}
 
@@ -1181,7 +1181,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       fontWeight: "700", fontSize: "13px", cursor: "pointer"
     }}
   >
-    🛒 Add to order
+    <ShoppingCart size={14} aria-hidden="true" /> Add to order
   </button>
 )}
 
@@ -1273,7 +1273,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                         fontWeight: "600", fontSize: "13px", color: "#374151"
                       }}
                     >
-                      ✏️ Save
+                      <Pencil size={14} aria-hidden="true" /> Save
                     </button>
                   </div>
                 </div>
@@ -1295,7 +1295,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                       justifyContent: "center", gap: "6px"
                     }}
                   >
-                    📦 {product.sold_out ? "Out of stock" : "Mark out of stock"}
+                    <Package size={14} aria-hidden="true" /> {product.sold_out ? "Out of stock" : "Mark out of stock"}
                   </button>
                   <button
                     onClick={handleRemove}
@@ -1309,7 +1309,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                       justifyContent: "center", gap: "6px"
                     }}
                   >
-                    🗑️ Remove
+                    <Trash2 size={14} aria-hidden="true" /> Remove
                   </button>
                 </div>
               </div>

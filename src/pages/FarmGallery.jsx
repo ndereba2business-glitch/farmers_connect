@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
-import { Camera, X, Trash2, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, X, Trash2, Upload, ChevronLeft, ChevronRight, AlertTriangle, Tag
+} from "lucide-react";
 import "./FarmGallery.css";
 
 const inputStyle = {
@@ -88,7 +89,7 @@ export default function FarmGallery() {
     if (problem) { setError(problem); setUploading(false); return; }
 
     try {
-      // ✅ STEP 1 — Upload (shrunk first) into the user's own folder, the
+      // STEP 1 — Upload (shrunk first) into the user's own folder, the
       // only place the farm-gallery bucket accepts writes
       let imageUrl;
       try {
@@ -99,7 +100,7 @@ export default function FarmGallery() {
         return;
       }
 
-      // ✅ STEP 3 — Save to farm_gallery table
+      // STEP 3 — Save to farm_gallery table
       const selectedBatch = batches.find(b => b.id === form.batch_id);
 
       const { error: insertError } = await supabase
@@ -121,7 +122,7 @@ export default function FarmGallery() {
         return;
       }
 
-      // ✅ SUCCESS — reset and refresh
+      // SUCCESS — reset and refresh
       setForm({
         caption: "",
         date_taken: new Date().toISOString().split("T")[0],
@@ -359,7 +360,7 @@ export default function FarmGallery() {
                 color: "#dc2626", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
-                ⚠️ {error}
+                <AlertTriangle size={14} aria-hidden="true" /> {error}
               </div>
             )}
 
@@ -405,7 +406,7 @@ export default function FarmGallery() {
               aria-pressed={activeTag === tag}
               className={`fg-tag fc-tap${activeTag === tag ? " fg-tag--active" : ""}`}
             >
-              {tag !== "All" && "🏷 "}{tag}
+              {tag !== "All" && ""}{tag}
             </button>
           ))}
         </div>
@@ -517,7 +518,7 @@ export default function FarmGallery() {
             {selected.batch_name && ` · ${selected.batch_name}`}
             {tagsOf(selected).length > 0 && (
               <div className="fg-viewer-tags">
-                {tagsOf(selected).map(tag => <span key={tag}>🏷 {tag}</span>)}
+                {tagsOf(selected).map(tag => <span key={tag}><Tag size={14} aria-hidden="true" /> {tag}</span>)}
               </div>
             )}
           </div>

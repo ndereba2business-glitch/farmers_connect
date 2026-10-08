@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { RotateCcw, Send } from "lucide-react";
+import { Bird, RotateCcw, Send } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -200,7 +200,7 @@ export default function CluckyAI() {
   return (
     <div className="ck-page" ref={pageRef}>
       <header className="ck-head">
-        <span className="ck-head-icon" aria-hidden="true">🐔</span>
+        <span className="ck-head-icon" aria-hidden="true"><Bird size={22} /></span>
         <div className="ck-head-text">
           <h1 className="ck-head-title">Clucky AI</h1>
           <p className="ck-head-sub">Your poultry assistant</p>
@@ -233,7 +233,7 @@ export default function CluckyAI() {
 
           {!loading && !loadError && messages.length === 0 && (
             <div className="ck-welcome">
-              <span style={{ fontSize: "40px" }} aria-hidden="true">🐔</span>
+              <span className="ck-welcome-icon" aria-hidden="true"><Bird size={28} /></span>
               <h2>{firstName ? `Hello ${firstName}, I'm Clucky` : "Hello, I'm Clucky"}</h2>
               <p>
                 Ask me anything about your chickens: health, vaccines, feeding, eggs, housing or costs.

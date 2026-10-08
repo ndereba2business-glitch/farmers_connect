@@ -1,4 +1,6 @@
+import BrandMark from "../components/BrandMark";
 import { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
@@ -167,25 +169,22 @@ export default function Login() {
           }}
         >
 
-          <div
-            style={{
-              fontSize: "50px",
-              marginBottom: "10px"
-            }}
-          >
-            🐔
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}>
+            <BrandMark size={56} />
           </div>
 
-          <h1>
+          <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: "700", letterSpacing: "-0.02em", color: "#111827" }}>
             Farmers Connect
           </h1>
 
           <p
             style={{
-              color: "#666"
+              margin: 0,
+              fontSize: "14px",
+              color: "#6b7280"
             }}
           >
-            Login to continue
+            Log in to continue
           </p>
 
         </div>
@@ -227,7 +226,7 @@ export default function Login() {
                   : "#666"
             }}
           >
-            📧 Email
+            Email
           </button>
 
           <button
@@ -256,7 +255,7 @@ export default function Login() {
                   : "#666"
             }}
           >
-            📱 Phone
+            Phone
           </button>
 
         </div>
@@ -352,7 +351,7 @@ export default function Login() {
               fontSize: "14px"
             }}
           >
-            ⚠️ {error}
+            <AlertTriangle size={14} aria-hidden="true" /> {error}
           </div>
         )}
 

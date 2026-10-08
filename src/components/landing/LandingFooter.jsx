@@ -1,3 +1,4 @@
+import BrandMark from "../BrandMark";
 import { Link } from "react-router-dom";
 
 export default function LandingFooter() {
@@ -7,7 +8,7 @@ export default function LandingFooter() {
         <div className="lp-footer-grid">
           <div className="lp-footer-brand">
             <a href="#top" className="lp-nav-brand">
-              <span className="lp-nav-mark" aria-hidden="true">🐔</span>
+              <BrandMark size={38} title="" />
               <span className="lp-nav-word">
                 <span>Farmers</span>
                 <span className="lp-nav-word-accent">Connect</span>

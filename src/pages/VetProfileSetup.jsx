@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { Stethoscope, CheckCircle2, Clock, XCircle, Ban, Save, CalendarOff, Trash2, Plus } from "lucide-react";
+import { Stethoscope, CheckCircle2, Clock, XCircle, Ban, Save, CalendarOff, Trash2, Plus, AlertTriangle
+} from "lucide-react";
 
 const KENYA_COUNTIES = [
   "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika",
@@ -464,7 +465,7 @@ export default function VetProfileSetup() {
             color: "#dc2626", padding: "10px 14px",
             borderRadius: "8px", fontSize: "13px", marginBottom: "16px"
           }}>
-            ⚠️ {error}
+            <AlertTriangle size={14} aria-hidden="true" /> {error}
           </div>
         )}
 

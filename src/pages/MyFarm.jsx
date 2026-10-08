@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   Egg, Plus, Syringe, Calendar, CheckCircle2,
   Clock, AlertTriangle, ChevronDown, ChevronUp,
-  WifiOff, X, Trash2, DollarSign, Skull, ShoppingCart
+  WifiOff, X, Trash2, DollarSign, Skull, ShoppingCart, TrendingDown, Banknote, TrendingUp
 } from "lucide-react";
 
 const BATCH_TYPES = [
@@ -772,7 +772,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
               }}
             >
-              ✅ Mark Complete
+              <CheckCircle2 size={14} aria-hidden="true" /> Mark Complete
             </button>
           )}
         </div>
@@ -784,7 +784,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             background: "#fef2f2", borderRadius: "12px", border: "1px solid #fecaca"
           }}>
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#ef4444" }}>
-              🪦 Log Mortality
+              <TrendingDown size={14} aria-hidden="true" /> Log Mortality
             </p>
             <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
@@ -829,7 +829,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             background: "#fffbeb", borderRadius: "12px", border: "1px solid #fde68a"
           }}>
             <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#d97706" }}>
-              💰 Log Expense
+              <Banknote size={14} aria-hidden="true" /> Log Expense
             </p>
             <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
@@ -1062,8 +1062,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               display: "flex", alignItems: "center", justifyContent: "center"
             }}>
               {netPL >= 0
-                ? <span style={{ fontSize: "14px" }}>↗</span>
-                : <span style={{ fontSize: "14px", color: "#ef4444" }}>↘</span>}
+                ? <TrendingUp size={14} aria-hidden="true" />
+                : <TrendingDown size={14} color="#b91c1c" aria-hidden="true" />}
             </div>
             <div>
               <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#6b7280" }}>

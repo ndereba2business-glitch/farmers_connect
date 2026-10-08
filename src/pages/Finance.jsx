@@ -51,23 +51,23 @@ export default function Finance() {
       }
     ]);
 
-    // ✅ NOTIFICATION — income recorded
+    // NOTIFICATION — income recorded
     if (type === "income") {
       await createNotification({
         userEmail: email,
         type: "general",
-        title: "Income Recorded 💰",
+        title: "Income Recorded",
         message: `KES ${Number(amount).toLocaleString()} income from "${category}" has been saved.`,
         link: "/finance"
       });
     }
 
-    // ✅ NOTIFICATION — expense recorded
+    // NOTIFICATION — expense recorded
     if (type === "expense") {
       await createNotification({
         userEmail: email,
         type: "general",
-        title: "Expense Recorded 📉",
+        title: "Expense Recorded",
         message: `KES ${Number(amount).toLocaleString()} expense on "${category}" has been saved.`,
         link: "/finance"
       });
@@ -96,7 +96,7 @@ export default function Finance() {
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px" }}>
 
-      <h1>Farm Finance 💰</h1>
+      <h1>Farm Finance</h1>
 
       {/* ANALYTICS */}
       <div style={{

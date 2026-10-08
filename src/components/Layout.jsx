@@ -1,3 +1,4 @@
+import BrandMark from "./BrandMark";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
@@ -96,7 +97,7 @@ export default function Layout() {
 
         <div className="fc-sidebar-header">
           <div className="fc-brand">
-            <div className="fc-logo-icon">🐔</div>
+            <BrandMark size={40} title="" />
             <div>
               <div className="fc-logo-line1">Farmers</div>
               <div className="fc-logo-line2">Connect</div>

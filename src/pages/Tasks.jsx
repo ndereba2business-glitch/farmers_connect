@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { createNotification } from "../lib/notifications";
-import { CheckSquare, Plus, Trash2, Clock } from "lucide-react";
+import { CheckSquare, Plus, Trash2, Clock, Wheat, Pill, Brush, Syringe, Wrench, Stethoscope, ClipboardList
+} from "lucide-react";
 
 const PRIORITIES = [
   { value: "high", label: "High", color: "#ef4444", bg: "#fef2f2" },
@@ -11,13 +12,13 @@ const PRIORITIES = [
 ];
 
 const CATEGORIES = [
-  { value: "Feeding", emoji: "🌾" },
-  { value: "Health", emoji: "💊" },
-  { value: "Cleaning", emoji: "🧹" },
-  { value: "Vaccination", emoji: "💉" },
-  { value: "Equipment", emoji: "🔧" },
-  { value: "Vet Visit", emoji: "🩺" },
-  { value: "Other", emoji: "📋" },
+  { value: "Feeding", icon: Wheat },
+  { value: "Health", icon: Pill },
+  { value: "Cleaning", icon: Brush },
+  { value: "Vaccination", icon: Syringe },
+  { value: "Equipment", icon: Wrench },
+  { value: "Vet Visit", icon: Stethoscope },
+  { value: "Other", icon: ClipboardList },
 ];
 
 const inputStyle = {
@@ -69,7 +70,7 @@ export default function Tasks() {
     await createNotification({
       userEmail,
       type: "task",
-      title: "New Task Added ✅",
+      title: "New Task Added",
       message: `"${form.title}" has been added to your farm tasks.`,
       link: "/tasks"
     });
@@ -85,7 +86,7 @@ export default function Tasks() {
     if (completed) {
       await createNotification({
         userEmail, type: "task",
-        title: "Task Completed ✅",
+        title: "Task Completed",
         message: `You completed "${task.title}". Great work!`,
         link: "/tasks"
       });
@@ -112,8 +113,9 @@ export default function Tasks() {
     return PRIORITIES.find(p => p.value === value) || PRIORITIES[1];
   }
 
-  function getCategoryEmoji(cat) {
-    return CATEGORIES.find(c => c.value === cat)?.emoji || "📋";
+  function categoryIcon(category) {
+    const Icon = CATEGORIES.find(c => c.value === category)?.icon || ClipboardList;
+    return <Icon size={18} color="#4b5563" aria-hidden="true" />;
   }
 
   return (
@@ -213,7 +215,7 @@ export default function Tasks() {
                 style={{ ...inputStyle, appearance: "none" }}
               >
                 {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.emoji} {c.value}</option>
+                  <option key={c.value} value={c.value}>{c.value}</option>
                 ))}
               </select>
             </div>
@@ -332,7 +334,7 @@ export default function Tasks() {
 
                 {/* EMOJI */}
                 <span style={{ fontSize: "18px", flexShrink: 0 }}>
-                  {getCategoryEmoji(task.category)}
+                  {categoryIcon(task.category)}
                 </span>
 
                 {/* TASK INFO */}

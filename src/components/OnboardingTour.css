@@ -2,8 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(15, 23, 42, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,10 +16,10 @@
   max-width: 520px;
   margin: auto;
   background: #fff;
-  border-radius: 24px;
+  border-radius: var(--fc-radius-lg);
   overflow: hidden;
   outline: none;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--fc-shadow-raised);
   animation: ot-pop 0.25s ease;
 }
 
@@ -32,7 +31,7 @@
 .ot-header {
   position: relative;
   padding: 24px 24px 20px;
-  transition: background 0.25s ease;
+  background: var(--fc-brand);
 }
 
 .ot-header-top {
@@ -45,12 +44,12 @@
 .ot-icon-box {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.22);
+  border-radius: var(--fc-radius-md);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
   flex-shrink: 0;
 }
 
@@ -98,7 +97,7 @@
 }
 .ot-progress-fill {
   height: 100%;
-  background: #22c55e;
+  background: var(--fc-brand-ink);
   border-radius: 4px;
   transition: width 0.25s ease;
 }
@@ -181,5 +180,5 @@
   .ot-header { padding: 20px 20px 16px; }
   .ot-body { padding: 20px 20px 22px; }
   .ot-title { font-size: 18px; }
-  .ot-icon-box { width: 44px; height: 44px; font-size: 22px; }
+  .ot-icon-box { width: 44px; height: 44px; }
 }

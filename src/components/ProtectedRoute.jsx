@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { user, role, loading } = useAuth();
 
-  // ✅ Still loading — don't redirect yet
+  // Still loading — don't redirect yet
   if (loading) {
     return (
       <div style={{
@@ -30,10 +30,10 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     );
   }
 
-  // ✅ Not logged in — send to login
+  // Not logged in — send to login
   if (!user) return <Navigate to="/login" replace />;
 
-  // ✅ Wrong role — send to their correct home
+  // Wrong role — send to their correct home
   if (allowedRoles && !allowedRoles.includes(role)) {
     if (role === "vet") return <Navigate to="/vet" replace />;
     if (role === "supplier") return <Navigate to="/supplier" replace />;
