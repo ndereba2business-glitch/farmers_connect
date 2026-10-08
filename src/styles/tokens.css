@@ -1,0 +1,246 @@
+/*
+  FARMERS CONNECT — VISUAL SYSTEM
+  ================================
+  One small set of decisions, so a new page looks like the rest of the app
+  without anyone having to guess. Use these variables in new CSS, and the
+  same values when a style has to be written inline.
+
+  COLOUR
+    Brand green is for the mark and the navigation. Primary green is for
+    the one main action on a screen. Maize is the seed in the logo and
+    nothing else gets it by default: it is an accent, not a second brand
+    colour. Green is NOT applied to something just because it is about
+    farming; most of the interface is ink on white.
+    Status colours mean one thing each: green = done / healthy,
+    amber = needs attention soon, red = overdue / danger / destructive,
+    blue = information.
+    Text on a tinted background uses the darker shade of that colour.
+
+  SHAPE
+    Three radii. 8px for small controls (chips, inputs inside rows),
+    12px for buttons and inputs, 16px for cards and sheets. Pills (999px)
+    only for tags and round buttons. Nothing larger: very round cards are
+    what made the old screens look like a template.
+
+  DEPTH
+    Cards sit on the page with a hairline border and almost no shadow.
+    Only things that float over the page (menus, sheets, dialogs) get the
+    raised shadow. No coloured glows, no gradients on buttons or cards.
+
+  TYPE
+    Inter for everything in the app. Weights 400 body, 600 labels and
+    buttons, 700 headings; nothing heavier.
+      page title    --fs-display   700
+      section head  --fs-section   700
+      card title    15-16px        600/700
+      body          14-15px        400
+      label         13px           600
+      metadata      12px           400, muted
+
+  ICONS (lucide-react, one family, outline)
+    20px next to text in navigation and buttons, 16px inside dense rows
+    and chips, 24px only for an empty-state or a page header. Stroke 1.75
+    everywhere (set once below). An icon inherits the colour of its text;
+    an active item is shown by colour and weight, never by a different
+    icon. No emoji as icons. Pick the icon for what the thing IS
+    (Syringe for vaccination, Stethoscope for vet, Store for supplier),
+    not for decoration.
+
+  SPACE
+    4 / 8 / 12 / 16 / 24 / 32. Card padding 16px on phones, 20-24px from
+    tablet up. 16px between cards, 24-32px between sections.
+*/
+
+:root {
+  /* colour */
+  --fc-brand: #14532d;
+  --fc-brand-ink: #f7f5ec;
+  --fc-accent: #f2b01e;
+
+  --fc-primary: #15803d;
+  --fc-primary-hover: #166534;
+  --fc-primary-soft: #f0fdf4;
+  --fc-primary-line: #bbf7d0;
+
+  --fc-ink: #111827;
+  --fc-ink-2: #374151;
+  --fc-muted: #6b7280;
+  --fc-line: #e5e7eb;
+  --fc-surface: #ffffff;
+  --fc-bg: #f7f8f5;
+
+  --fc-success: #15803d;
+  --fc-success-soft: #f0fdf4;
+  --fc-warning: #b45309;
+  --fc-warning-soft: #fffbeb;
+  --fc-danger: #b91c1c;
+  --fc-danger-soft: #fef2f2;
+  --fc-info: #1d4ed8;
+  --fc-info-soft: #eff6ff;
+
+  /* shape */
+  --fc-radius-sm: 8px;
+  --fc-radius-md: 12px;
+  --fc-radius-lg: 16px;
+  --fc-radius-pill: 999px;
+
+  /* depth */
+  --fc-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --fc-shadow-raised: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.06);
+
+  /* space */
+  --fc-space-1: 4px;
+  --fc-space-2: 8px;
+  --fc-space-3: 12px;
+  --fc-space-4: 16px;
+  --fc-space-5: 24px;
+  --fc-space-6: 32px;
+
+  /* icons */
+  --fc-icon: 20px;
+  --fc-icon-sm: 16px;
+  --fc-icon-stroke: 1.75;
+
+  --fc-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fc-font);
+  color: var(--fc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Form controls don't inherit the page font by default, which is how the
+   login screen ended up in the browser's serif. */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+h1, h2, h3, h4 {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+/* One stroke weight for every icon in the app. */
+svg.lucide {
+  stroke-width: var(--fc-icon-stroke);
+}
+
+/* ---------- shared building blocks ---------- */
+
+.fc-card {
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-lg);
+  box-shadow: var(--fc-shadow-card);
+  padding: var(--fc-space-4);
+}
+
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--fc-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.fc-btn--primary { background: var(--fc-primary); color: #fff; }
+.fc-btn--primary:hover { background: var(--fc-primary-hover); }
+.fc-btn--secondary { background: var(--fc-surface); border-color: var(--fc-line); color: var(--fc-ink-2); }
+.fc-btn--secondary:hover { background: #f9fafb; }
+.fc-btn--danger { background: var(--fc-surface); border-color: #fecaca; color: var(--fc-danger); }
+.fc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* A compact row of figures: the replacement for one tall card per number. */
+.fc-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--fc-line);
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-lg);
+  overflow: hidden;
+}
+.fc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  min-height: 76px;
+  padding: 12px 14px;
+  background: var(--fc-surface);
+  border: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.fc-stat:hover { background: #fafafa; }
+.fc-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fc-muted);
+}
+.fc-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--fc-ink);
+  font-variant-numeric: tabular-nums;
+}
+.fc-stat-note {
+  font-size: 12px;
+  color: var(--fc-muted);
+}
+.fc-stat--warn .fc-stat-value { color: var(--fc-warning); }
+.fc-stat--danger .fc-stat-value { color: var(--fc-danger); }
+/* an odd last cell spans the row instead of leaving a grey gap */
+.fc-stats > .fc-stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+@media (min-width: 768px) {
+  .fc-card { padding: var(--fc-space-5); }
+  .fc-stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .fc-stats > .fc-stat:last-child:nth-child(odd) { grid-column: auto; }
+  .fc-stat { padding: 16px 18px; }
+  .fc-stat-value { font-size: 26px; }
+}
+
+.fc-page-title {
+  margin: 0;
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fc-ink);
+}
+.fc-page-sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--fc-muted);
+}
+
+.fc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--fc-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: var(--fc-ink-2);
+}
+.fc-tag--success { background: var(--fc-success-soft); color: #166534; }
+.fc-tag--warning { background: var(--fc-warning-soft); color: #92400e; }
+.fc-tag--danger { background: var(--fc-danger-soft); color: #991b1b; }
+.fc-tag--info { background: var(--fc-info-soft); color: #1e40af; }
