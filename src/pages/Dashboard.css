@@ -1,23 +1,65 @@
-/* ===== DASHBOARD RESPONSIVE COMPANION STYLES ===== */
+/* Farmer dashboard (db-). Layout that has to change with the screen lives
+   here: a gridTemplateColumns written inline would beat these rules. */
 
-/* Main content grid: Pending Tasks (2fr) + right column (1fr) on desktop,
-   stacks to a single column on tablet/mobile so nothing gets crushed */
+.db-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.db-block { margin-bottom: 16px; }
+
+.db-section-title {
+  margin: 0 0 16px;
+  font-size: var(--fs-section, 18px);
+  font-weight: 700;
+  color: var(--fc-ink);
+}
+
+.db-card-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fc-ink);
+}
+
+.db-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* a quiet label above a chart */
+.db-kicker {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fc-muted);
+}
+
+.db-money { margin-bottom: 20px; }
+/* long amounts: three in a row only when there is room for them */
+.db-money.fc-stats { grid-template-columns: minmax(0, 1fr); }
+.db-money .fc-stat { min-height: 0; }
+.db-money .fc-stat-value { font-size: 20px; }
+@media (min-width: 560px) {
+  .db-money.fc-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 .fc-dashboard-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1025px) {
   .fc-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Card padding tightens slightly on small phones so content isn't
-   fighting the viewport edges for space */
-@media (max-width: 480px) {
-  .fc-dashboard-card {
-    padding: 16px !important;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
 }

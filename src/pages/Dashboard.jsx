@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import "./Dashboard.css";
 import {
-  Egg, Syringe, ShoppingBag, Users, ArrowUpRight,
+  Egg, Syringe, ShoppingBag, Users,
   Plus, Stethoscope, CheckCircle2,
-  AlertTriangle, X, TrendingUp, TrendingDown, DollarSign, Wallet
+  AlertTriangle, X, TrendingUp, TrendingDown
 } from "lucide-react";
 import {
   ComposedChart, BarChart as RechartsBarChart, Bar, Line, XAxis, YAxis,
@@ -18,7 +18,7 @@ function DailyFinanceTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div style={{
-      background: "white", borderRadius: "10px", padding: "10px 14px",
+      background: "white", borderRadius: "12px", padding: "10px 14px",
       border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
       <p style={{ margin: 0, fontSize: "var(--fs-small, 12px)", fontWeight: "700", color: "#111827" }}>{label}</p>
@@ -36,7 +36,7 @@ function DailyDeathsTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div style={{
-      background: "white", borderRadius: "10px", padding: "10px 14px",
+      background: "white", borderRadius: "12px", padding: "10px 14px",
       border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
       <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "700", color: "#1e293b" }}>{label}</p>
@@ -207,17 +207,17 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { title: "Active Batches", value: stats.batches, icon: Egg, color: "#edf9f1", iconColor: "#22c55e", path: "/my-farm" },
-    { title: "Pending Vaccines", value: stats.vaccines, icon: Syringe, color: "#fff7e6", iconColor: "#f59e0b", path: "/my-farm" },
-    { title: "Active Listings", value: stats.listings, icon: ShoppingBag, color: "#fff0eb", iconColor: "#f97316", path: "/marketplace" },
-    { title: "Community Messages", value: stats.posts, icon: Users, color: "#edf5ff", iconColor: "#3b82f6", path: "/community" },
+    { title: "Active batches", value: stats.batches, icon: Egg, path: "/my-farm" },
+    { title: "Vaccines due", value: stats.vaccines, icon: Syringe, path: "/my-farm" },
+    { title: "Marketplace listings", value: stats.listings, icon: ShoppingBag, path: "/marketplace" },
+    { title: "Community messages", value: stats.posts, icon: Users, path: "/community" },
   ];
 
   const quickActions = [
-    { icon: <ShoppingBag size={20} color="#f97316" />, label: "List Product", path: "/marketplace", bg: "#fff0eb" },
-    { icon: <Egg size={20} color="#22c55e" />, label: "Add Batch", path: "/my-farm", bg: "#edf9f1" },
-    { icon: <Users size={20} color="#3b82f6" />, label: "Community", path: "/community", bg: "#edf5ff" },
-    { icon: <Stethoscope size={20} color="#8b5cf6" />, label: "Ask Vet", path: "/bookings", bg: "#f3f0ff" },
+    { icon: Egg, label: "Add a batch", path: "/my-farm" },
+    { icon: Stethoscope, label: "Ask a vet", path: "/bookings" },
+    { icon: ShoppingBag, label: "Marketplace", path: "/marketplace" },
+    { icon: Users, label: "Community", path: "/community" },
   ];
 
   const greetingHour = new Date().getHours();
@@ -256,17 +256,17 @@ export default function Dashboard() {
             marginBottom: "10px", gap: "12px", flexWrap: "wrap"
           }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1, minWidth: "220px" }}>
-              <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: "2px" }} />
+              <AlertTriangle size={18} color="#b91c1c" aria-hidden="true" style={{ flexShrink: 0, marginTop: "2px" }} />
               <div>
                 <span style={{ fontSize: "var(--fs-body, 14px)", color: "#991b1b", fontWeight: "700" }}>
                   {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length} vaccination
-                  {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length > 1 ? "s are" : " is"} overdue!{" "}
+                  {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length > 1 ? "s are" : " is"} overdue.{" "}
                 </span>
                 <span style={{ fontSize: "var(--fs-body, 14px)", color: "#7f1d1d" }}>
                   Go to your farm to mark them done.
                 </span>
-                <div style={{ fontSize: "var(--fs-small, 12px)", color: "#ef4444", marginTop: "2px" }}>
-                  💉 {vaccine.vaccine_name}
+                <div style={{ fontSize: "var(--fs-small, 12px)", color: "#991b1b", marginTop: "2px" }}>
+                  <Syringe size={14} aria-hidden="true" /> {vaccine.vaccine_name}
                   {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
                   {" "}· Due: {vaccine.scheduled_date}
                 </div>
@@ -275,127 +275,61 @@ export default function Dashboard() {
             <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
               <button
                 onClick={() => navigate("/my-farm")}
+                className="fc-tap"
                 style={{
-                  padding: "6px 14px", background: "none",
-                  border: "1px solid #fca5a5", borderRadius: "8px",
-                  color: "#ef4444", fontWeight: "600", fontSize: "var(--fs-tiny, 12px)", cursor: "pointer"
+                  padding: "6px 14px", background: "#fff",
+                  border: "1px solid #fecaca", borderRadius: "8px",
+                  color: "#b91c1c", fontWeight: "600", fontSize: "13px", cursor: "pointer"
                 }}
               >
                 View Farm
               </button>
               <button
                 onClick={() => setDismissedAlerts(prev => [...prev, vaccine.id])}
+                aria-label="Dismiss this reminder"
+                className="fc-tap"
                 style={{
-                  width: "28px", height: "28px", borderRadius: "6px",
+                  width: "28px", height: "28px", borderRadius: "8px",
                   border: "none", background: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center"
                 }}
               >
-                <X size={16} color="#ef4444" />
+                <X size={16} color="#b91c1c" aria-hidden="true" />
               </button>
             </div>
           </div>
         ))}
 
       {/* ── HEADER ── */}
-      <div style={{
-        display: "flex", justifyContent: "space-between",
-        alignItems: "center", marginBottom: "28px",
-        flexWrap: "wrap", gap: "16px"
-      }}>
+      <div className="db-head">
         <div>
-          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 36px)", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
-            Dashboard
-          </h1>
-          <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "var(--fs-greeting, 16px)" }}>
-            {greeting}, {profile?.full_name || "Farmer"} 👋 Welcome back to Farmers Connect
-          </p>
+          <h1 className="fc-page-title">Dashboard</h1>
+          <p className="fc-page-sub">{greeting}, {profile?.full_name || "Farmer"}</p>
         </div>
-        <button
-          onClick={() => navigate("/my-farm")}
-          style={{
-            height: "48px", padding: "0 22px", border: "none",
-            borderRadius: "14px",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)",
-            color: "white", fontWeight: "700", cursor: "pointer",
-            fontSize: "var(--fs-btn, 14px)", boxShadow: "0 8px 24px rgba(34,197,94,0.3)",
-            display: "flex", alignItems: "center", gap: "8px"
-          }}
-        >
-          <Plus size={18} /> Add Batch
+        <button type="button" className="fc-btn fc-btn--primary" onClick={() => navigate("/my-farm")}>
+          <Plus size={18} aria-hidden="true" /> Add Batch
         </button>
       </div>
 
-      {/* ── STAT CARDS ── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-        gap: "18px", marginBottom: "24px"
-      }}>
+      {/* ── FIGURES ── */}
+      <div className="fc-stats db-block">
         {statCards.map(item => {
           const Icon = item.icon;
           return (
-            <div
-              key={item.title}
-              onClick={() => navigate(item.path)}
-              style={{
-                background: "white", borderRadius: "24px", padding: "22px",
-                boxShadow: "0 4px 20px rgba(15,23,42,0.05)",
-                border: "1px solid rgba(226,232,240,0.8)",
-                cursor: "pointer", transition: "all 0.2s ease"
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = "0 10px 30px rgba(15,23,42,0.1)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(15,23,42,0.05)";
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{
-                  width: "64px", height: "64px", borderRadius: "20px",
-                  background: item.color, display: "flex",
-                  alignItems: "center", justifyContent: "center"
-                }}>
-                  <Icon size={28} color={item.iconColor} />
-                </div>
-                <ArrowUpRight size={18} color="#d1d5db" />
-              </div>
-              <div style={{ marginTop: "20px" }}>
-                <div style={{ fontSize: "var(--fs-stat, 34px)", fontWeight: "800", color: "#111827" }}>
-                  {loading ? "—" : item.value}
-                </div>
-                <div style={{ marginTop: "4px", color: "#6b7280", fontSize: "var(--fs-label, 14px)", fontWeight: "500" }}>
-                  {item.title}
-                </div>
-              </div>
-            </div>
+            <button key={item.title} type="button" className="fc-stat" onClick={() => navigate(item.path)}>
+              <span className="fc-stat-label"><Icon size={16} aria-hidden="true" /> {item.title}</span>
+              <span className="fc-stat-value">{loading ? "—" : item.value}</span>
+            </button>
           );
         })}
       </div>
 
       {/* ── MORTALITY & SURVIVAL ── */}
       {mortalityData.length > 0 && (
-        <div style={{
-          background: "#fff", borderRadius: "24px", padding: "24px",
-          border: "1px solid rgba(226,232,240,0.8)",
-          boxShadow: "0 4px 20px rgba(15,23,42,0.05)", marginBottom: "18px"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-            <TrendingDown size={20} color="#ef4444" />
-            <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
-              Mortality & Survival
-            </h2>
-          </div>
+        <div className="fc-card db-block">
+          <h2 className="db-section-title">Mortality and survival</h2>
 
-          <p style={{
-            fontSize: "var(--fs-upper, 11px)", color: "#9ca3af", fontWeight: "700",
-            textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
-          }}>
-            BATCH SURVIVAL RATE
-          </p>
+          <p className="db-kicker">Survival rate by batch</p>
           <div style={{ width: "100%", height: `${Math.max(survivalChartData.length * 60, 120)}px`, marginBottom: "28px" }}>
             <ResponsiveContainer width="100%" height="100%">
               <RechartsBarChart
@@ -423,19 +357,14 @@ export default function Dashboard() {
                 />
                 <Tooltip
                   formatter={v => [`${v}%`, "Survival rate"]}
-                  contentStyle={{ borderRadius: "10px", border: "1px solid #e5e7eb", fontSize: "12px" }}
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #e5e7eb", fontSize: "12px" }}
                 />
-                <Bar dataKey="survival" fill="#16a34a" radius={[0, 6, 6, 0]} barSize={22} />
+                <Bar dataKey="survival" fill="#15803d" radius={[0, 6, 6, 0]} barSize={22} />
               </RechartsBarChart>
             </ResponsiveContainer>
           </div>
 
-          <p style={{
-            fontSize: "var(--fs-upper, 11px)", color: "#9ca3af", fontWeight: "700",
-            textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px"
-          }}>
-            DAILY DEATHS (LAST 14 DAYS)
-          </p>
+          <p className="db-kicker">Deaths per day, last 14 days</p>
           {dailyMortalityData.length === 0 || loading ? (
             <div style={{
               height: "220px", display: "flex", alignItems: "center",
@@ -463,13 +392,13 @@ export default function Dashboard() {
                     width={30}
                   />
                   <Tooltip content={<DailyDeathsTooltip />} />
-                  <Bar dataKey="deaths" name="Deaths" fill="#f87171" radius={[3, 3, 0, 0]} barSize={14} />
+                  <Bar dataKey="deaths" name="Deaths" fill="#fca5a5" radius={[3, 3, 0, 0]} barSize={14} />
                   <Line
                     dataKey="deaths"
                     name="Trend"
-                    stroke="#ef4444"
+                    stroke="#b91c1c"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "#ef4444", strokeWidth: 0 }}
+                    dot={{ r: 3, fill: "#b91c1c", strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                   />
                 </ComposedChart>
@@ -480,82 +409,28 @@ export default function Dashboard() {
       )}
 
       {/* ── SALES & PROFIT (LAST 14 DAYS OVERVIEW) ── */}
-      <div style={{
-        background: "#fff", borderRadius: "24px", padding: "24px",
-        border: "1px solid rgba(226,232,240,0.8)",
-        boxShadow: "0 4px 20px rgba(15,23,42,0.05)", marginBottom: "18px"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-          <div style={{
-            width: "36px", height: "36px", borderRadius: "10px",
-            background: "#f0fdf4", display: "flex",
-            alignItems: "center", justifyContent: "center"
-          }}>
-            <Wallet size={20} color="#16a34a" />
-          </div>
-          <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
-            Sales & Profit
-          </h2>
-        </div>
+      <div className="fc-card db-block">
+        <h2 className="db-section-title">Sales and profit</h2>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-          gap: "16px", marginBottom: "24px"
-        }}>
-          <div style={{
-            background: "#f0fdf4", border: "1px solid #dcfce7",
-            borderRadius: "16px", padding: "16px 18px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#16a34a" }}>
-              <DollarSign size={16} />
-              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Revenue</span>
-            </div>
-            <div style={{ marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800", color: "#16a34a" }}>
-              KES {periodTotals.revenue.toLocaleString()}
-            </div>
+        <div className="fc-stats db-money">
+          <div className="fc-stat fc-stat--static">
+            <span className="fc-stat-label">Revenue</span>
+            <span className="fc-stat-value">KES {periodTotals.revenue.toLocaleString()}</span>
           </div>
-
-          <div style={{
-            background: "#fef2f2", border: "1px solid #fecaca",
-            borderRadius: "16px", padding: "16px 18px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#ef4444" }}>
-              <TrendingDown size={16} />
-              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Expenses</span>
-            </div>
-            <div style={{ marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800", color: "#ef4444" }}>
-              KES {periodTotals.expenses.toLocaleString()}
-            </div>
+          <div className="fc-stat fc-stat--static">
+            <span className="fc-stat-label">Expenses</span>
+            <span className="fc-stat-value">KES {periodTotals.expenses.toLocaleString()}</span>
           </div>
-
-          <div style={{
-            background: periodTotals.profit >= 0 ? "#f0fdf4" : "#fef2f2",
-            border: `1px solid ${periodTotals.profit >= 0 ? "#dcfce7" : "#fecaca"}`,
-            borderRadius: "16px", padding: "16px 18px"
-          }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
-            }}>
-              <TrendingUp size={16} />
-              <span style={{ fontSize: "var(--fs-small, 13px)", fontWeight: "600" }}>Profit</span>
-            </div>
-            <div style={{
-              marginTop: "6px", fontSize: "var(--fs-pill, 24px)", fontWeight: "800",
-              color: periodTotals.profit >= 0 ? "#16a34a" : "#ef4444"
-            }}>
-              KES {periodTotals.profit.toLocaleString()}
-            </div>
+          <div className={`fc-stat fc-stat--static${periodTotals.profit < 0 ? " fc-stat--danger" : ""}`}>
+            <span className="fc-stat-label">
+              {periodTotals.profit < 0 ? <TrendingDown size={16} aria-hidden="true" /> : <TrendingUp size={16} aria-hidden="true" />}
+              {periodTotals.profit < 0 ? "Loss" : "Profit"}
+            </span>
+            <span className="fc-stat-value">KES {Math.abs(periodTotals.profit).toLocaleString()}</span>
           </div>
         </div>
 
-        <p style={{
-          fontSize: "var(--fs-upper, 11px)", fontWeight: "700", color: "#9ca3af",
-          textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px"
-        }}>
-          LAST 14 DAYS
-        </p>
+        <p className="db-kicker">Per day, last 14 days (KES)</p>
 
         {dailyFinanceData.length === 0 || loading ? (
           <div style={{
@@ -578,21 +453,21 @@ export default function Dashboard() {
                 <YAxis
                   domain={[0, yAxisMax]}
                   ticks={yTicks}
-                  tickFormatter={v => `$${v}`}
+                  tickFormatter={v => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)}
                   tick={{ fontSize: 11, fill: "#9ca3af" }}
                   axisLine={false}
                   tickLine={false}
-                  width={55}
+                  width={44}
                 />
                 <Tooltip content={<DailyFinanceTooltip />} />
-                <Bar dataKey="sales" name="Sales" fill="#22c55e" radius={[3, 3, 0, 0]} barSize={14} />
-                <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[3, 3, 0, 0]} barSize={14} />
+                <Bar dataKey="sales" name="Sales" fill="#15803d" radius={[3, 3, 0, 0]} barSize={14} />
+                <Bar dataKey="expenses" name="Expenses" fill="#9ca3af" radius={[3, 3, 0, 0]} barSize={14} />
                 <Line
                   dataKey="profit"
                   name="Profit"
-                  stroke="#f97316"
+                  stroke="#111827"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#f97316", strokeWidth: 0 }}
+                  dot={{ r: 3, fill: "#111827", strokeWidth: 0 }}
                   activeDot={{ r: 5 }}
                 />
               </ComposedChart>
@@ -602,15 +477,15 @@ export default function Dashboard() {
 
         <div style={{ display: "flex", gap: "20px", marginTop: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <div style={{ width: "12px", height: "12px", background: "#22c55e", borderRadius: "2px" }} />
+            <div style={{ width: "12px", height: "12px", background: "#15803d", borderRadius: "2px" }} />
             <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Sales</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <div style={{ width: "12px", height: "12px", background: "#ef4444", borderRadius: "2px" }} />
+            <div style={{ width: "12px", height: "12px", background: "#9ca3af", borderRadius: "2px" }} />
             <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Expenses</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <div style={{ width: "16px", height: "2px", background: "#f97316" }} />
+            <div style={{ width: "16px", height: "2px", background: "#111827" }} />
             <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Profit</span>
           </div>
         </div>
@@ -622,74 +497,58 @@ export default function Dashboard() {
       <div className="fc-dashboard-grid">
 
         {/* PENDING TASKS */}
-        <div style={{
-          background: "white", borderRadius: "28px", padding: "28px",
-          minHeight: "300px", border: "1px solid rgba(226,232,240,0.8)",
-          boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
-        }}>
-          <div style={{
-            display: "flex", justifyContent: "space-between",
-            alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "10px"
-          }}>
+        <div className="fc-card">
+          <div className="db-card-head">
             <div>
-              <h2 style={{ margin: 0, fontSize: "var(--fs-section, 20px)", fontWeight: "700", color: "#111827" }}>
-                Pending Tasks
-              </h2>
-              <p style={{ marginTop: "4px", color: "#9ca3af", fontSize: "var(--fs-small, 13px)" }}>
+              <h2 className="db-section-title" style={{ marginBottom: 0 }}>Tasks to do</h2>
+              <p className="fc-page-sub" style={{ fontSize: "13px" }}>
                 {stats.tasks} task{stats.tasks !== 1 ? "s" : ""} remaining
               </p>
             </div>
-            <button
-              onClick={() => navigate("/tasks")}
-              style={{
-                border: "none", background: "#f4f7fb", borderRadius: "12px",
-                padding: "8px 16px", fontWeight: "600", cursor: "pointer",
-                fontSize: "var(--fs-small, 13px)", color: "#374151"
-              }}
-            >
-              View All
+            <button type="button" className="fc-btn fc-btn--secondary" onClick={() => navigate("/tasks")}>
+              View all
             </button>
           </div>
 
           {recentTasks.length === 0 ? (
             <div style={{
-              height: "180px", display: "flex", flexDirection: "column",
-              justifyContent: "center", alignItems: "center"
+              padding: "28px 8px", display: "flex", flexDirection: "column",
+              justifyContent: "center", alignItems: "center", textAlign: "center"
             }}>
-              <CheckCircle2 size={56} color="#22c55e" />
-              <h3 style={{ marginTop: "14px", marginBottom: "6px", fontSize: "var(--fs-h3, 16px)", color: "#111827" }}>
-                All tasks completed!
+              <CheckCircle2 size={24} color="#15803d" aria-hidden="true" />
+              <h3 style={{ marginTop: "10px", marginBottom: "4px", fontSize: "15px", fontWeight: "600", color: "#111827" }}>
+                No tasks waiting
               </h3>
-              <p style={{ color: "#9ca3af", fontSize: "var(--fs-body, 14px)" }}>Your farm is fully up to date.</p>
+              <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>Add one from the Tasks page when something needs doing.</p>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               {recentTasks.map(task => (
                 <div key={task.id} style={{
                   display: "flex", alignItems: "center", gap: "14px",
-                  padding: "12px 14px", borderRadius: "14px",
-                  background: "#f9fafb", border: "1px solid #f0f0f0"
+                  padding: "10px 0", borderTop: "1px solid #f3f4f6"
                 }}>
                   <div style={{
                     width: "8px", height: "8px", borderRadius: "50%",
                     background: task.priority === "high" ? "#ef4444"
-                      : task.priority === "medium" ? "#f59e0b" : "#22c55e",
+                      : task.priority === "medium" ? "#f59e0b" : "#9ca3af",
                     flexShrink: 0
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: "600", fontSize: "var(--fs-body, 14px)", color: "#111827" }}>
                       {task.title}
                     </div>
-                    <div style={{ fontSize: "var(--fs-tiny, 12px)", color: "#9ca3af", marginTop: "2px" }}>
-                      Due: {task.due_date || "No due date"}
+                    <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>
+                      {task.due_date ? `Due ${task.due_date}` : "No due date"}
                     </div>
                   </div>
                   <button
                     onClick={() => navigate("/tasks")}
+                    className="fc-tap"
                     style={{
-                      padding: "4px 10px", borderRadius: "6px",
+                      padding: "4px 12px", borderRadius: "8px",
                       border: "1px solid #e5e7eb", background: "white",
-                      fontSize: "var(--fs-tiny, 11px)", cursor: "pointer", fontWeight: "600", color: "#374151"
+                      fontSize: "13px", cursor: "pointer", fontWeight: "600", color: "#374151"
                     }}
                   >
                     View
@@ -704,41 +563,13 @@ export default function Dashboard() {
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
 
           {/* QUICK ACTIONS */}
-          <div style={{
-            background: "white", borderRadius: "28px", padding: "24px",
-            border: "1px solid rgba(226,232,240,0.8)",
-            boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
-          }}>
-            <h2 style={{ marginTop: 0, marginBottom: "18px", fontSize: "var(--fs-h3, 18px)", fontWeight: "700", color: "#111827" }}>
-              Quick Actions
-            </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
-              {quickActions.map(({ icon, label, path, bg }) => (
-                <button
-                  key={label}
-                  onClick={() => navigate(path)}
-                  style={{
-                    minHeight: "80px", minWidth: 0, padding: "10px 8px",
-                    borderRadius: "18px", textAlign: "center",
-                    border: "1px solid rgba(226,232,240,0.8)",
-                    background: bg || "#fff",
-                    display: "flex", flexDirection: "column",
-                    alignItems: "center", justifyContent: "center",
-                    gap: "8px", cursor: "pointer", transition: "all 0.2s"
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.08)";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  {icon}
-                  <span style={{ fontSize: "var(--fs-tiny, 12px)", fontWeight: "600", color: "#374151", overflowWrap: "anywhere" }}>
-                    {label}
-                  </span>
+          <div className="fc-card">
+            <h2 className="db-card-title">Quick actions</h2>
+            <div className="fc-quick">
+              {quickActions.map(({ icon: Icon, label, path }) => (
+                <button key={label} type="button" className="fc-quick-btn" onClick={() => navigate(path)}>
+                  <Icon size={20} aria-hidden="true" />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
@@ -746,41 +577,36 @@ export default function Dashboard() {
 
           {/* OVERDUE VACCINATIONS */}
           {overdueVaccines.length > 0 && (
-            <div style={{
-              background: "#fff", borderRadius: "24px", padding: "20px",
-              border: "1px solid rgba(226,232,240,0.8)",
-              boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
-            }}>
+            <div className="fc-card">
               <div style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", marginBottom: "14px"
               }}>
-                <h3 style={{ margin: 0, fontSize: "var(--fs-h3, 15px)", fontWeight: "700", color: "#111827" }}>
-                  Overdue Vaccinations
-                </h3>
+                <h2 className="db-card-title" style={{ margin: 0 }}>Overdue vaccinations</h2>
                 <button
                   onClick={() => navigate("/my-farm")}
+                  className="fc-tap"
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "600"
+                    fontSize: "13px", color: "#15803d", fontWeight: "600"
                   }}
                 >
-                  View All
+                  View all
                 </button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {overdueVaccines.slice(0, 3).map(v => (
                   <div key={v.id} style={{
-                    padding: "10px 12px", borderRadius: "10px",
+                    padding: "10px 12px", borderRadius: "12px",
                     background: "#fef2f2", border: "1px solid #fecaca",
                     display: "flex", alignItems: "center", gap: "10px"
                   }}>
-                    <Syringe size={14} color="#ef4444" />
+                    <Syringe size={16} color="#b91c1c" aria-hidden="true" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "600", color: "#991b1b" }}>
                         {v.vaccine_name}
                       </p>
-                      <p style={{ margin: 0, fontSize: "var(--fs-tiny, 11px)", color: "#ef4444" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "#991b1b" }}>
                         {v.farm_batches?.batch_name} · {v.scheduled_date}
                       </p>
                     </div>
@@ -792,40 +618,26 @@ export default function Dashboard() {
 
           {/* UPCOMING VACCINATIONS (if no overdue) */}
           {overdueVaccines.length === 0 && (
-            <div style={{
-              background: "#fff", borderRadius: "24px", padding: "20px",
-              border: "1px solid rgba(226,232,240,0.8)",
-              boxShadow: "0 4px 20px rgba(15,23,42,0.05)"
-            }}>
+            <div className="fc-card">
               <div style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", marginBottom: "14px"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Syringe size={16} color="#22c55e" />
-                  <h3 style={{ margin: 0, fontSize: "var(--fs-h3, 15px)", fontWeight: "700", color: "#111827" }}>
-                    Upcoming Vaccinations
-                  </h3>
-                </div>
+                <h2 className="db-card-title" style={{ margin: 0 }}>Vaccinations</h2>
                 <button
                   onClick={() => navigate("/my-farm")}
+                  className="fc-tap"
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "600"
+                    fontSize: "13px", color: "#15803d", fontWeight: "600"
                   }}
                 >
-                  View All
+                  View all
                 </button>
               </div>
-              <div style={{
-                textAlign: "center", padding: "20px",
-                background: "#f0fdf4", borderRadius: "12px"
-              }}>
-                <CheckCircle2 size={32} color="#22c55e" style={{ marginBottom: "8px" }} />
-                <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", color: "#16a34a", fontWeight: "600" }}>
-                  All vaccinations up to date!
-                </p>
-              </div>
+              <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#374151" }}>
+                <CheckCircle2 size={18} color="#15803d" aria-hidden="true" /> Nothing overdue. All vaccinations are up to date.
+              </p>
             </div>
           )}
         </div>

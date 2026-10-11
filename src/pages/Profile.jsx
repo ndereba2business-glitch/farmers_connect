@@ -23,7 +23,7 @@ const COUNTRY_CODES = [
 ];
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
   background: "#fff", color: "#111827"
@@ -100,7 +100,7 @@ export default function Profile() {
     if (!userEmail) return;
     setSaving(true);
 
-    // ✅ First check if profile exists
+    // First check if profile exists
     const { data: existing } = await supabase
       .from("farmer_profiles")
       .select("id")
@@ -110,7 +110,7 @@ export default function Profile() {
     let error;
 
     if (existing) {
-      // ✅ Profile exists — UPDATE it
+      // Profile exists — UPDATE it
       const { error: updateError } = await supabase
         .from("farmer_profiles")
         .update({
@@ -125,7 +125,7 @@ export default function Profile() {
         .eq("user_email", userEmail);
       error = updateError;
     } else {
-      // ✅ No profile yet — INSERT one
+      // No profile yet — INSERT one
       const { error: insertError } = await supabase
         .from("farmer_profiles")
         .insert([{
@@ -230,9 +230,9 @@ export default function Profile() {
 
       {/* ======================== PROFILE HEADER CARD ======================== */}
       <div style={{
-        background: "#fff", borderRadius: "24px",
+        background: "#fff", borderRadius: "16px",
         border: "1px solid #e5e7eb",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+        boxShadow: "var(--fc-shadow-card)",
         overflow: "hidden", marginBottom: "20px"
       }}>
 
@@ -252,7 +252,7 @@ export default function Profile() {
             {/* AVATAR */}
             <div style={{ position: "relative", display: "inline-block" }}>
               <div style={{
-                width: "80px", height: "80px", borderRadius: "18px",
+                width: "80px", height: "80px", borderRadius: "16px",
                 border: "4px solid #fff", overflow: "hidden",
                 background: "#dcfce7", display: "flex",
                 alignItems: "center", justifyContent: "center",
@@ -266,7 +266,7 @@ export default function Profile() {
                   />
                 ) : (
                   <span style={{
-                    fontSize: "28px", fontWeight: "800", color: "#16a34a"
+                    fontSize: "28px", fontWeight: "700", color: "#15803d"
                   }}>
                     {initials}
                   </span>
@@ -276,7 +276,7 @@ export default function Profile() {
               {/* CAMERA OVERLAY */}
               <label style={{
                 position: "absolute", inset: 0,
-                borderRadius: "18px",
+                borderRadius: "16px",
                 background: "rgba(0,0,0,0.4)",
                 display: "flex", alignItems: "center",
                 justifyContent: "center", cursor: "pointer",
@@ -300,7 +300,7 @@ export default function Profile() {
             {/* NAME + EMAIL */}
             <div style={{ flex: 1, paddingTop: "44px" }}>
               <h1 style={{
-                margin: 0, fontSize: "22px", fontWeight: "800", color: "#111827"
+                margin: 0, fontSize: "22px", fontWeight: "700", color: "#111827"
               }}>
                 {profileData.full_name || "Farmer"}
               </h1>
@@ -312,9 +312,9 @@ export default function Profile() {
               }}>
                 {profileData.farm_name && (
                   <span style={{
-                    background: "#f0fdf4", color: "#16a34a",
+                    background: "#f0fdf4", color: "#15803d",
                     fontSize: "12px", fontWeight: "600",
-                    padding: "3px 10px", borderRadius: "20px",
+                    padding: "3px 10px", borderRadius: "16px",
                     border: "1px solid #dcfce7"
                   }}>
                     {profileData.farm_name}
@@ -350,7 +350,7 @@ export default function Profile() {
                 onClick={() => setEditing(!editing)}
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
-                  padding: "8px 16px", borderRadius: "10px",
+                  padding: "8px 16px", borderRadius: "12px",
                   border: "1.5px solid #e5e7eb", background: "#fff",
                   cursor: "pointer", fontWeight: "600",
                   fontSize: "13px", color: "#374151"
@@ -365,10 +365,10 @@ export default function Profile() {
                 disabled={replayingTour}
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
-                  padding: "8px 16px", borderRadius: "10px",
+                  padding: "8px 16px", borderRadius: "12px",
                   border: "1.5px solid #dcfce7", background: "#f0fdf4",
                   cursor: replayingTour ? "not-allowed" : "pointer",
-                  fontWeight: "600", fontSize: "13px", color: "#16a34a",
+                  fontWeight: "600", fontSize: "13px", color: "#15803d",
                   opacity: replayingTour ? 0.7 : 1
                 }}
               >
@@ -380,7 +380,7 @@ export default function Profile() {
                 onClick={handleLogout}
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
-                  padding: "8px 16px", borderRadius: "10px",
+                  padding: "8px 16px", borderRadius: "12px",
                   border: "1.5px solid #e5e7eb", background: "#fff",
                   cursor: "pointer", fontWeight: "600",
                   fontSize: "13px", color: "#374151"
@@ -518,11 +518,11 @@ export default function Profile() {
                     padding: "12px 24px",
                     background: saving
                       ? "#86efac"
-                      : "linear-gradient(135deg,#22c55e,#16a34a)",
+                      : "#15803d",
                     color: "#fff", border: "none", borderRadius: "12px",
                     fontWeight: "700", fontSize: "14px",
                     cursor: saving ? "not-allowed" : "pointer",
-                    boxShadow: "0 4px 16px rgba(34,197,94,0.25)"
+                    boxShadow: "none"
                   }}
                 >
                   {saving
@@ -587,9 +587,9 @@ export default function Profile() {
 
       {/* ======================== TABS ======================== */}
       <div style={{
-        background: "#fff", borderRadius: "24px",
+        background: "#fff", borderRadius: "16px",
         border: "1px solid #e5e7eb",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+        boxShadow: "var(--fc-shadow-card)",
         overflow: "hidden"
       }}>
 
@@ -606,7 +606,7 @@ export default function Profile() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               style={{
-                padding: "8px 18px", borderRadius: "20px",
+                padding: "8px 18px", borderRadius: "16px",
                 border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
                 background: activeTab === tab.key ? "#111827" : "#fff",
                 color: activeTab === tab.key ? "#fff" : "#6b7280",
@@ -683,16 +683,16 @@ export default function Profile() {
                         </p>
                         <p style={{
                           margin: "2px 0 0", fontWeight: "700",
-                          fontSize: "14px", color: "#22c55e"
+                          fontSize: "14px", color: "#15803d"
                         }}>
                           KES {Number(product.price).toLocaleString()}
                         </p>
                       </div>
                       <span style={{
                         fontSize: "11px", fontWeight: "600",
-                        padding: "3px 8px", borderRadius: "20px",
+                        padding: "3px 8px", borderRadius: "16px",
                         background: product.sold_out ? "#fee2e2" : "#dcfce7",
-                        color: product.sold_out ? "#ef4444" : "#16a34a"
+                        color: product.sold_out ? "#ef4444" : "#15803d"
                       }}>
                         {product.sold_out ? "Sold Out" : "Active"}
                       </span>

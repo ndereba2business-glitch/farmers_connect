@@ -1,3 +1,4 @@
+import BrandMark from "../BrandMark";
 import { Egg, Stethoscope, ShoppingBag, Package, Users } from "lucide-react";
 import { useInView } from "./useInView";
 
@@ -42,7 +43,7 @@ export default function SolutionSection() {
             </svg>
 
             <div className="lp-hub-center">
-              <span className="lp-hub-mark" aria-hidden="true">🐔</span>
+              <BrandMark size={44} title="" />
               <span className="lp-hub-word">Farmers<br />Connect</span>
             </div>
 

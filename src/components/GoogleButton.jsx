@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { isGoogleEnabled, startGoogleSignIn } from "../lib/googleSignIn";
 
 function GoogleLogo() {
@@ -58,7 +59,7 @@ export default function GoogleButton({ role, label = "Continue with Google" }) {
         disabled={starting}
         style={{
           width: "100%", minHeight: "48px", padding: "12px 14px",
-          borderRadius: "10px", border: "1px solid #d1d5db",
+          borderRadius: "12px", border: "1px solid #d1d5db",
           background: "#fff", color: "#1f2937",
           fontWeight: "600", fontSize: "15px",
           cursor: starting ? "wait" : "pointer",
@@ -80,10 +81,10 @@ export default function GoogleButton({ role, label = "Continue with Google" }) {
           role="alert"
           style={{
             background: "#fef2f2", color: "#dc2626", padding: "12px",
-            borderRadius: "10px", marginTop: "12px", fontSize: "14px"
+            borderRadius: "12px", marginTop: "12px", fontSize: "14px"
           }}
         >
-          ⚠️ {error}
+          <AlertTriangle size={14} aria-hidden="true" /> {error}
         </div>
       )}
     </div>

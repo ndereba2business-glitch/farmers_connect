@@ -1,4 +1,6 @@
+import BrandMark from "../components/BrandMark";
 import { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
@@ -143,7 +145,7 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f0fdf4",
+        background: "#f7f8f5",
         padding: "20px"
       }}
     >
@@ -167,25 +169,22 @@ export default function Login() {
           }}
         >
 
-          <div
-            style={{
-              fontSize: "50px",
-              marginBottom: "10px"
-            }}
-          >
-            🐔
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}>
+            <BrandMark size={56} />
           </div>
 
-          <h1>
+          <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: "700", letterSpacing: "-0.02em", color: "#111827" }}>
             Farmers Connect
           </h1>
 
           <p
             style={{
-              color: "#666"
+              margin: 0,
+              fontSize: "14px",
+              color: "#6b7280"
             }}
           >
-            Login to continue
+            Log in to continue
           </p>
 
         </div>
@@ -195,7 +194,7 @@ export default function Login() {
           style={{
             display: "flex",
             background: "#f3f4f6",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "4px",
             marginBottom: "20px"
           }}
@@ -227,7 +226,7 @@ export default function Login() {
                   : "#666"
             }}
           >
-            📧 Email
+            Email
           </button>
 
           <button
@@ -256,7 +255,7 @@ export default function Login() {
                   : "#666"
             }}
           >
-            📱 Phone
+            Phone
           </button>
 
         </div>
@@ -267,7 +266,7 @@ export default function Login() {
           <input
             type="email"
 
-            placeholder="Email"
+            aria-label="Email" placeholder="Email"
 
             value={email}
 
@@ -280,7 +279,7 @@ export default function Login() {
             style={{
               width: "100%",
               padding: "14px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               border: "1px solid #ddd",
               marginBottom: "15px",
               fontSize: "15px",
@@ -293,7 +292,7 @@ export default function Login() {
           <input
             type="tel"
 
-            placeholder="0712345678"
+            aria-label="Phone number" placeholder="0712345678"
 
             value={phone}
 
@@ -306,7 +305,7 @@ export default function Login() {
             style={{
               width: "100%",
               padding: "14px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               border: "1px solid #ddd",
               marginBottom: "15px",
               fontSize: "15px",
@@ -319,7 +318,7 @@ export default function Login() {
         <input
           type="password"
 
-          placeholder="Password"
+          aria-label="Password" placeholder="Password"
 
           value={password}
 
@@ -332,7 +331,7 @@ export default function Login() {
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             border: "1px solid #ddd",
             marginBottom: "20px",
             fontSize: "15px",
@@ -347,12 +346,12 @@ export default function Login() {
               background: "#fef2f2",
               color: "#dc2626",
               padding: "12px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               marginBottom: "14px",
               fontSize: "14px"
             }}
           >
-            ⚠️ {error}
+            <AlertTriangle size={14} aria-hidden="true" /> {error}
           </div>
         )}
 
@@ -365,18 +364,18 @@ export default function Login() {
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             border: "none",
             background: "#15803d",
             color: "white",
-            fontWeight: "bold",
+            fontWeight: "700",
             cursor: "pointer",
             fontSize: "15px"
           }}
         >
           {loading
             ? "Logging in..."
-            : "Login"}
+            : "Log in"}
         </button>
 
         <GoogleButton />
@@ -401,10 +400,10 @@ export default function Login() {
               color: "#15803d",
               marginLeft: "6px",
               cursor: "pointer",
-              fontWeight: "bold"
+              fontWeight: "700"
             }}
           >
-            Signup
+            Sign up
           </span>
 
         </p>

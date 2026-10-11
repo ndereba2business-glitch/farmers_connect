@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 14px;
 }
-.sd-header h1 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+.sd-header h1 { margin: 0; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; }
 .sd-header p { margin: 4px 0 0; color: var(--ss-muted); font-size: 0.94rem; max-width: 56ch; }
 
 /* --------------------------------------------------------------- shared */
@@ -23,7 +23,7 @@
   padding: 18px;
 }
 
-.sd-section-title { margin: 0 0 14px; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
+.sd-section-title { margin: 0 0 14px; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
 .sd-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .sd-section-head .sd-section-title { margin-bottom: 14px; }
 .sd-link {
@@ -57,7 +57,7 @@
 .sd-btn--primary {
   color: #fff;
   background: linear-gradient(135deg, var(--ss-green-400), var(--ss-green));
-  box-shadow: 0 10px 22px -12px rgba(21, 128, 61, 0.7);
+  box-shadow: none;
 }
 .sd-btn--primary:hover { transform: translateY(-1px); }
 .sd-btn--ghost { color: var(--ss-ink); background: var(--ss-surface); border-color: var(--ss-line); }
@@ -69,7 +69,7 @@
   align-items: center;
   height: 24px;
   padding: 0 10px;
-  border-radius: 100px;
+  border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
@@ -106,13 +106,13 @@
   display: grid;
   place-items: center;
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
   background: linear-gradient(155deg, var(--ss-green-400), var(--ss-green));
 }
 .sd-profile-text { min-width: 0; }
 .sd-profile-name { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.sd-profile-name h2 { margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.sd-profile-name h2 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .sd-meta {
   list-style: none;
   margin: 8px 0 0;
@@ -161,7 +161,7 @@
 .sd-stat--link { transition: transform 0.15s ease, border-color 0.15s ease; }
 .sd-stat--link:hover { transform: translateY(-2px); border-color: #b7e4c7; }
 .sd-stat-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 6px; }
-.sd-stat-value { font-size: 1.85rem; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+.sd-stat-value { font-size: 1.85rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
 .sd-stat-label { font-size: 0.88rem; font-weight: 700; }
 .sd-stat-hint { font-size: 0.75rem; color: var(--ss-muted); }
 
@@ -177,7 +177,7 @@
 .sd-summary > div { padding: 14px 16px; border-right: 1px solid var(--ss-line); min-width: 0; }
 .sd-summary > div:last-child { border-right: 0; }
 .sd-summary dt { font-size: 0.74rem; color: var(--ss-muted); font-weight: 600; }
-.sd-summary dd { margin: 4px 0 0; font-size: 1.05rem; font-weight: 800; overflow-wrap: anywhere; }
+.sd-summary dd { margin: 4px 0 0; font-size: 1.05rem; font-weight: 700; overflow-wrap: anywhere; }
 
 /* ---------------------------------------------------- quick actions */
 .sd-actions {
@@ -196,7 +196,7 @@
   padding: 12px 14px;
   background: var(--ss-surface);
   border: 1px solid var(--ss-line);
-  border-radius: 14px;
+  border-radius: 12px;
   text-decoration: none;
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
@@ -263,7 +263,7 @@
   border-top: 1px solid var(--ss-line);
 }
 .sd-feed-item:first-child { border-top: 0; padding-top: 0; }
-.sd-feed-icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; }
+.sd-feed-icon { width: 32px; height: 32px; border-radius: 12px; display: grid; place-items: center; }
 .sd-feed-text { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .sd-feed-title { font-size: 0.88rem; font-weight: 700; overflow-wrap: anywhere; }
 .sd-feed-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--ss-muted); }
@@ -347,7 +347,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--ss-bg);
   font-size: 0.88rem;
 }

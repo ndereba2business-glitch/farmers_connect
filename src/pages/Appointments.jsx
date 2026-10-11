@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import {
-  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban, AlertTriangle
+  Calendar, Clock, Plus, X, CheckCircle2, Inbox, XCircle, Eye, Ban, AlertTriangle, MapPin, Bird
 } from "lucide-react";
 import { VisitReportFields } from "../components/VisitReportModal";
 
@@ -56,7 +56,7 @@ async function hasConflictingAcceptedAppointment(vetId, appt) {
 }
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
   background: "#fff", color: "#111827"
@@ -68,7 +68,7 @@ const labelStyle = {
 };
 
 const URGENCY_COLORS = {
-  low: { bg: "#f0fdf4", color: "#16a34a" },
+  low: { bg: "#f0fdf4", color: "#15803d" },
   medium: { bg: "#fffbeb", color: "#d97706" },
   high: { bg: "#fff7ed", color: "#ea580c" },
 };
@@ -452,7 +452,7 @@ export default function Appointments() {
       {/* HEADER */}
       <div className="fc-page-header" style={{ marginBottom: "20px" }}>
         <div>
-          <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+          <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
             Appointments
           </h1>
           <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -463,10 +463,10 @@ export default function Appointments() {
           onClick={() => { setNewFormError(""); setShowNewForm(true); }}
           style={{
             height: "44px", padding: "0 20px", border: "none", borderRadius: "12px",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff",
+            background: "#15803d", color: "#fff",
             fontWeight: "700", cursor: "pointer", fontSize: "14px",
             display: "flex", alignItems: "center", gap: "8px",
-            boxShadow: "0 6px 20px rgba(34,197,94,0.3)"
+            boxShadow: "none"
           }}
         >
           <Plus size={18} /> New Appointment
@@ -504,7 +504,7 @@ export default function Appointments() {
             className="fc-tap"
             onClick={() => setActiveTab(tab.key)}
             style={{
-              padding: "9px 18px", borderRadius: "20px",
+              padding: "9px 18px", borderRadius: "16px",
               border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
               background: activeTab === tab.key ? "#111827" : "#fff",
               color: activeTab === tab.key ? "#fff" : "#6b7280",
@@ -520,13 +520,13 @@ export default function Appointments() {
       {loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ height: "120px", borderRadius: "18px", background: "#f3f4f6" }} />
+            <div key={i} style={{ height: "120px", borderRadius: "16px", background: "#f3f4f6" }} />
           ))}
         </div>
       ) : displayList.length === 0 ? (
         <div style={{
           textAlign: "center", padding: "70px 20px",
-          background: "#fff", borderRadius: "24px", border: "1px solid #f0f0f0"
+          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
         }}>
           {activeTab === "unassigned" ? (
             <Inbox size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
@@ -553,8 +553,8 @@ export default function Appointments() {
             const urgency = URGENCY_COLORS[appt.urgency] || URGENCY_COLORS.medium;
             return (
               <div key={appt.id} style={{
-                background: "#fff", borderRadius: "18px", padding: "18px 20px",
-                border: "1px solid #e5e7eb", boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+                background: "#fff", borderRadius: "16px", padding: "18px 20px",
+                border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)",
                 display: "flex", justifyContent: "space-between",
                 alignItems: "flex-start", flexWrap: "wrap", gap: "14px"
               }}>
@@ -565,7 +565,7 @@ export default function Appointments() {
                     </span>
                     <span style={{
                       fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                      borderRadius: "20px", background: urgency.bg, color: urgency.color,
+                      borderRadius: "16px", background: urgency.bg, color: urgency.color,
                       textTransform: "capitalize"
                     }}>
                       {appt.urgency}
@@ -573,16 +573,16 @@ export default function Appointments() {
                     {activeTab === "unassigned" && (
                       <span style={{
                         fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                        borderRadius: "20px", background: "#eff6ff", color: "#3b82f6"
+                        borderRadius: "16px", background: "#eff6ff", color: "#3b82f6"
                       }}>
                         {appt.requested_vet_id ? "Requested — You" : "Unclaimed"}
                       </span>
                     )}
                     {activeTab === "upcoming" && (
                       <span style={{
-                        fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "20px",
+                        fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
                         background: appt.status === "accepted" ? "#dcfce7" : "#fef3c7",
-                        color: appt.status === "accepted" ? "#16a34a" : "#d97706",
+                        color: appt.status === "accepted" ? "#15803d" : "#d97706",
                         textTransform: "capitalize"
                       }}>
                         {appt.status}
@@ -598,10 +598,10 @@ export default function Appointments() {
                         <Clock size={12} /> {appt.appointment_time}
                       </span>
                     )}
-                    {appt.county && <span>📍 {appt.county}</span>}
-                    {appt.bird_count && <span>🐔 {appt.bird_count} birds</span>}
+                    {appt.county && <span><MapPin size={14} aria-hidden="true" /> {appt.county}</span>}
+                    {appt.bird_count && <span><Bird size={14} aria-hidden="true" /> {appt.bird_count} birds</span>}
                     {activeTab === "completed" && (
-                      <span style={{ color: "#16a34a", fontWeight: "700" }}>
+                      <span style={{ color: "#15803d", fontWeight: "700" }}>
                         KES {Number(appt.fee || 0).toLocaleString()}
                       </span>
                     )}
@@ -673,7 +673,7 @@ export default function Appointments() {
                 color: "#dc2626", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
-                ⚠️ {newFormError}
+                <AlertTriangle size={14} aria-hidden="true" /> {newFormError}
               </div>
             )}
             <SubmitButton saving={saving} label="Create Appointment" />
@@ -692,7 +692,7 @@ export default function Appointments() {
                 color: "#dc2626", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
-                ⚠️ {editFormError}
+                <AlertTriangle size={14} aria-hidden="true" /> {editFormError}
               </div>
             )}
             <SubmitButton saving={saving} label="Save Changes" />
@@ -748,7 +748,7 @@ export default function Appointments() {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
                 {medications.map((med, i) => (
                   <div key={i} style={{
-                    border: "1px solid #e5e7eb", borderRadius: "10px", padding: "12px",
+                    border: "1px solid #e5e7eb", borderRadius: "12px", padding: "12px",
                     display: "flex", flexDirection: "column", gap: "8px"
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -881,7 +881,7 @@ function Modal({ title, onClose, children }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "20px", padding: "28px",
+          background: "#fff", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >
@@ -978,7 +978,7 @@ function SubmitButton({ saving, label }) {
       disabled={saving}
       style={{
         width: "100%", padding: "13px",
-        background: saving ? "#86efac" : "linear-gradient(135deg,#22c55e,#16a34a)",
+        background: saving ? "#86efac" : "#15803d",
         color: "#fff", border: "none", borderRadius: "12px",
         fontWeight: "700", fontSize: "14px", cursor: saving ? "not-allowed" : "pointer"
       }}
@@ -989,7 +989,7 @@ function SubmitButton({ saving, label }) {
 }
 
 const btnPrimary = {
-  padding: "8px 16px", background: "#16a34a", color: "#fff",
+  padding: "8px 16px", background: "#15803d", color: "#fff",
   border: "none", borderRadius: "8px", fontWeight: "700",
   fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
 };

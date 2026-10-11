@@ -4,7 +4,7 @@ import { CheckCircle2, XCircle, Info, X } from "lucide-react";
 const ToastContext = createContext(null);
 
 const VARIANTS = {
-  success: { bg: "#f0fdf4", border: "#bbf7d0", color: "#16a34a", Icon: CheckCircle2 },
+  success: { bg: "#f0fdf4", border: "#bbf7d0", color: "#15803d", Icon: CheckCircle2 },
   error: { bg: "#fef2f2", border: "#fecaca", color: "#dc2626", Icon: XCircle },
   info: { bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8", Icon: Info },
 };

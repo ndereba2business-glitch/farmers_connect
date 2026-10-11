@@ -45,8 +45,9 @@ losing their input.
 ## Stack
 - Frontend: React 19 + Vite, react-router-dom v7, plain JavaScript (no TypeScript)
 - State: React context only (`AuthContext`, `ToastContext`) — there is no Redux
-- Styling: plain CSS files and inline styles — there is no Tailwind
-- Icons: lucide-react. Charts: recharts (farmer dashboard only)
+- Styling: plain CSS files and inline styles — there is no Tailwind. The visual system (colours, three radii, one card shadow, type and icon rules, shared `fc-card` / `fc-btn` / `fc-stats` / `fc-quick` classes) is written down in `src/styles/tokens.css`; read its header before styling anything
+- Icons: lucide-react only, never emoji as icons (reaction emoji in the community chat are content and stay). Charts: recharts (farmer dashboard only)
+- Brand mark: `src/components/BrandMark.jsx`. The same artwork is `public/favicon.svg` and the PNGs in `public/icons/`, regenerated with `node scripts/build-icons.mjs`
 - Backend: Supabase (auth, Postgres with row-level security, storage, realtime, edge functions — no separate backend framework)
 - Deploy: Vercel (merging to `main` deploys to production)
 
@@ -84,7 +85,8 @@ This app is for farmers likely using mid-range/low-end Android phones on mobile 
 - `src/components/landing/` — public landing page sections
 - `src/lib/` — Supabase client (`supabaseClient.js`) and the logic behind each feature, kept free of React where possible so it can be unit tested: `feedPlan.js`, `community.js`, `clucky.js`, `notificationHelpers.js`, `googleSignIn.js`, image upload, supplier contact links, product listing
 - `src/config/features.js` — feature switches
-- `src/styles/responsive.css` — the one global stylesheet (reset, font scale, shared utilities)
+- `src/styles/tokens.css` — the visual system: variables and the shared building-block classes
+- `src/styles/responsive.css` — the global reset, font scale and responsive utilities
 - `supabase/migrations/` — schema history. `supabase/functions/` — edge functions. `supabase/tests/security.sql` — access-rule checks
 - `tests/unit/` — pure logic. `tests/e2e/` — the real app in Chromium against a mock Supabase
 
@@ -106,6 +108,7 @@ Follow conventional commits, since this repo is also a portfolio piece:
 - `fix:` bug fix
 - `refactor:` code change with no behavior change
 - `style:` responsiveness/CSS-only changes
+- `design:` visual identity and look-and-feel changes
 - `docs:` README/comments only
 - `chore:` tooling, dependencies, deletions
 - Commit logically, not in one giant dump — e.g. schema migration and its related UI change are two commits, not one
@@ -132,3 +135,6 @@ Follow conventional commits, since this repo is also a portfolio piece:
 - New screens get their own CSS file with a short class prefix (`ss-` supplier shell, `sf-` supplier forms, `fc-` shared layout, `ot-` onboarding tour) instead of long inline style objects
 - Fetch in an effect with a cancelled flag, track `loading` and `error` state, and render a retry button on failure (see `SupplierShell.jsx` for the pattern)
 - Form fields need a real `<label>` or `aria-label`; a placeholder is not a label
+- Look: ink on white, one primary green (`#15803d`) for the main action, radii 8/12/16, hairline cards, solid buttons. No gradients on buttons or cards, no coloured glows, no frosted glass, no weight above 700, no icon tile beside every heading. Green is not applied to something just because it is about farming
+- A row of figures is `fc-stats`, not one card per number
+- The landing page has no photographs yet. Only real photographs of real farms go there, never stock or generated images

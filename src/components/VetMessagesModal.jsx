@@ -6,7 +6,7 @@ import FarmerPicker from "./FarmerPicker";
 import { X, Send, ArrowLeft, MessageSquarePlus } from "lucide-react";
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
 };
@@ -132,7 +132,7 @@ export default function VetMessagesModal({ onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "20px", width: "100%", maxWidth: "480px",
+          background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px",
           height: "min(640px, 85vh)", display: "flex", flexDirection: "column", overflow: "hidden"
         }}
       >
@@ -160,7 +160,7 @@ export default function VetMessagesModal({ onClose }) {
               <button
                 onClick={() => setStartingNew(true)}
                 aria-label="New conversation"
-                style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#16a34a" }}
+                style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#15803d" }}
               >
                 <MessageSquarePlus size={20} />
               </button>
@@ -183,8 +183,8 @@ export default function VetMessagesModal({ onClose }) {
               disabled={!newFarmer}
               style={{
                 marginTop: "16px", width: "100%", padding: "12px",
-                background: newFarmer ? "linear-gradient(135deg,#22c55e,#16a34a)" : "#e5e7eb",
-                color: "#fff", border: "none", borderRadius: "10px",
+                background: newFarmer ? "#15803d" : "#e5e7eb",
+                color: "#fff", border: "none", borderRadius: "12px",
                 fontWeight: "700", fontSize: "14px", cursor: newFarmer ? "pointer" : "not-allowed"
               }}
             >
@@ -206,8 +206,8 @@ export default function VetMessagesModal({ onClose }) {
                   return (
                     <div key={m.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start" }}>
                       <div style={{
-                        maxWidth: "75%", padding: "9px 13px", borderRadius: "14px",
-                        background: isMine ? "#16a34a" : "#f3f4f6",
+                        maxWidth: "75%", padding: "9px 13px", borderRadius: "12px",
+                        background: isMine ? "#15803d" : "#f3f4f6",
                         color: isMine ? "#fff" : "#111827", fontSize: "13px"
                       }}>
                         {m.message}
@@ -233,8 +233,8 @@ export default function VetMessagesModal({ onClose }) {
                 disabled={!draft.trim() || sending}
                 aria-label="Send message"
                 style={{
-                  flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px",
-                  border: "none", background: "#16a34a", color: "#fff",
+                  flexShrink: 0, width: "42px", height: "42px", borderRadius: "12px",
+                  border: "none", background: "#15803d", color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: draft.trim() ? "pointer" : "not-allowed", opacity: draft.trim() ? 1 : 0.6
                 }}
@@ -255,8 +255,8 @@ export default function VetMessagesModal({ onClose }) {
                 <button
                   onClick={() => setStartingNew(true)}
                   style={{
-                    padding: "9px 18px", background: "#f0fdf4", color: "#16a34a",
-                    border: "1px solid #bbf7d0", borderRadius: "10px",
+                    padding: "9px 18px", background: "#f0fdf4", color: "#15803d",
+                    border: "1px solid #bbf7d0", borderRadius: "12px",
                     fontWeight: "700", fontSize: "13px", cursor: "pointer"
                   }}
                 >

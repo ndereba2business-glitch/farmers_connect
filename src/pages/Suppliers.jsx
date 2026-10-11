@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Phone, MessageCircle, MapPin, Truck, Clock } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Truck, Clock, Check
+} from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { CATEGORIES, CATEGORY_LABELS, initialsOf } from "../components/supplier/supplierFormat";
 import { recordContact, supplierMessage, telHref, whatsappHref } from "../lib/contactSupplier";
@@ -8,10 +9,10 @@ const TYPES = [{ value: "all", label: "All" }, ...CATEGORIES];
 
 const contactBtn = (whatsapp) => ({
   display: "inline-flex", alignItems: "center", gap: "8px",
-  minHeight: "44px", padding: "0 16px", borderRadius: "10px",
+  minHeight: "44px", padding: "0 16px", borderRadius: "12px",
   textDecoration: "none", fontWeight: "700", fontSize: "13px",
-  border: "1.5px solid #22c55e",
-  background: whatsapp ? "#22c55e" : "#f0fdf4",
+  border: "1.5px solid #15803d",
+  background: whatsapp ? "#15803d" : "#f0fdf4",
   color: whatsapp ? "#fff" : "#15803d"
 });
 
@@ -57,7 +58,7 @@ export default function Suppliers() {
 
   return (
     <div style={{ maxWidth: "960px" }}>
-      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
         Suppliers
       </h1>
       <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -71,7 +72,7 @@ export default function Suppliers() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
-            flex: "1 1 220px", minHeight: "44px", padding: "10px 14px", borderRadius: "10px",
+            flex: "1 1 220px", minHeight: "44px", padding: "10px 14px", borderRadius: "12px",
             border: "1.5px solid #e5e7eb", fontSize: "16px", boxSizing: "border-box"
           }}
         />
@@ -80,7 +81,7 @@ export default function Suppliers() {
           value={type}
           onChange={e => setType(e.target.value)}
           style={{
-            minHeight: "44px", padding: "10px 14px", borderRadius: "10px",
+            minHeight: "44px", padding: "10px 14px", borderRadius: "12px",
             border: "1.5px solid #e5e7eb", fontSize: "16px", background: "#fff"
           }}
         >
@@ -97,7 +98,7 @@ export default function Suppliers() {
           <span>{error}</span>
           <button
             onClick={() => { setError(""); setLoading(true); setReload(n => n + 1); }}
-            style={{ minHeight: "44px", padding: "0 18px", borderRadius: "10px", border: "1.5px solid #b91c1c", background: "#fff", color: "#b91c1c", fontWeight: "700", cursor: "pointer" }}
+            style={{ minHeight: "44px", padding: "0 18px", borderRadius: "12px", border: "1.5px solid #b91c1c", background: "#fff", color: "#b91c1c", fontWeight: "700", cursor: "pointer" }}
           >
             Try again
           </button>
@@ -120,24 +121,24 @@ export default function Suppliers() {
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <span aria-hidden="true" style={{
                 flex: "none", width: "48px", height: "48px", borderRadius: "12px", overflow: "hidden",
-                display: "grid", placeItems: "center", fontWeight: "800", color: "#fff",
-                background: "linear-gradient(155deg,#22c55e,#15803d)"
+                display: "grid", placeItems: "center", fontWeight: "700", color: "#fff",
+                background: "#15803d"
               }}>
                 {s.logo_url
                   ? <img src={s.logo_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : initialsOf(s.business_name)}
               </span>
-              <div style={{ fontWeight: "800", fontSize: "16px", color: "#111827", minWidth: 0, overflowWrap: "anywhere" }}>
+              <div style={{ fontWeight: "700", fontSize: "16px", color: "#111827", minWidth: 0, overflowWrap: "anywhere" }}>
                 {s.business_name}{" "}
-                <span style={{ fontSize: "11px", fontWeight: "700", color: "#16a34a", background: "#dcfce7", padding: "2px 8px", borderRadius: "20px", verticalAlign: "middle", whiteSpace: "nowrap" }}>
-                  ✔ Verified
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#15803d", background: "#dcfce7", padding: "2px 8px", borderRadius: "16px", verticalAlign: "middle", whiteSpace: "nowrap" }}>
+                  <Check size={14} aria-hidden="true" /> Verified
                 </span>
               </div>
             </div>
             {(s.product_categories || []).length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px" }}>
                 {s.product_categories.map(c => (
-                  <span key={c} style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", background: "#f0fdf4", padding: "3px 10px", borderRadius: "20px" }}>
+                  <span key={c} style={{ fontSize: "12px", fontWeight: "700", color: "#15803d", background: "#f0fdf4", padding: "3px 10px", borderRadius: "16px" }}>
                     {CATEGORY_LABELS[c] || c}
                   </span>
                 ))}

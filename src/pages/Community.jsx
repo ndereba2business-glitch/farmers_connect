@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Ban, Copy, CornerUpLeft, Flag, Image as ImageIcon, Info, Reply, Send, Trash2, X, ZoomIn } from "lucide-react";
+import { Ban, Copy, CornerUpLeft, Flag, Image as ImageIcon, Info, Reply, Send, Trash2, Users, X, ZoomIn } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -448,7 +448,7 @@ export default function Community() {
           {avatar}
           <div className="cm-stack">
             <div className="cm-bubble cm-bubble--removed">
-              🚫 {removedText(message, userEmail)}
+              <Ban size={14} aria-hidden="true" /> {removedText(message, userEmail)}
               <span className="cm-time">{timeLabel(message.created_at)}</span>
             </div>
           </div>
@@ -518,7 +518,7 @@ export default function Community() {
   return (
     <div className="cm-page" ref={pageRef}>
       <header className="cm-head">
-        <span className="cm-head-icon" aria-hidden="true">🐔</span>
+        <span className="cm-head-icon" aria-hidden="true"><Users size={20} /></span>
         <div className="cm-head-text">
           <h1 className="cm-head-title">Farmers Community</h1>
           <p className="cm-head-sub">Poultry farming only</p>

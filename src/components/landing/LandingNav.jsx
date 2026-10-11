@@ -1,3 +1,4 @@
+import BrandMark from "../BrandMark";
 import { Link } from "react-router-dom";
 
 // Only links to sections that exist on the page, plus the two real auth
@@ -6,7 +7,7 @@ export default function LandingNav() {
   return (
     <nav className="lp-nav" aria-label="Primary">
       <a href="#top" className="lp-nav-brand">
-        <span className="lp-nav-mark" aria-hidden="true">🐔</span>
+        <BrandMark size={38} title="" />
         <span className="lp-nav-word">
           <span>Farmers</span>
           <span className="lp-nav-word-accent">Connect</span>
