@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { Search, X } from "lucide-react";
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
 };
@@ -48,8 +48,8 @@ export default function FarmerPicker({ value, onChange }) {
     return (
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 14px", borderRadius: "10px",
-        border: "1.5px solid #22c55e", background: "#f0fdf4"
+        padding: "10px 14px", borderRadius: "12px",
+        border: "1.5px solid #15803d", background: "#f0fdf4"
       }}>
         <div>
           <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "#111827" }}>
@@ -85,7 +85,7 @@ export default function FarmerPicker({ value, onChange }) {
       />
       {query.trim() && (
         <div style={{
-          marginTop: "6px", border: "1px solid #e5e7eb", borderRadius: "10px",
+          marginTop: "6px", border: "1px solid #e5e7eb", borderRadius: "12px",
           maxHeight: "180px", overflowY: "auto", background: "#fff"
         }}>
           {searching ? (

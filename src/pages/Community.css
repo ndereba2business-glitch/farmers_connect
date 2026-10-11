@@ -83,7 +83,7 @@
   max-width: 440px;
   margin: 6px 0 10px;
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff8c5;
   color: #5c4a00;
   font-size: 12.5px;
@@ -98,7 +98,7 @@
   margin: 2px 0 8px;
   padding: 0 18px;
   border: 1px solid #d1d5db;
-  border-radius: 22px;
+  border-radius: 16px;
   background: #fff;
   color: #166534;
   font-weight: 600;
@@ -166,7 +166,7 @@
   max-width: 100%;
   padding: 6px 9px 5px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   color: #111827;
   font: inherit;
@@ -177,7 +177,7 @@
 .cm-row--first .cm-bubble { border-top-left-radius: 2px; }
 .cm-row--mine .cm-bubble { background: #d9fdd3; }
 .cm-row--mine.cm-row--first .cm-bubble { border-top-left-radius: 10px; border-top-right-radius: 2px; }
-.cm-bubble:focus-visible { outline: 2px solid #16a34a; outline-offset: 2px; }
+.cm-bubble:focus-visible { outline: 2px solid #15803d; outline-offset: 2px; }
 .cm-bubble--removed {
   cursor: default;
   color: #6b7280;
@@ -186,7 +186,7 @@
 }
 .cm-bubble--flash { animation: cm-flash 1.4s ease; }
 @keyframes cm-flash {
-  0%, 60% { box-shadow: 0 0 0 3px #22c55e; }
+  0%, 60% { box-shadow: 0 0 0 3px #15803d; }
   100% { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
 }
 
@@ -212,7 +212,7 @@
 .cm-quote {
   margin-bottom: 4px;
   padding: 4px 8px;
-  border-left: 3px solid #16a34a;
+  border-left: 3px solid #15803d;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.06);
   font-size: 12.5px;
@@ -277,14 +277,14 @@
   gap: 4px;
   padding: 2px 8px;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #fff;
   color: #374151;
   font-size: 13px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
 .cm-reaction--mine span {
-  border-color: #16a34a;
+  border-color: #15803d;
   background: #ecfdf3;
   color: #166534;
   font-weight: 700;
@@ -335,7 +335,7 @@
   max-height: 120px;
   padding: 11px 14px;
   border: 1px solid #d1d5db;
-  border-radius: 22px;
+  border-radius: 16px;
   background: #fff;
   color: #111827;
   font: inherit;
@@ -344,14 +344,14 @@
   resize: none;
   box-sizing: border-box;
 }
-.cm-input:focus { outline: 2px solid #22c55e; outline-offset: 0; }
+.cm-input:focus { outline: 2px solid #15803d; outline-offset: 0; }
 .cm-send {
   width: 44px;
   height: 44px;
   flex: none;
   border: none;
   border-radius: 50%;
-  background: #16a34a;
+  background: #15803d;
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -409,7 +409,7 @@
 .cm-sheet-preview {
   margin: 0 0 10px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #f3f4f6;
   color: #374151;
   font-size: 13px;
@@ -434,7 +434,7 @@
   font-size: 22px;
   cursor: pointer;
 }
-.cm-emoji--mine { border-color: #16a34a; background: #dcfce7; }
+.cm-emoji--mine { border-color: #15803d; background: #dcfce7; }
 .cm-action {
   display: flex;
   align-items: center;
@@ -443,7 +443,7 @@
   min-height: 48px;
   padding: 0 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: none;
   color: #111827;
   font: inherit;
@@ -479,7 +479,7 @@
   min-height: 84px;
   padding: 10px 12px;
   border: 1.5px solid #d1d5db;
-  border-radius: 10px;
+  border-radius: 12px;
   font: inherit;
   font-size: 16px;
   resize: vertical;
@@ -495,21 +495,21 @@
   min-height: 44px;
   padding: 0 14px;
   border: 1.5px solid #e5e7eb;
-  border-radius: 22px;
+  border-radius: 16px;
   background: #fff;
   color: #374151;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
 }
-.cm-chip--on { border-color: #16a34a; background: #f0fdf4; color: #166534; }
+.cm-chip--on { border-color: #15803d; background: #f0fdf4; color: #166534; }
 .cm-primary {
   width: 100%;
   min-height: 48px;
   margin-top: 10px;
   border: none;
   border-radius: 12px;
-  background: #16a34a;
+  background: #15803d;
   color: #fff;
   font-weight: 700;
   font-size: 15px;
@@ -545,6 +545,6 @@
     border-radius: 16px;
   }
   .cm-overlay { align-items: center; }
-  .cm-sheet { border-radius: 18px; }
+  .cm-sheet { border-radius: 16px; }
   .cm-list { padding: 14px 18px 8px; }
 }

@@ -36,7 +36,7 @@ const SPECIALIZATIONS = [
 ];
 
 const URGENCY_OPTIONS = [
-  { value: "low", label: "Low — routine check", bg: "#f0fdf4", color: "#16a34a" },
+  { value: "low", label: "Low — routine check", bg: "#f0fdf4", color: "#15803d" },
   { value: "medium", label: "Medium — needs attention soon", bg: "#fffbeb", color: "#d97706" },
   { value: "high", label: "High — urgent", bg: "#fff7ed", color: "#ea580c" },
 ];
@@ -53,7 +53,7 @@ const EMPTY_BOOKING_FORM = {
 };
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff"
 };
@@ -300,8 +300,8 @@ export default function Bookings() {
 
   function statusMeta(status) {
     switch (status) {
-      case "accepted": return { bg: "#dcfce7", color: "#16a34a", label: "Confirmed" };
-      case "completed": return { bg: "#f0fdf4", color: "#16a34a", label: "Completed" };
+      case "accepted": return { bg: "#dcfce7", color: "#15803d", label: "Confirmed" };
+      case "completed": return { bg: "#f0fdf4", color: "#15803d", label: "Completed" };
       case "cancelled": return { bg: "#f3f4f6", color: "#9ca3af", label: "Cancelled" };
       case "rejected": return { bg: "#fef2f2", color: "#ef4444", label: "Declined" };
       default: return { bg: "#fef3c7", color: "#d97706", label: "Pending" };
@@ -313,9 +313,8 @@ export default function Bookings() {
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Stethoscope size={28} color="#22c55e" />
           <div>
-            <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+            <h1 className="fc-page-title">
               Ask Vet
             </h1>
             <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
@@ -330,7 +329,7 @@ export default function Bookings() {
             borderRadius: "12px", background: "#ef4444",
             color: "white", fontWeight: "700", cursor: "pointer",
             fontSize: "14px", display: "flex", alignItems: "center",
-            gap: "8px", boxShadow: "0 6px 20px rgba(239,68,68,0.3)"
+            gap: "8px", boxShadow: "none"
           }}
         >
           <Siren size={14} aria-hidden="true" /> Emergency
@@ -343,7 +342,7 @@ export default function Bookings() {
       <div style={{
         display: "flex", flexWrap: "wrap", gap: "2px",
         background: "#f3f4f6",
-        borderRadius: "14px", padding: "4px",
+        borderRadius: "12px", padding: "4px",
         marginBottom: "24px"
       }}>
         {TABS.map(tab => (
@@ -355,7 +354,7 @@ export default function Bookings() {
             style={{
               flex: "1 0 auto", padding: "10px",
               whiteSpace: "nowrap",
-              borderRadius: "10px", border: "none",
+              borderRadius: "12px", border: "none",
               cursor: "pointer", fontWeight: "600", fontSize: "13px",
               background: activeTab === tab.key ? "#fff" : "transparent",
               color: activeTab === tab.key ? "#111827" : "#9ca3af",
@@ -380,7 +379,7 @@ export default function Bookings() {
               top: "50%", transform: "translateY(-50%)", color: "#9ca3af"
             }} />
             <input
-              placeholder="Search vets by name..."
+              aria-label="Search vets by name" placeholder="Search vets by name..."
               value={vetSearch}
               onChange={e => setVetSearch(e.target.value)}
               style={{ ...inputStyle, paddingLeft: "40px" }}
@@ -411,7 +410,7 @@ export default function Bookings() {
           {vets.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
             }}>
               <Stethoscope size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
               <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -430,13 +429,13 @@ export default function Bookings() {
                   display: "flex", alignItems: "center", gap: "16px"
                 }}>
                   <div style={{
-                    width: "52px", height: "52px", borderRadius: "14px",
+                    width: "52px", height: "52px", borderRadius: "12px",
                     background: "#dcfce7", display: "flex",
                     alignItems: "center", justifyContent: "center",
                     fontSize: "22px", flexShrink: 0
                   }}>
                     {vet.avatar_url ? (
-                      <img src={vet.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "14px" }} />
+                      <img src={vet.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "12px" }} />
                     ) : <Stethoscope size={24} color="#15803d" aria-hidden="true" />}
                   </div>
                   <div style={{ flex: 1 }}>
@@ -450,9 +449,9 @@ export default function Bookings() {
                     )}
                   </div>
                   <span style={{
-                    background: "#dcfce7", color: "#16a34a",
+                    background: "#dcfce7", color: "#15803d",
                     fontSize: "11px", fontWeight: "700",
-                    padding: "3px 10px", borderRadius: "20px"
+                    padding: "3px 10px", borderRadius: "16px"
                   }}>
                     <Check size={14} aria-hidden="true" /> Verified
                   </span>
@@ -467,9 +466,9 @@ export default function Bookings() {
       {activeTab === "ask" && (
         <div>
           <div style={{
-            background: "#fff", borderRadius: "20px",
+            background: "#fff", borderRadius: "16px",
             border: "1px solid #e5e7eb", padding: "24px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)", marginBottom: "20px"
+            boxShadow: "var(--fc-shadow-card)", marginBottom: "20px"
           }}>
             <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700", color: "#111827" }}>
               Ask a Vet Question
@@ -483,10 +482,10 @@ export default function Bookings() {
                   className="fc-tap"
                   onClick={() => setSelectedCategory(cat.label)}
                   style={{
-                    padding: "6px 14px", borderRadius: "20px",
-                    border: `1.5px solid ${selectedCategory === cat.label ? "#22c55e" : "#e5e7eb"}`,
+                    padding: "6px 14px", borderRadius: "16px",
+                    border: `1.5px solid ${selectedCategory === cat.label ? "#15803d" : "#e5e7eb"}`,
                     background: selectedCategory === cat.label ? "#f0fdf4" : "#fff",
-                    color: selectedCategory === cat.label ? "#16a34a" : "#374151",
+                    color: selectedCategory === cat.label ? "#15803d" : "#374151",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer",
                     transition: "all 0.2s"
                   }}
@@ -498,7 +497,7 @@ export default function Bookings() {
 
             {/* QUESTION */}
             <textarea
-              placeholder="Describe the problem in detail — symptoms, bird age, number affected, how long..."
+              aria-label="Describe the problem" placeholder="Describe the problem in detail — symptoms, bird age, number affected, how long..."
               value={questionText}
               onChange={e => setQuestionText(e.target.value)}
               style={{
@@ -514,7 +513,7 @@ export default function Bookings() {
                 style={{
                   flex: 1, padding: "12px",
                   background: "#f9fafb", border: "1px solid #e5e7eb",
-                  borderRadius: "10px", cursor: "pointer",
+                  borderRadius: "12px", cursor: "pointer",
                   fontWeight: "600", fontSize: "13px", color: "#374151",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
                 }}
@@ -528,8 +527,8 @@ export default function Bookings() {
                   flex: 2, padding: "12px",
                   background: !questionText.trim()
                     ? "#86efac"
-                    : "linear-gradient(135deg,#22c55e,#16a34a)",
-                  color: "#fff", border: "none", borderRadius: "10px",
+                    : "#15803d",
+                  color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px",
                   cursor: !questionText.trim() ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
@@ -558,24 +557,24 @@ export default function Bookings() {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {questions.map(q => (
                 <div key={q.id} style={{
-                  background: "#fff", borderRadius: "14px",
+                  background: "#fff", borderRadius: "12px",
                   border: "1px solid #e5e7eb", padding: "16px 18px"
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                       <span style={{
                         background: q.is_emergency ? "#fef2f2" : "#f0fdf4",
-                        color: q.is_emergency ? "#ef4444" : "#16a34a",
+                        color: q.is_emergency ? "#ef4444" : "#15803d",
                         fontSize: "12px", fontWeight: "600",
-                        padding: "3px 10px", borderRadius: "20px"
+                        padding: "3px 10px", borderRadius: "16px"
                       }}>
                         {q.is_emergency ? "Emergency" : q.category}
                       </span>
                       <span style={{
                         background: q.status === "answered" ? "#dcfce7" : "#f3f4f6",
-                        color: q.status === "answered" ? "#16a34a" : "#9ca3af",
+                        color: q.status === "answered" ? "#15803d" : "#9ca3af",
                         fontSize: "11px", fontWeight: "600",
-                        padding: "3px 10px", borderRadius: "20px"
+                        padding: "3px 10px", borderRadius: "16px"
                       }}>
                         {q.status === "answered" ? "✓ Answered" : "Pending"}
                       </span>
@@ -589,10 +588,10 @@ export default function Bookings() {
                   </p>
                   {q.answer && (
                     <div style={{
-                      background: "#f0fdf4", borderRadius: "10px",
-                      padding: "10px 14px", borderLeft: "3px solid #22c55e"
+                      background: "#f0fdf4", borderRadius: "12px",
+                      padding: "10px 14px", borderLeft: "3px solid #15803d"
                     }}>
-                      <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: "700", color: "#16a34a" }}>
+                      <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: "700", color: "#15803d" }}>
                         VET RESPONSE
                       </p>
                       <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}>{q.answer}</p>
@@ -622,8 +621,8 @@ export default function Bookings() {
               onClick={() => { setBookingError(""); setShowBookingForm(true); }}
               style={{
                 height: "42px", padding: "0 18px", border: "none",
-                borderRadius: "10px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                borderRadius: "12px",
+                background: "#15803d",
                 color: "white", fontWeight: "700", cursor: "pointer",
                 fontSize: "13px", display: "flex", alignItems: "center", gap: "8px"
               }}
@@ -665,7 +664,7 @@ export default function Bookings() {
           ) : myBookings.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
             }}>
               <Calendar size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
               <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -694,21 +693,21 @@ export default function Bookings() {
                           </span>
                           <span style={{
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                            borderRadius: "20px", background: urgency.bg, color: urgency.color,
+                            borderRadius: "16px", background: urgency.bg, color: urgency.color,
                             textTransform: "capitalize"
                           }}>
                             {b.urgency}
                           </span>
                           <span style={{
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                            borderRadius: "20px", background: status.bg, color: status.color
+                            borderRadius: "16px", background: status.bg, color: status.color
                           }}>
                             {status.label}
                           </span>
                           {!b.requested_vet_id && b.status === "pending" && (
                             <span style={{
                               fontSize: "11px", fontWeight: "600", padding: "2px 8px",
-                              borderRadius: "20px", background: "#eff6ff", color: "#3b82f6"
+                              borderRadius: "16px", background: "#eff6ff", color: "#3b82f6"
                             }}>
                               Open to any vet
                             </span>
@@ -755,7 +754,7 @@ export default function Bookings() {
                           onClick={() => openReport(b)}
                           style={{
                             display: "flex", alignItems: "center", gap: "6px",
-                            padding: "7px 14px", background: "#f0fdf4", color: "#16a34a",
+                            padding: "7px 14px", background: "#f0fdf4", color: "#15803d",
                             border: "1px solid #bbf7d0", borderRadius: "8px",
                             fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
@@ -781,7 +780,7 @@ export default function Bookings() {
       {activeTab === "suppliers" && (
         <div style={{
           textAlign: "center", padding: "60px 20px",
-          background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
         }}>
           <Store size={40} color="#9ca3af" aria-hidden="true" style={{ display: "block", margin: "0 auto 12px" }} />
           <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -806,13 +805,13 @@ export default function Bookings() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "20px",
+              background: "#fff", borderRadius: "16px",
               padding: "28px", maxWidth: "480px", width: "100%",
               maxHeight: "90vh", overflowY: "auto"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "800", color: "#111827" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
                 Book a Visit
               </h2>
               <button
@@ -924,7 +923,7 @@ export default function Bookings() {
               <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>Reason for Visit</label>
                 <textarea
-                  placeholder="Describe the problem, symptoms, or purpose of the visit..."
+                  aria-label="Describe the problem" placeholder="Describe the problem, symptoms, or purpose of the visit..."
                   value={bookingForm.reason}
                   onChange={e => setBookingForm({ ...bookingForm, reason: e.target.value })}
                   style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }}
@@ -948,7 +947,7 @@ export default function Bookings() {
                   width: "100%", padding: "14px",
                   background: bookingSaving
                     ? "#86efac"
-                    : "linear-gradient(135deg,#22c55e,#16a34a)",
+                    : "#15803d",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: bookingSaving ? "not-allowed" : "pointer"
@@ -974,14 +973,14 @@ export default function Bookings() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "20px",
+              background: "#fff", borderRadius: "16px",
               padding: "28px", maxWidth: "480px", width: "100%"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <AlertTriangle size={22} color="#ef4444" />
-                <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "800", color: "#ef4444" }}>
+                <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#ef4444" }}>
                   Emergency Poultry Support
                 </h2>
               </div>
@@ -1011,7 +1010,7 @@ export default function Bookings() {
                 Upload photos/videos (optional)
               </p>
               <div style={{
-                border: "1px solid #e5e7eb", borderRadius: "10px",
+                border: "1px solid #e5e7eb", borderRadius: "12px",
                 padding: "14px", display: "flex", alignItems: "center",
                 gap: "8px", cursor: "pointer", color: "#9ca3af", fontSize: "14px"
               }}>

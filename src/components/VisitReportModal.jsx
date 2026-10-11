@@ -44,10 +44,10 @@ export function VisitReportFields({ record }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {record.medications.map((med, i) => (
               <div key={i} style={{
-                border: "1px solid #e5e7eb", borderRadius: "10px", padding: "10px 12px",
+                border: "1px solid #e5e7eb", borderRadius: "12px", padding: "10px 12px",
                 display: "flex", alignItems: "flex-start", gap: "8px"
               }}>
-                <Pill size={14} color="#22c55e" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <Pill size={14} color="#15803d" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <div>
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#111827" }}>{med.name}</p>
                   {med.dosage && <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#6b7280" }}>{med.dosage}</p>}
@@ -86,7 +86,7 @@ export default function VisitReportModal({ appointment, record, loading, onClose
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "20px", padding: "28px",
+          background: "#fff", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >

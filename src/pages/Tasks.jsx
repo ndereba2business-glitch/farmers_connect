@@ -8,7 +8,7 @@ import { CheckSquare, Plus, Trash2, Clock, Wheat, Pill, Brush, Syringe, Wrench, 
 const PRIORITIES = [
   { value: "high", label: "High", color: "#ef4444", bg: "#fef2f2" },
   { value: "medium", label: "Medium", color: "#f59e0b", bg: "#fffbeb" },
-  { value: "low", label: "Low", color: "#22c55e", bg: "#f0fdf4" },
+  { value: "low", label: "Low", color: "#15803d", bg: "#f0fdf4" },
 ];
 
 const CATEGORIES = [
@@ -22,7 +22,7 @@ const CATEGORIES = [
 ];
 
 const inputStyle = {
-  width: "100%", padding: "10px 14px", borderRadius: "10px",
+  width: "100%", padding: "10px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff"
 };
@@ -123,9 +123,9 @@ export default function Tasks() {
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <CheckSquare size={28} color="#22c55e" />
+          <CheckSquare size={28} color="#15803d" />
           <div>
-            <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+            <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
               Farm Tasks
             </h1>
             <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
@@ -138,10 +138,10 @@ export default function Tasks() {
           style={{
             height: "44px", padding: "0 20px", border: "none",
             borderRadius: "12px",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)",
+            background: "#15803d",
             color: "white", fontWeight: "700", cursor: "pointer",
             fontSize: "14px", display: "flex", alignItems: "center",
-            gap: "8px", boxShadow: "0 6px 20px rgba(34,197,94,0.3)"
+            gap: "8px", boxShadow: "none"
           }}
         >
           <Plus size={18} /> Add Task
@@ -151,7 +151,7 @@ export default function Tasks() {
       {/* STAT CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "20px" }}>
         {[
-          { label: "Pending", value: pending.length, color: "#22c55e" },
+          { label: "Pending", value: pending.length, color: "#15803d" },
           { label: "Overdue", value: overdue.length, color: "#ef4444" },
           { label: "Due Today", value: dueToday.length, color: "#f59e0b" },
         ].map(item => (
@@ -159,9 +159,9 @@ export default function Tasks() {
             background: "#fff", borderRadius: "16px",
             border: "1px solid #e5e7eb", padding: "20px",
             textAlign: "center",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+            boxShadow: "var(--fc-shadow-card)"
           }}>
-            <div style={{ fontSize: "32px", fontWeight: "800", color: item.color }}>
+            <div style={{ fontSize: "32px", fontWeight: "700", color: item.color }}>
               {item.value}
             </div>
             <div style={{ fontSize: "13px", color: "#6b7280", marginTop: "4px", fontWeight: "500" }}>
@@ -176,7 +176,7 @@ export default function Tasks() {
         <div style={{
           background: "#fff", borderRadius: "16px",
           border: "1px solid #e5e7eb", padding: "20px",
-          marginBottom: "20px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)"
+          marginBottom: "20px", boxShadow: "var(--fc-shadow-card)"
         }}>
           <input
             placeholder="What needs to be done?"
@@ -234,8 +234,8 @@ export default function Tasks() {
               onClick={addTask}
               style={{
                 flex: 1, padding: "12px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)",
-                color: "#fff", border: "none", borderRadius: "10px",
+                background: "#15803d",
+                color: "#fff", border: "none", borderRadius: "12px",
                 fontWeight: "700", fontSize: "14px", cursor: "pointer"
               }}
             >
@@ -245,7 +245,7 @@ export default function Tasks() {
               onClick={() => setShowForm(false)}
               style={{
                 padding: "12px 20px", background: "#f9fafb",
-                border: "1px solid #e5e7eb", borderRadius: "10px",
+                border: "1px solid #e5e7eb", borderRadius: "12px",
                 cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "#374151"
               }}
             >
@@ -272,7 +272,7 @@ export default function Tasks() {
             onClick={() => setActiveTab(tab.key)}
             style={{
               flex: 1, padding: "9px",
-              borderRadius: "9px", border: "none",
+              borderRadius: "8px", border: "none",
               cursor: "pointer", fontWeight: "600", fontSize: "13px",
               background: activeTab === tab.key ? "#fff" : "transparent",
               color: activeTab === tab.key ? "#111827" : "#9ca3af",
@@ -317,10 +317,12 @@ export default function Tasks() {
                 {/* CHECKBOX */}
                 <button
                   onClick={() => toggleTask(task)}
+                  aria-label={task.completed ? `Mark "${task.title}" as not done` : `Mark "${task.title}" as done`}
+                  aria-pressed={Boolean(task.completed)}
                   style={{
                     width: "22px", height: "22px", borderRadius: "50%",
-                    border: `2px solid ${task.completed ? "#22c55e" : "#d1d5db"}`,
-                    background: task.completed ? "#22c55e" : "#fff",
+                    border: `2px solid ${task.completed ? "#15803d" : "#d1d5db"}`,
+                    background: task.completed ? "#15803d" : "#fff",
                     cursor: "pointer", flexShrink: 0, display: "flex",
                     alignItems: "center", justifyContent: "center"
                   }}
@@ -350,7 +352,7 @@ export default function Tasks() {
                   <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                     <span style={{
                       fontSize: "11px", fontWeight: "700",
-                      padding: "2px 8px", borderRadius: "20px",
+                      padding: "2px 8px", borderRadius: "16px",
                       background: priority.bg, color: priority.color
                     }}>
                       {priority.label}
@@ -378,6 +380,8 @@ export default function Tasks() {
                 {/* DELETE */}
                 <button
                   onClick={() => deleteTask(task.id)}
+                  aria-label={`Delete task "${task.title}"`}
+                  className="fc-tap"
                   style={{
                     width: "32px", height: "32px", borderRadius: "8px",
                     border: "none", background: "none",

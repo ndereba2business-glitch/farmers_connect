@@ -7,7 +7,7 @@ import { X, AlertTriangle
 } from "lucide-react";
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
 };
@@ -141,7 +141,7 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "20px", padding: "28px",
+          background: "#fff", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >
@@ -280,7 +280,7 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
             disabled={saving}
             style={{
               width: "100%", padding: "13px",
-              background: saving ? "#86efac" : "linear-gradient(135deg,#22c55e,#16a34a)",
+              background: saving ? "#86efac" : "#15803d",
               color: "#fff", border: "none", borderRadius: "12px",
               fontWeight: "700", fontSize: "14px", cursor: saving ? "not-allowed" : "pointer"
             }}

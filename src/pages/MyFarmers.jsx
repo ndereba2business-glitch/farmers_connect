@@ -10,14 +10,14 @@ import {
 import VisitReportModal from "../components/VisitReportModal";
 
 const RECORD_TYPE_META = {
-  prescription: { icon: Pill, label: "Prescription", color: "#16a34a" },
+  prescription: { icon: Pill, label: "Prescription", color: "#15803d" },
   diagnosis: { icon: Stethoscope, label: "Diagnosis", color: "#3b82f6" },
   vaccination: { icon: Syringe, label: "Vaccination", color: "#8b5cf6" },
   lab_result: { icon: Beaker, label: "Lab Result", color: "#ef4444" },
 };
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff"
 };
@@ -26,7 +26,7 @@ const STATUS_COLORS = {
   pending: { bg: "#fffbeb", color: "#d97706" },
   claimed: { bg: "#eff6ff", color: "#3b82f6" },
   accepted: { bg: "#eff6ff", color: "#3b82f6" },
-  completed: { bg: "#f0fdf4", color: "#16a34a" },
+  completed: { bg: "#f0fdf4", color: "#15803d" },
   cancelled: { bg: "#fef2f2", color: "#ef4444" },
   record: { bg: "#f5f3ff", color: "#8b5cf6" } // farmer reachable only via standalone medical records, no appointment
 };
@@ -236,9 +236,9 @@ export default function MyFarmers() {
       {/* HEADER */}
       <div className="fc-page-header" style={{ marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Users size={28} color="#22c55e" />
+          <Users size={28} color="#15803d" />
           <div>
-            <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+            <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
               My Farmers
             </h1>
             <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
@@ -255,7 +255,7 @@ export default function MyFarmers() {
           transform: "translateY(-50%)", color: "#9ca3af"
         }} />
         <input
-          placeholder="Search by name, email, or county..."
+          aria-label="Search farmers" placeholder="Search by name, email, or county..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ ...inputStyle, paddingLeft: "40px", maxWidth: "420px" }}
@@ -275,7 +275,7 @@ export default function MyFarmers() {
       {!loading && filtered.length === 0 && (
         <div style={{
           textAlign: "center", padding: "80px 20px",
-          background: "#fff", borderRadius: "24px", border: "1px solid #f0f0f0"
+          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
         }}>
           <Users size={56} color="#e5e7eb" style={{ marginBottom: "16px" }} />
           <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -294,17 +294,17 @@ export default function MyFarmers() {
             const statusStyle = STATUS_COLORS[f.lastStatus] || { bg: "#f3f4f6", color: "#6b7280" };
             return (
               <div key={f.email} style={{
-                background: "#fff", borderRadius: "18px",
+                background: "#fff", borderRadius: "16px",
                 border: "1px solid #e5e7eb", padding: "18px 20px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+                boxShadow: "var(--fc-shadow-card)",
                 display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center"
               }}>
                 {/* AVATAR */}
                 <div style={{
-                  width: "48px", height: "48px", borderRadius: "14px",
+                  width: "48px", height: "48px", borderRadius: "12px",
                   background: "#dcfce7", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0, overflow: "hidden",
-                  fontWeight: "700", color: "#16a34a", fontSize: "18px"
+                  fontWeight: "700", color: "#15803d", fontSize: "18px"
                 }}>
                   {f.avatarUrl
                     ? <img src={f.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -321,7 +321,7 @@ export default function MyFarmers() {
                     <span style={{
                       background: statusStyle.bg, color: statusStyle.color,
                       fontSize: "11px", fontWeight: "700",
-                      padding: "2px 9px", borderRadius: "20px", textTransform: "capitalize"
+                      padding: "2px 9px", borderRadius: "16px", textTransform: "capitalize"
                     }}>
                       {STATUS_LABELS[f.lastStatus] || f.lastStatus}
                     </span>
@@ -329,7 +329,7 @@ export default function MyFarmers() {
                       <span style={{
                         background: "#fef2f2", color: "#ef4444",
                         fontSize: "11px", fontWeight: "700",
-                        padding: "2px 9px", borderRadius: "20px"
+                        padding: "2px 9px", borderRadius: "16px"
                       }}>
                         <Siren size={14} aria-hidden="true" /> Urgent
                       </span>
@@ -402,7 +402,7 @@ export default function MyFarmers() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "20px", padding: "28px",
+              background: "#fff", borderRadius: "16px", padding: "28px",
               maxWidth: "520px", width: "100%", maxHeight: "90vh", overflowY: "auto"
             }}
           >
@@ -440,7 +440,7 @@ export default function MyFarmers() {
                       onClick={() => openReport(appt)}
                       style={{
                         display: "flex", alignItems: "center", gap: "6px",
-                        padding: "7px 14px", background: "#f0fdf4", color: "#16a34a",
+                        padding: "7px 14px", background: "#f0fdf4", color: "#15803d",
                         border: "1px solid #bbf7d0", borderRadius: "8px",
                         fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                       }}
@@ -479,7 +479,7 @@ export default function MyFarmers() {
                             </p>
                             <span style={{
                               fontSize: "10px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "20px", background: "#f3f4f6", color: meta.color
+                              borderRadius: "16px", background: "#f3f4f6", color: meta.color
                             }}>
                               {meta.label}
                             </span>

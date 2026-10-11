@@ -7,7 +7,7 @@ import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, Che
 const VET_STATUS_META = {
   unverified: { bg: "#f3f4f6", color: "#6b7280", label: "Unverified" },
   pending: { bg: "#fef3c7", color: "#d97706", label: "Pending Review" },
-  verified: { bg: "#dcfce7", color: "#16a34a", label: "Verified" },
+  verified: { bg: "#dcfce7", color: "#15803d", label: "Verified" },
   rejected: { bg: "#fee2e2", color: "#ef4444", label: "Rejected" },
   suspended: { bg: "#fee2e2", color: "#991b1b", label: "Suspended" },
 };
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { title: "Total Users", value: stats.users, icon: Users, color: "#edf9f1", iconColor: "#22c55e" },
+    { title: "Total Users", value: stats.users, icon: Users, color: "#edf9f1", iconColor: "#15803d" },
     {
       title: `Farmers who contacted a supplier (30 days) · ${stats.contactSuppliers} supplier${stats.contactSuppliers === 1 ? "" : "s"} reached`,
       value: stats.contactFarmers, icon: PhoneCall, color: "#eff6ff", iconColor: "#1d4ed8"
@@ -134,8 +134,8 @@ export default function AdminDashboard() {
     <div>
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-        <Shield size={28} color="#22c55e" />
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+        <Shield size={28} color="#15803d" />
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
           Admin Dashboard
         </h1>
       </div>
@@ -153,9 +153,9 @@ export default function AdminDashboard() {
           const Icon = item.icon;
           return (
             <div key={item.title} style={{
-              background: "#fff", borderRadius: "20px", padding: "20px",
+              background: "#fff", borderRadius: "16px", padding: "20px",
               border: "1px solid #e5e7eb",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.04)",
+              boxShadow: "var(--fc-shadow-card)",
               display: "flex", alignItems: "center", gap: "16px"
             }}>
               <div style={{
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                 <Icon size={24} color={item.iconColor} />
               </div>
               <div>
-                <div style={{ fontSize: "28px", fontWeight: "800", color: "#111827" }}>
+                <div style={{ fontSize: "28px", fontWeight: "700", color: "#111827" }}>
                   {loading ? "—" : item.value}
                 </div>
                 <div style={{ fontSize: "13px", color: "#6b7280", fontWeight: "500" }}>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
             aria-pressed={activeTab === tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: "8px 20px", borderRadius: "9px",
+              padding: "8px 20px", borderRadius: "8px",
               border: "none", cursor: "pointer",
               fontWeight: "600", fontSize: "13px",
               background: activeTab === tab ? "#fff" : "transparent",
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
           >
             {tab === "vets" && stats.pendingVets > 0 && (
               <span style={{
-                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800",
+                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
                 width: "16px", height: "16px", borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
             )}
             {tab === "suppliers" && stats.pendingSuppliers > 0 && (
               <span style={{
-                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800",
+                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
                 width: "16px", height: "16px", borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
               <span
                 aria-label={`${openReports} reported`}
                 style={{
-                  background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800",
+                  background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
                   minWidth: "16px", height: "16px", padding: "0 4px", borderRadius: "8px",
                   display: "flex", alignItems: "center", justifyContent: "center"
                 }}
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                 key={f}
                 onClick={() => setVetFilter(f)}
                 style={{
-                  padding: "6px 14px", borderRadius: "20px",
+                  padding: "6px 14px", borderRadius: "16px",
                   border: `1.5px solid ${vetFilter === f ? "#111827" : "#e5e7eb"}`,
                   background: vetFilter === f ? "#111827" : "#fff",
                   color: vetFilter === f ? "#fff" : "#6b7280",
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
           {filteredVets.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
             }}>
               <Stethoscope size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
               <p style={{ color: "#9ca3af", fontSize: "14px" }}>
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
                   <div key={vet.id} style={{
                     background: "#fff", borderRadius: "16px",
                     border: "1px solid #e5e7eb", padding: "18px 20px",
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+                    boxShadow: "var(--fc-shadow-card)"
                   }}>
                     <div style={{
                       display: "flex", justifyContent: "space-between",
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
                           </span>
                           <span style={{
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                            borderRadius: "20px", background: meta.bg, color: meta.color
+                            borderRadius: "16px", background: meta.bg, color: meta.color
                           }}>
                             {meta.label}
                           </span>
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                               onClick={() => updateVetStatus(vet.id, "verified")}
                               style={{
                                 display: "flex", alignItems: "center", gap: "6px",
-                                padding: "8px 14px", background: "#16a34a", color: "#fff",
+                                padding: "8px 14px", background: "#15803d", color: "#fff",
                                 border: "none", borderRadius: "8px", fontWeight: "700",
                                 fontSize: "12px", cursor: busy ? "not-allowed" : "pointer"
                               }}
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
                 key={f}
                 onClick={() => setSupplierFilter(f)}
                 style={{
-                  padding: "6px 14px", borderRadius: "20px",
+                  padding: "6px 14px", borderRadius: "16px",
                   border: `1.5px solid ${supplierFilter === f ? "#111827" : "#e5e7eb"}`,
                   background: supplierFilter === f ? "#111827" : "#fff",
                   color: supplierFilter === f ? "#fff" : "#6b7280",
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
               return (
                 <div style={{
                   textAlign: "center", padding: "60px 20px",
-                  background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+                  background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
                 }}>
                   <Store size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
                   <p style={{ color: "#9ca3af", fontSize: "14px" }}>
@@ -433,8 +433,8 @@ export default function AdminDashboard() {
                   const busy = updatingSupplierId === sup.id;
                   const actionStyle = (color, border) => ({
                     display: "flex", alignItems: "center", gap: "6px", minHeight: "44px",
-                    padding: "0 16px", background: color === "#16a34a" ? "#16a34a" : "#fff",
-                    color: color === "#16a34a" ? "#fff" : color, border: border || "none",
+                    padding: "0 16px", background: color === "#15803d" ? "#15803d" : "#fff",
+                    color: color === "#15803d" ? "#fff" : color, border: border || "none",
                     borderRadius: "8px", fontWeight: "700", fontSize: "12px",
                     cursor: busy ? "not-allowed" : "pointer"
                   });
@@ -442,7 +442,7 @@ export default function AdminDashboard() {
                     <div key={sup.id} style={{
                       background: "#fff", borderRadius: "16px",
                       border: "1px solid #e5e7eb", padding: "18px 20px",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+                      boxShadow: "var(--fc-shadow-card)"
                     }}>
                       <div style={{
                         display: "flex", justifyContent: "space-between",
@@ -455,7 +455,7 @@ export default function AdminDashboard() {
                             </span>
                             <span style={{
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "20px", background: meta.bg, color: meta.color
+                              borderRadius: "16px", background: meta.bg, color: meta.color
                             }}>
                               {meta.label}
                             </span>
@@ -479,7 +479,7 @@ export default function AdminDashboard() {
                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                           {sup.verification_status === "pending" && (
                             <>
-                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "verified")} style={actionStyle("#16a34a")}>
+                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "verified")} style={actionStyle("#15803d")}>
                                 <CheckCircle2 size={14} /> Approve
                               </button>
                               <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "rejected")} style={actionStyle("#ef4444", "1px solid #fecaca")}>
@@ -511,9 +511,9 @@ export default function AdminDashboard() {
       {/* ═══════════ USERS TABLE ═══════════ */}
       {activeTab === "users" && (
         <div style={{
-          background: "#fff", borderRadius: "20px",
+          background: "#fff", borderRadius: "16px",
           border: "1px solid #e5e7eb",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.04)", overflow: "hidden"
+          boxShadow: "var(--fc-shadow-card)", overflow: "hidden"
         }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -552,9 +552,9 @@ export default function AdminDashboard() {
                   </td>
                   <td style={{ padding: "14px 20px" }}>
                     <span style={{
-                      background: "#dcfce7", color: "#16a34a",
+                      background: "#dcfce7", color: "#15803d",
                       fontSize: "12px", fontWeight: "700",
-                      padding: "3px 10px", borderRadius: "20px"
+                      padding: "3px 10px", borderRadius: "16px"
                     }}>
                       {user.role || "farmer"}
                     </span>
@@ -571,7 +571,7 @@ export default function AdminDashboard() {
 
       {/* ═══════════ PRODUCTS TABLE ═══════════ */}
       {activeTab === "products" && (
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "20px", border: "1px solid #e5e7eb", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
               {["Title", "Category", "Price", "Seller", "Status"].map(h => (
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
                   {product.category}
                 </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", fontWeight: "600", color: "#22c55e" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", fontWeight: "600", color: "#15803d" }}>
                   KES {Number(product.price).toLocaleString()}
                 </td>
                 <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
@@ -614,9 +614,9 @@ export default function AdminDashboard() {
                 <td style={{ padding: "14px 20px" }}>
                   <span style={{
                     background: product.sold_out ? "#fee2e2" : "#dcfce7",
-                    color: product.sold_out ? "#ef4444" : "#16a34a",
+                    color: product.sold_out ? "#ef4444" : "#15803d",
                     fontSize: "12px", fontWeight: "700",
-                    padding: "3px 10px", borderRadius: "20px"
+                    padding: "3px 10px", borderRadius: "16px"
                   }}>
                     {product.sold_out ? "sold out" : "active"}
                   </span>
@@ -629,7 +629,7 @@ export default function AdminDashboard() {
 
       {/* ═══════════ BATCHES TABLE ═══════════ */}
       {activeTab === "batches" && (
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "20px", border: "1px solid #e5e7eb", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
               {["Batch Name", "Type", "Quantity", "Farmer", "Status"].map(h => (
@@ -672,9 +672,9 @@ export default function AdminDashboard() {
                 <td style={{ padding: "14px 20px" }}>
                   <span style={{
                     background: batch.status === "active" ? "#dcfce7" : "#f3f4f6",
-                    color: batch.status === "active" ? "#16a34a" : "#9ca3af",
+                    color: batch.status === "active" ? "#15803d" : "#9ca3af",
                     fontSize: "12px", fontWeight: "700",
-                    padding: "3px 10px", borderRadius: "20px"
+                    padding: "3px 10px", borderRadius: "16px"
                   }}>
                     {batch.status || "active"}
                   </span>

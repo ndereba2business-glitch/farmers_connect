@@ -46,7 +46,7 @@
   min-height: 44px;
   padding: 0 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   color: #374151;
   font-size: 13px;
@@ -138,9 +138,9 @@
   overflow-wrap: anywhere;
 }
 .ck-row--me .ck-bubble {
-  border-color: #16a34a;
+  border-color: #15803d;
   border-radius: 14px 14px 4px 14px;
-  background: #16a34a;
+  background: #15803d;
   color: #fff;
 }
 .ck-note {
@@ -190,7 +190,7 @@
   padding: 0 20px;
   border: none;
   border-radius: 12px;
-  background: #16a34a;
+  background: #15803d;
   color: #fff;
   font-weight: 700;
   cursor: pointer;
@@ -236,7 +236,7 @@
   max-height: 130px;
   padding: 11px 14px;
   border: 1.5px solid #d1d5db;
-  border-radius: 22px;
+  border-radius: 16px;
   background: #fff;
   color: #111827;
   font: inherit;
@@ -245,14 +245,14 @@
   resize: none;
   box-sizing: border-box;
 }
-.ck-input:focus { outline: 2px solid #22c55e; outline-offset: 0; }
+.ck-input:focus { outline: 2px solid #15803d; outline-offset: 0; }
 .ck-send {
   width: 44px;
   height: 44px;
   flex: none;
   border: none;
   border-radius: 50%;
-  background: #16a34a;
+  background: #15803d;
   color: #fff;
   cursor: pointer;
   display: flex;

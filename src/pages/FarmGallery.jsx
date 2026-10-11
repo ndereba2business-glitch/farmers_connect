@@ -7,7 +7,7 @@ import { Camera, X, Trash2, Upload, ChevronLeft, ChevronRight, AlertTriangle, Ta
 import "./FarmGallery.css";
 
 const inputStyle = {
-  width: "100%", padding: "10px 14px", borderRadius: "10px",
+  width: "100%", padding: "10px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff"
 };
@@ -202,8 +202,8 @@ export default function FarmGallery() {
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-          <Camera size={26} color="#22c55e" style={{ flexShrink: 0 }} />
-          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 28px)", fontWeight: "800", color: "#111827", letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
+          <Camera size={26} color="#15803d" style={{ flexShrink: 0 }} />
+          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 28px)", fontWeight: "700", color: "#111827", letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
             Farm Gallery
           </h1>
         </div>
@@ -212,10 +212,10 @@ export default function FarmGallery() {
           style={{
             height: "44px", padding: "0 16px", border: "none",
             borderRadius: "12px",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)",
+            background: "#15803d",
             color: "white", fontWeight: "700", cursor: "pointer",
             fontSize: "14px", display: "flex", alignItems: "center",
-            gap: "8px", boxShadow: "0 6px 20px rgba(34,197,94,0.3)",
+            gap: "8px", boxShadow: "none",
             whiteSpace: "nowrap", flexShrink: 0
           }}
         >
@@ -229,9 +229,9 @@ export default function FarmGallery() {
       {/* ADD PHOTO FORM */}
       {showForm && (
         <div style={{
-          background: "#fff", borderRadius: "20px",
+          background: "#fff", borderRadius: "16px",
           border: "1px solid #e5e7eb", padding: "24px",
-          marginBottom: "24px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)"
+          marginBottom: "24px", boxShadow: "var(--fc-shadow-card)"
         }}>
           <form onSubmit={handleSavePhoto}>
 
@@ -239,19 +239,19 @@ export default function FarmGallery() {
             <div
               onClick={() => document.getElementById("gallery-upload").click()}
               style={{
-                border: "2px dashed #d1fae5", borderRadius: "14px",
+                border: "2px dashed #d1fae5", borderRadius: "12px",
                 padding: "32px", textAlign: "center", cursor: "pointer",
                 background: form.imagePreview ? "#f0fdf4" : "#fafafa",
                 marginBottom: "16px", transition: "all 0.2s"
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "#22c55e"}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "#15803d"}
               onMouseLeave={e => e.currentTarget.style.borderColor = "#d1fae5"}
             >
               {form.imagePreview ? (
                 <div style={{ position: "relative", display: "inline-block" }}>
                   <img
                     src={form.imagePreview} alt="preview"
-                    style={{ maxHeight: "200px", maxWidth: "100%", borderRadius: "10px", objectFit: "cover" }}
+                    style={{ maxHeight: "200px", maxWidth: "100%", borderRadius: "12px", objectFit: "cover" }}
                   />
                   <button
                     type="button"
@@ -372,8 +372,8 @@ export default function FarmGallery() {
                   flex: 1, padding: "12px",
                   background: uploading
                     ? "#86efac"
-                    : "linear-gradient(135deg,#22c55e,#16a34a)",
-                  color: "#fff", border: "none", borderRadius: "10px",
+                    : "#15803d",
+                  color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px",
                   cursor: uploading ? "not-allowed" : "pointer"
                 }}
@@ -385,7 +385,7 @@ export default function FarmGallery() {
                 onClick={() => { setShowForm(false); setError(""); }}
                 style={{
                   padding: "12px 20px", background: "#f9fafb",
-                  border: "1px solid #e5e7eb", borderRadius: "10px",
+                  border: "1px solid #e5e7eb", borderRadius: "12px",
                   cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "#374151"
                 }}
               >
@@ -426,7 +426,7 @@ export default function FarmGallery() {
       {!loading && !loadError && filteredPhotos.length === 0 && (
         <div style={{
           textAlign: "center", padding: "80px 20px",
-          background: "#fff", borderRadius: "20px", border: "1px solid #f0f0f0"
+          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
         }}>
           <Camera size={56} color="#e5e7eb" style={{ marginBottom: "16px" }} />
           <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -438,7 +438,7 @@ export default function FarmGallery() {
           <button
             onClick={() => setShowForm(true)}
             style={{
-              minHeight: "44px", padding: "12px 24px", background: "#16a34a",
+              minHeight: "44px", padding: "12px 24px", background: "#15803d",
               color: "#fff", border: "none", borderRadius: "12px",
               fontWeight: "700", cursor: "pointer"
             }}

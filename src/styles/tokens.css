@@ -192,6 +192,8 @@ option > svg.lucide:first-child {
   cursor: pointer;
 }
 .fc-stat:hover { background: #fafafa; }
+/* a figure that is not a link */
+.fc-stat--static, .fc-stat--static:hover { cursor: default; background: var(--fc-surface); }
 .fc-stat-label {
   display: flex;
   align-items: center;
@@ -252,3 +254,40 @@ option > svg.lucide:first-child {
 .fc-tag--warning { background: var(--fc-warning-soft); color: #92400e; }
 .fc-tag--danger { background: var(--fc-danger-soft); color: #991b1b; }
 .fc-tag--info { background: var(--fc-info-soft); color: #1e40af; }
+
+/* Shortcuts to the things a person does most: plain buttons, one colour. */
+.fc-quick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.fc-quick--wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.fc-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-md);
+  background: var(--fc-surface);
+  color: var(--fc-ink-2);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.fc-quick-btn:hover { background: #f9fafb; border-color: #d1d5db; }
+.fc-quick-btn svg { color: var(--fc-primary); }
+@media (max-width: 359px) {
+  .fc-quick { grid-template-columns: minmax(0, 1fr); }
+}
+
+.fc-section-title {
+  margin: 0 0 16px;
+  font-size: var(--fs-section, 18px);
+  font-weight: 700;
+  color: var(--fc-ink);
+}

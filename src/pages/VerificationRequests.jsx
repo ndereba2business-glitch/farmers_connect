@@ -10,10 +10,10 @@ const FILTERS = [
 
 const btn = (primary) => ({
   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
-  minHeight: "44px", padding: "0 16px", borderRadius: "10px", cursor: "pointer",
+  minHeight: "44px", padding: "0 16px", borderRadius: "12px", cursor: "pointer",
   fontWeight: "700", fontSize: "13px",
   border: primary ? "none" : "1px solid #e5e7eb",
-  background: primary ? "#16a34a" : "#fff",
+  background: primary ? "#15803d" : "#fff",
   color: primary ? "#fff" : "#374151"
 });
 
@@ -78,7 +78,7 @@ export default function VerificationRequests() {
 
   return (
     <div style={{ maxWidth: "880px" }}>
-      <h1 style={{ margin: 0, fontSize: "30px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "30px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
         Farmer verification
       </h1>
       <p style={{ margin: "6px 0 20px", color: "#6b7280", fontSize: "14px" }}>
@@ -89,7 +89,7 @@ export default function VerificationRequests() {
         {FILTERS.map(f => (
           <button key={f.value} role="tab" aria-selected={filter === f.value} onClick={() => changeFilter(f.value)}
             style={{
-              ...btn(false), borderRadius: "22px",
+              ...btn(false), borderRadius: "16px",
               background: filter === f.value ? "#111827" : "#fff",
               color: filter === f.value ? "#fff" : "#6b7280",
               border: `1.5px solid ${filter === f.value ? "#111827" : "#e5e7eb"}`
@@ -120,7 +120,7 @@ export default function VerificationRequests() {
             }}>
               <span aria-hidden="true" style={{
                 width: "52px", height: "52px", borderRadius: "50%", overflow: "hidden", flex: "none",
-                display: "grid", placeItems: "center", background: "#f0fdf4", color: "#15803d", fontWeight: "800"
+                display: "grid", placeItems: "center", background: "#f0fdf4", color: "#15803d", fontWeight: "700"
               }}>
                 {f.avatar_url
                   ? <img src={f.avatar_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

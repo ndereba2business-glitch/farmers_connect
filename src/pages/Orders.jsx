@@ -85,7 +85,7 @@ export default function Orders() {
 
   return (
     <div style={{ maxWidth: "760px" }}>
-      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
         My Orders
       </h1>
       <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -102,7 +102,7 @@ export default function Orders() {
           <button
             onClick={() => { setError(""); setLoading(true); refresh(); }}
             style={{
-              minHeight: "44px", padding: "0 18px", borderRadius: "10px",
+              minHeight: "44px", padding: "0 18px", borderRadius: "12px",
               border: "1.5px solid #b91c1c", background: "#fff", color: "#b91c1c",
               fontWeight: "700", cursor: "pointer"
             }}
@@ -128,7 +128,7 @@ export default function Orders() {
           return (
             <div key={o.id} style={{
               background: "#fff", border: "1px solid #e5e7eb",
-              borderRadius: "14px", padding: "18px"
+              borderRadius: "12px", padding: "18px"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <div>
@@ -138,7 +138,7 @@ export default function Orders() {
                   </div>
                 </div>
                 <span style={{
-                  alignSelf: "flex-start", padding: "4px 12px", borderRadius: "20px",
+                  alignSelf: "flex-start", padding: "4px 12px", borderRadius: "16px",
                   fontSize: "12px", fontWeight: "700", background: s.bg, color: s.color
                 }}>
                   {s.label}
@@ -160,8 +160,8 @@ export default function Orders() {
                   {phone && (
                     <a href={telHref(phone)} style={{
                       display: "inline-flex", alignItems: "center", gap: "8px",
-                      minHeight: "44px", padding: "0 16px", borderRadius: "10px",
-                      background: "#f0fdf4", border: "1.5px solid #22c55e",
+                      minHeight: "44px", padding: "0 16px", borderRadius: "12px",
+                      background: "#f0fdf4", border: "1.5px solid #15803d",
                       color: "#15803d", fontWeight: "700", fontSize: "13px", textDecoration: "none"
                     }}>
                       <Phone size={16} aria-hidden="true" /> Call {phone}

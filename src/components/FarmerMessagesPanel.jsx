@@ -5,7 +5,7 @@ import { useToast } from "../context/ToastContext";
 import { ArrowLeft, Send, MessageSquarePlus } from "lucide-react";
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
 };
@@ -140,7 +140,7 @@ export default function FarmerMessagesPanel() {
 
   return (
     <div style={{
-      background: "#fff", borderRadius: "20px", border: "1px solid #e5e7eb",
+      background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb",
       height: "min(600px, 75vh)", display: "flex", flexDirection: "column", overflow: "hidden"
     }}>
       {/* HEADER */}
@@ -166,7 +166,7 @@ export default function FarmerMessagesPanel() {
           <button
             onClick={() => setStartingNew(true)}
             aria-label="New conversation"
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#16a34a" }}
+            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#15803d" }}
           >
             <MessageSquarePlus size={20} />
           </button>
@@ -199,8 +199,8 @@ export default function FarmerMessagesPanel() {
             disabled={!newVetEmail}
             style={{
               marginTop: "16px", width: "100%", padding: "12px",
-              background: newVetEmail ? "linear-gradient(135deg,#22c55e,#16a34a)" : "#e5e7eb",
-              color: "#fff", border: "none", borderRadius: "10px",
+              background: newVetEmail ? "#15803d" : "#e5e7eb",
+              color: "#fff", border: "none", borderRadius: "12px",
               fontWeight: "700", fontSize: "14px", cursor: newVetEmail ? "pointer" : "not-allowed"
             }}
           >
@@ -222,8 +222,8 @@ export default function FarmerMessagesPanel() {
                 return (
                   <div key={m.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start" }}>
                     <div style={{
-                      maxWidth: "75%", padding: "9px 13px", borderRadius: "14px",
-                      background: isMine ? "#16a34a" : "#f3f4f6",
+                      maxWidth: "75%", padding: "9px 13px", borderRadius: "12px",
+                      background: isMine ? "#15803d" : "#f3f4f6",
                       color: isMine ? "#fff" : "#111827", fontSize: "13px"
                     }}>
                       {m.message}
@@ -249,8 +249,8 @@ export default function FarmerMessagesPanel() {
               disabled={!draft.trim() || sending}
               aria-label="Send message"
               style={{
-                flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px",
-                border: "none", background: "#16a34a", color: "#fff",
+                flexShrink: 0, width: "42px", height: "42px", borderRadius: "12px",
+                border: "none", background: "#15803d", color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: draft.trim() ? "pointer" : "not-allowed", opacity: draft.trim() ? 1 : 0.6
               }}
@@ -271,8 +271,8 @@ export default function FarmerMessagesPanel() {
               <button
                 onClick={() => setStartingNew(true)}
                 style={{
-                  padding: "9px 18px", background: "#f0fdf4", color: "#16a34a",
-                  border: "1px solid #bbf7d0", borderRadius: "10px",
+                  padding: "9px 18px", background: "#f0fdf4", color: "#15803d",
+                  border: "1px solid #bbf7d0", borderRadius: "12px",
                   fontWeight: "700", fontSize: "13px", cursor: "pointer"
                 }}
               >

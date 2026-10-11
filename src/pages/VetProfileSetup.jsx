@@ -20,13 +20,13 @@ const STATUS_META = {
   unverified: { bg: "#f3f4f6", color: "#6b7280", icon: Clock, label: "Not submitted yet — fill out your profile below" },
   missing: { bg: "#f3f4f6", color: "#6b7280", icon: Clock, label: "Not submitted yet — fill out your profile below" },
   pending: { bg: "#fef3c7", color: "#d97706", icon: Clock, label: "Pending review — an admin will review your profile soon" },
-  verified: { bg: "#dcfce7", color: "#16a34a", icon: CheckCircle2, label: "Verified — farmers can find and book you" },
+  verified: { bg: "#dcfce7", color: "#15803d", icon: CheckCircle2, label: "Verified — farmers can find and book you" },
   rejected: { bg: "#fee2e2", color: "#ef4444", icon: XCircle, label: "Rejected — update your details and resubmit" },
   suspended: { bg: "#fee2e2", color: "#991b1b", icon: Ban, label: "Suspended — contact support to appeal" },
 };
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
 };
@@ -216,8 +216,8 @@ export default function VetProfileSetup() {
     <div style={{ maxWidth: "680px" }}>
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-        <Stethoscope size={28} color="#22c55e" />
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+        <Stethoscope size={28} color="#15803d" />
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
           My Vet Profile
         </h1>
       </div>
@@ -238,13 +238,13 @@ export default function VetProfileSetup() {
       </div>
 
       <form onSubmit={handleSave} style={{
-        background: "#fff", borderRadius: "20px", border: "1px solid #e5e7eb",
-        padding: "28px", boxShadow: "0 4px 20px rgba(0,0,0,0.04)"
+        background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb",
+        padding: "28px", boxShadow: "var(--fc-shadow-card)"
       }}>
         {/* FULL NAME */}
         <div style={{ marginBottom: "18px" }}>
           <label style={labelStyle}>Full Name</label>
-          <input
+          <input aria-label="Full Name"
             placeholder="Dr. Jane Wanjiru"
             value={form.full_name}
             onChange={e => setForm({ ...form, full_name: e.target.value })}
@@ -256,7 +256,7 @@ export default function VetProfileSetup() {
         {/* BIO */}
         <div style={{ marginBottom: "18px" }}>
           <label style={labelStyle}>Bio (optional)</label>
-          <textarea
+          <textarea aria-label="Bio"
             placeholder="A short introduction — experience, focus areas, years practicing..."
             value={form.bio}
             onChange={e => setForm({ ...form, bio: e.target.value })}
@@ -267,7 +267,7 @@ export default function VetProfileSetup() {
         {/* LICENSE NUMBER */}
         <div style={{ marginBottom: "18px" }}>
           <label style={labelStyle}>License / Registration Number (optional)</label>
-          <input
+          <input aria-label="License / Registration Number"
             placeholder="e.g. KVB-2024-00123"
             value={form.license_number}
             onChange={e => setForm({ ...form, license_number: e.target.value })}
@@ -281,7 +281,7 @@ export default function VetProfileSetup() {
         {/* BASE FEE */}
         <div style={{ marginBottom: "22px" }}>
           <label style={labelStyle}>Typical Visit Fee (KES, optional)</label>
-          <input
+          <input aria-label="Typical Visit Fee"
             type="number" placeholder="e.g. 1500"
             value={form.base_fee}
             onChange={e => setForm({ ...form, base_fee: e.target.value })}
@@ -301,10 +301,10 @@ export default function VetProfileSetup() {
                   type="button"
                   onClick={() => toggleArrayValue("service_counties", county)}
                   style={{
-                    padding: "6px 14px", borderRadius: "20px",
-                    border: `1.5px solid ${active ? "#22c55e" : "#e5e7eb"}`,
+                    padding: "6px 14px", borderRadius: "16px",
+                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
                     background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#16a34a" : "#374151",
+                    color: active ? "#15803d" : "#374151",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -327,10 +327,10 @@ export default function VetProfileSetup() {
                   type="button"
                   onClick={() => toggleArrayValue("specializations", spec)}
                   style={{
-                    padding: "6px 14px", borderRadius: "20px",
-                    border: `1.5px solid ${active ? "#22c55e" : "#e5e7eb"}`,
+                    padding: "6px 14px", borderRadius: "16px",
+                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
                     background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#16a34a" : "#374151",
+                    color: active ? "#15803d" : "#374151",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -353,10 +353,10 @@ export default function VetProfileSetup() {
                   type="button"
                   onClick={() => toggleArrayValue("working_days", day.value)}
                   style={{
-                    padding: "6px 14px", borderRadius: "20px",
-                    border: `1.5px solid ${active ? "#22c55e" : "#e5e7eb"}`,
+                    padding: "6px 14px", borderRadius: "16px",
+                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
                     background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#16a34a" : "#374151",
+                    color: active ? "#15803d" : "#374151",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -370,7 +370,7 @@ export default function VetProfileSetup() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 150px), 1fr))", gap: "12px" }}>
             <div>
               <label style={labelStyle}>Available From</label>
-              <input
+              <input aria-label="Available From"
                 type="time"
                 value={form.available_start_time}
                 onChange={e => setForm({ ...form, available_start_time: e.target.value })}
@@ -379,7 +379,7 @@ export default function VetProfileSetup() {
             </div>
             <div>
               <label style={labelStyle}>Available Until</label>
-              <input
+              <input aria-label="Available Until"
                 type="time"
                 value={form.available_end_time}
                 onChange={e => setForm({ ...form, available_end_time: e.target.value })}
@@ -397,7 +397,7 @@ export default function VetProfileSetup() {
           </p>
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
             <input
-              type="date"
+              type="date" aria-label="Unavailable date"
               value={newBlockedDate}
               onChange={e => setNewBlockedDate(e.target.value)}
               style={inputStyle}
@@ -406,7 +406,7 @@ export default function VetProfileSetup() {
               type="button"
               onClick={addBlockedDate}
               style={{
-                flexShrink: 0, padding: "0 16px", border: "none", borderRadius: "10px",
+                flexShrink: 0, padding: "0 16px", border: "none", borderRadius: "12px",
                 background: "#111827", color: "#fff", fontWeight: "700",
                 cursor: "pointer", display: "flex", alignItems: "center", gap: "6px"
               }}
@@ -422,7 +422,7 @@ export default function VetProfileSetup() {
               {blockedDates.map(bd => (
                 <span key={bd.id} style={{
                   display: "flex", alignItems: "center", gap: "6px",
-                  padding: "6px 10px", borderRadius: "20px",
+                  padding: "6px 10px", borderRadius: "16px",
                   background: "#f3f4f6", color: "#374151", fontSize: "13px", fontWeight: "600"
                 }}>
                   <CalendarOff size={13} />
@@ -474,7 +474,7 @@ export default function VetProfileSetup() {
           disabled={saving}
           style={{
             width: "100%", padding: "14px",
-            background: saving ? "#86efac" : "linear-gradient(135deg,#22c55e,#16a34a)",
+            background: saving ? "#86efac" : "#15803d",
             color: "#fff", border: "none", borderRadius: "12px",
             fontWeight: "700", fontSize: "15px",
             cursor: saving ? "not-allowed" : "pointer",

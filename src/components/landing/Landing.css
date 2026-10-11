@@ -1,12 +1,10 @@
 /* =====================================================================
    Farmers Connect — public landing page
-   Design tokens build directly on the brand already shipping in the
-   authenticated app (see src/components/Layout.css and Signup.jsx):
-     - forest-green sidebar gradient  -> the hero's dark band
-     - #15803d / #16a34a / #22c55e    -> the existing green ramp
-     - #faf9f6 cream                  -> the existing app surface
-     - Inter                          -> already loaded in index.html
-   Fraunces is the one new addition, used only for display headlines.
+   Same decisions as the app (src/styles/tokens.css): brand green
+   #14532d, primary green #15803d, ink on a warm paper colour, 12px
+   buttons, hairlines instead of shadows, no glows and no frosted glass.
+   Light by default; two solid brand-green bands for contrast.
+   Fraunces is used only for display headlines, Inter for the rest.
    Prefixed `lp-` throughout so nothing collides with the `fc-` classes
    the logged-in shell (Layout.css) already owns — both stylesheets are
    loaded globally by Vite, so distinct prefixes keep them from leaking
@@ -14,22 +12,23 @@
    ===================================================================== */
 
 .lp-root {
-  --lp-forest-950: #031510;
-  --lp-forest-900: #051b14;
-  --lp-forest-800: #0b2a1e;
-  --lp-forest-700: #14402c;
+  --lp-forest-950: #0c2417;
+  --lp-forest-900: #14532d;
+  --lp-forest-800: #14532d;
+  --lp-forest-700: #166534;
   --lp-green-600: #15803d;
-  --lp-green-500: #16a34a;
-  --lp-green-400: #22c55e;
+  --lp-green-500: #15803d;
+  /* the light green is only for text and icons on the dark bands */
+  --lp-green-400: #86efac;
   --lp-cream: #faf9f6;
   --lp-cream-2: #f1efe6;
   --lp-ink: #0e1a15;
   --lp-muted: #5c6b61;
   --lp-line: #e3e6de;
-  --lp-line-on-dark: rgba(244, 243, 236, 0.14);
+  --lp-line-on-dark: rgba(244, 243, 236, 0.2);
   --lp-on-dark: #f4f3ec;
-  --lp-on-dark-muted: #aab6ad;
-  --lp-shadow: 0 24px 60px -24px rgba(3, 21, 16, 0.35);
+  --lp-on-dark-muted: #cfdcd3;
+  --lp-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 12px 32px -18px rgba(16, 24, 40, 0.2);
 
   background: var(--lp-cream);
   color: var(--lp-ink);
@@ -79,11 +78,11 @@
 }
 
 .lp-eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--lp-green-500);
+  color: var(--lp-green-600);
 }
 
 .lp-eyebrow--on-dark {
@@ -99,7 +98,7 @@
 }
 
 .lp-root :focus-visible {
-  outline: 2px solid var(--lp-green-400);
+  outline: 2px solid var(--lp-green-600);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -122,10 +121,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 20px;
-  background: rgba(3, 21, 16, 0.78);
-  backdrop-filter: blur(12px) saturate(1.15);
-  border-bottom: 1px solid var(--lp-line-on-dark);
+  padding: 10px 16px;
+  background: var(--lp-cream);
+  border-bottom: 1px solid var(--lp-line);
 }
 @media (min-width: 768px) {
   .lp-nav { padding: 16px 40px; }
@@ -142,12 +140,12 @@
   display: flex;
   flex-direction: column;
   line-height: 1.05;
-  font-weight: 800;
-  font-size: 0.92rem;
-  color: var(--lp-on-dark);
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--lp-ink);
+  letter-spacing: -0.02em;
 }
-.lp-nav-word-accent { color: var(--lp-green-400); }
+.lp-nav-word-accent { color: var(--lp-green-600); }
 
 .lp-nav-links {
   display: none;
@@ -159,11 +157,11 @@
 .lp-nav-link {
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--lp-on-dark-muted);
+  color: var(--lp-muted);
   padding: 10px 2px;
   transition: color 0.2s ease;
 }
-.lp-nav-link:hover { color: var(--lp-on-dark); }
+.lp-nav-link:hover { color: var(--lp-ink); }
 
 .lp-nav-actions {
   display: flex;
@@ -177,7 +175,7 @@
 .lp-nav-login {
   font-size: 0.86rem;
   font-weight: 600;
-  color: var(--lp-on-dark-muted);
+  color: var(--lp-ink);
   padding: 10px 10px;
   min-height: 44px;
   display: inline-flex;
@@ -185,66 +183,36 @@
   white-space: nowrap;
   transition: color 0.2s ease;
 }
-.lp-nav-login:hover { color: var(--lp-on-dark); }
+.lp-nav-login:hover { color: var(--lp-green-600); }
 
 .lp-nav-cta {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 18px;
-  border-radius: 100px;
+  padding: 0 16px;
+  border-radius: 12px;
   font-size: 0.86rem;
-  font-weight: 700;
-  color: #06170f;
-  background: linear-gradient(120deg, var(--lp-green-400), var(--lp-green-500));
-  box-shadow: 0 12px 26px -8px rgba(34, 197, 94, 0.55);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+  background: var(--lp-green-600);
+  transition: background-color 0.15s ease;
   white-space: nowrap;
 }
-.lp-nav-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 32px -8px rgba(34, 197, 94, 0.65);
-}
+.lp-root .lp-nav-cta { color: #fff; }
+.lp-nav-cta:hover { background: var(--lp-forest-700); }
 
 /* --------------------------------------------------------------- hero */
 .lp-hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding-block: 76px 64px;
-  background: linear-gradient(180deg, var(--lp-forest-950) 0%, var(--lp-forest-900) 55%, var(--lp-forest-800) 100%);
-  color: var(--lp-on-dark);
+  padding-block: 40px 56px;
+  background: var(--lp-cream);
+  border-bottom: 1px solid var(--lp-line);
 }
-
-.lp-hero-scene {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(120% 65% at 50% -8%, rgba(34, 197, 94, 0.22), transparent 60%);
-}
-
-.lp-hero-layer {
-  position: absolute;
-  left: -5%;
-  right: -5%;
-  will-change: transform;
-}
-.lp-hero-hills-far {
-  bottom: -6%;
-  height: 42%;
-  background: linear-gradient(180deg, transparent, rgba(20, 64, 44, 0.55) 45%);
-  clip-path: polygon(0% 100%, 0% 58%, 9% 50%, 21% 60%, 35% 44%, 50% 62%, 66% 46%, 80% 61%, 92% 48%, 100% 57%, 100% 100%);
-}
-.lp-hero-hills-near {
-  bottom: -8%;
-  height: 30%;
-  background: linear-gradient(180deg, transparent, rgba(11, 42, 30, 0.85) 45%);
-  clip-path: polygon(0% 100%, 0% 70%, 11% 80%, 25% 62%, 41% 82%, 59% 64%, 75% 83%, 89% 68%, 100% 78%, 100% 100%);
+@media (min-width: 768px) {
+  .lp-hero { padding-block: 72px 88px; }
 }
 
 .lp-hero-inner {
   position: relative;
-  padding-top: 28px;
+  padding-top: 0;
 }
 
 .lp-hero h1 {
@@ -255,7 +223,7 @@
 }
 .lp-hero h1 em {
   font-style: italic;
-  color: var(--lp-green-400);
+  color: var(--lp-forest-900);
 }
 
 .lp-hero-sub {
@@ -263,7 +231,7 @@
   max-width: 46ch;
   font-size: 1.04rem;
   line-height: 1.62;
-  color: var(--lp-on-dark-muted);
+  color: var(--lp-muted);
 }
 
 .lp-hero-ctas {
@@ -279,57 +247,33 @@
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  padding: 0 22px;
-  border-radius: 100px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  border: none;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-.lp-btn-primary {
-  color: #06170f;
-  background: linear-gradient(120deg, var(--lp-green-400), var(--lp-green-500));
-  box-shadow: 0 16px 34px -10px rgba(34, 197, 94, 0.55);
-}
-.lp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 20px 40px -10px rgba(34, 197, 94, 0.65); }
+.lp-btn-primary { background: var(--lp-green-600); }
+.lp-root .lp-btn-primary { color: #fff; }
+.lp-btn-primary:hover { background: var(--lp-forest-700); }
 
 .lp-btn-ghost {
-  color: var(--lp-on-dark);
-  background: rgba(244, 243, 236, 0.06);
-  border: 1px solid var(--lp-line-on-dark);
+  background: #fff;
+  border-color: #d5dbd2;
 }
-.lp-btn-ghost:hover { background: rgba(244, 243, 236, 0.1); border-color: rgba(244,243,236,0.28); }
+.lp-root .lp-btn-ghost { color: var(--lp-ink); }
+.lp-btn-ghost:hover { background: var(--lp-cream-2); }
+/* on the green band the quiet button is an outline */
+.lp-cta .lp-btn-ghost { background: transparent; border-color: rgba(244, 243, 236, 0.45); }
+.lp-root .lp-cta .lp-btn-ghost { color: var(--lp-on-dark); }
+.lp-cta .lp-btn-ghost:hover { background: rgba(244, 243, 236, 0.1); }
 
 .lp-hero-roles {
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.lp-role-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border-radius: 100px;
-  border: 1px solid var(--lp-line-on-dark);
-  background: rgba(244, 243, 236, 0.04);
-  font-size: 0.8rem;
-  color: var(--lp-on-dark-muted);
-}
-.lp-role-chip .lp-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex: none;
-  background: var(--lp-green-400);
-}
-
-.lp-hero-coop {
-  margin-top: 52px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--lp-on-dark-muted);
-  font-size: 0.78rem;
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: var(--lp-muted);
 }
 
 /* ----------------------------------------------------------- problem */
@@ -460,14 +404,14 @@
   width: 132px;
   height: 132px;
   border-radius: 50%;
-  background: linear-gradient(155deg, var(--lp-forest-800), var(--lp-forest-950));
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: #fff;
+  border: 1px solid var(--lp-line);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--lp-on-dark);
+  color: var(--lp-ink);
   text-align: center;
   box-shadow: var(--lp-shadow);
   z-index: 2;
@@ -482,10 +426,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #fff;
   border: 1px solid var(--lp-line);
-  box-shadow: var(--lp-shadow);
   opacity: 0;
   transition: opacity 0.5s ease, transform 0.5s ease;
   z-index: 2;
@@ -497,8 +440,8 @@
 .lp-hub-node-icon {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: rgba(22, 163, 74, 0.12);
+  border-radius: 8px;
+  background: rgba(21, 128, 61, 0.1);
   color: var(--lp-green-600);
   display: flex;
   align-items: center;
@@ -550,8 +493,8 @@
 .lp-hub-list-icon {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  background: rgba(22, 163, 74, 0.12);
+  border-radius: 8px;
+  background: rgba(21, 128, 61, 0.1);
   color: var(--lp-green-600);
   display: flex;
   align-items: center;
@@ -591,16 +534,17 @@
 }
 
 .lp-band-dark {
-  background: linear-gradient(180deg, var(--lp-forest-900), var(--lp-forest-950));
+  background: var(--lp-forest-900);
   color: var(--lp-on-dark);
 }
+.lp-band-dark .lp-eyebrow { color: var(--lp-green-400); }
 .lp-band-dark .lp-section-head p,
 .lp-band-dark .lp-feature p,
 .lp-band-dark .lp-trust-item p {
   color: var(--lp-on-dark-muted);
 }
 .lp-band-dark .lp-feature-icon {
-  background: rgba(34, 197, 94, 0.14);
+  background: rgba(244, 243, 236, 0.12);
   color: var(--lp-green-400);
 }
 .lp-band-tint { background: var(--lp-cream-2); }
@@ -637,7 +581,7 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(22, 163, 74, 0.12);
+  background: rgba(21, 128, 61, 0.1);
   color: var(--lp-green-600);
   display: flex;
   align-items: center;
@@ -695,9 +639,8 @@
 .lp-card {
   background: #fff;
   border: 1px solid var(--lp-line);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 14px 34px -24px rgba(3, 21, 16, 0.3);
 }
 .lp-card h3 { font-size: 1.25rem; margin-top: 16px; }
 .lp-card p {
@@ -711,9 +654,9 @@
 .lp-mock {
   background: #fff;
   border: 1px solid var(--lp-line);
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: var(--lp-shadow);
-  padding: 22px;
+  padding: 20px;
   width: 100%;
   max-width: 440px;
   margin-inline: auto;
@@ -732,7 +675,7 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 100px;
-  background: rgba(22, 163, 74, 0.12);
+  background: rgba(21, 128, 61, 0.1);
   color: var(--lp-green-600);
 }
 .lp-mock-rows { list-style: none; margin: 0; padding: 4px 0 0; }
@@ -818,7 +761,7 @@
 /* ------------------------------------------------------------ final CTA */
 .lp-cta {
   padding-block: 76px;
-  background: linear-gradient(135deg, var(--lp-green-600), #0f5f2e 55%, var(--lp-forest-800));
+  background: var(--lp-forest-900);
   color: var(--lp-on-dark);
 }
 .lp-cta-inner { text-align: center; }
@@ -838,11 +781,9 @@
   gap: 12px;
 }
 .lp-btn-light {
-  color: var(--lp-forest-900);
   background: var(--lp-cream);
-  box-shadow: 0 16px 34px -12px rgba(3, 21, 16, 0.5);
 }
-.lp-btn-light:hover { transform: translateY(-1px); }
+.lp-btn-light:hover { background: #fff; }
 
 /* --------------------------------------------------------------- footer */
 .lp-footer {
@@ -891,8 +832,12 @@
 
 /* `.lp-root a { color: inherit }` outranks single-class link colours, so
    these need the same specificity to actually apply. */
-.lp-root .lp-nav-link,
-.lp-root .lp-nav-login { color: var(--lp-on-dark-muted); }
+.lp-root .lp-nav-link { color: var(--lp-muted); }
+.lp-root .lp-nav-login { color: var(--lp-ink); }
 .lp-root .lp-nav-link:hover,
-.lp-root .lp-nav-login:hover { color: var(--lp-on-dark); }
+.lp-root .lp-nav-login:hover { color: var(--lp-green-600); }
 .lp-root .lp-btn-light { color: var(--lp-forest-900); }
+
+/* the brand lockup is dark ink in the nav and light in the footer */
+.lp-footer .lp-nav-word { color: var(--lp-on-dark); }
+.lp-footer .lp-nav-word-accent { color: var(--lp-green-400); }

@@ -73,7 +73,7 @@ test("wrong password shows an error and stays on login", { timeout: 60000 }, asy
   await page.goto(`${app.url}/login`);
   await page.fill('input[type="email"]', SUPPLIER.email);
   await page.fill('input[type="password"]', "wrong");
-  await page.click('button:has-text("Login")');
+  await page.click('button:has-text("Log in")');
   await page.locator("text=Invalid login credentials").waitFor();
   assert.equal(new URL(page.url()).pathname, "/login");
   await context.close();

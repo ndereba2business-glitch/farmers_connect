@@ -17,9 +17,9 @@ const DELIVERY_STEPS = [
 ];
 
 const actionBtn = (primary) => ({
-  minHeight: "44px", padding: "0 16px", borderRadius: "10px",
+  minHeight: "44px", padding: "0 16px", borderRadius: "12px",
   border: primary ? "none" : "1.5px solid #d1d5db",
-  background: primary ? "linear-gradient(135deg,#22c55e,#16a34a)" : "#fff",
+  background: primary ? "#15803d" : "#fff",
   color: primary ? "#fff" : "#374151",
   fontWeight: "700", fontSize: "13px", cursor: "pointer"
 });
@@ -115,7 +115,7 @@ export default function SupplierOrders() {
   if (profile === null) {
     return (
       <div style={{ maxWidth: "560px" }}>
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827" }}>Supplier Orders</h1>
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827" }}>Supplier Orders</h1>
         <p style={{ color: "#6b7280", margin: "12px 0 20px" }}>
           Set up your supplier profile first. Once an admin verifies it, your products can be
           ordered and requests appear here.
@@ -129,7 +129,7 @@ export default function SupplierOrders() {
 
   return (
     <div style={{ maxWidth: "820px" }}>
-      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
         Supplier Orders
       </h1>
       <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -167,7 +167,7 @@ export default function SupplierOrders() {
           const busy = busyId === o.id;
           return (
             <div key={o.id} style={{
-              background: "#fff", border: "1px solid #e5e7eb", borderRadius: "14px", padding: "18px"
+              background: "#fff", border: "1px solid #e5e7eb", borderRadius: "12px", padding: "18px"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <div>
@@ -180,7 +180,7 @@ export default function SupplierOrders() {
                   </div>
                 </div>
                 <span style={{
-                  alignSelf: "flex-start", padding: "4px 12px", borderRadius: "20px",
+                  alignSelf: "flex-start", padding: "4px 12px", borderRadius: "16px",
                   fontSize: "12px", fontWeight: "700", background: s.bg, color: s.color
                 }}>
                   {s.label}
@@ -197,8 +197,8 @@ export default function SupplierOrders() {
                 {o.customer_phone && (
                   <a href={telHref(o.customer_phone)} style={{
                     display: "inline-flex", alignItems: "center", gap: "8px",
-                    minHeight: "44px", padding: "0 16px", borderRadius: "10px",
-                    background: "#f0fdf4", border: "1.5px solid #22c55e",
+                    minHeight: "44px", padding: "0 16px", borderRadius: "12px",
+                    background: "#f0fdf4", border: "1.5px solid #15803d",
                     color: "#15803d", fontWeight: "700", fontSize: "13px", textDecoration: "none"
                   }}>
                     <Phone size={16} aria-hidden="true" /> Call {o.customer_phone}

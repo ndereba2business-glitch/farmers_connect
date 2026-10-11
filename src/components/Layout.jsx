@@ -8,7 +8,7 @@ import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
   Users, Shield,
   ClipboardList, UserCircle, ChevronRight,
-  Bot, Image, CheckSquare, LogOut,
+  Bird, Image, CheckSquare, LogOut,
   Package, Calculator, Menu, X, CalendarClock
 } from "lucide-react";
 import "./Layout.css";
@@ -21,7 +21,7 @@ const FARMER_NAV = [
   { name: "My Farm", path: "/my-farm", icon: Egg },
   { name: "Ask Vet", path: "/bookings", icon: Stethoscope },
   { name: "Community", path: "/community", icon: Users },
-  { name: "Clucky AI", path: "/clucky", icon: Bot },
+  { name: "Clucky AI", path: "/clucky", icon: Bird },
   { name: "Feed Calculator", path: "/feed-calculator", icon: Calculator },
   { name: "Tasks", path: "/tasks", icon: CheckSquare },
   { name: "Gallery", path: "/gallery", icon: Image },
@@ -109,7 +109,7 @@ export default function Layout() {
             className="fc-close-btn"
             aria-label="Close menu"
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
 
@@ -157,7 +157,7 @@ export default function Layout() {
           </div>
 
           <button onClick={handleLogout} className="fc-signout-btn">
-            <LogOut size={16} />
+            <LogOut size={18} aria-hidden="true" />
             Sign Out
           </button>
         </div>
@@ -174,6 +174,11 @@ export default function Layout() {
           >
             <Menu size={20} />
           </button>
+
+          <Link to={navItems[0].path} className="fc-topbar-brand" aria-label="Farmers Connect home">
+            <BrandMark size={28} title="" />
+            <span>Farmers <b>Connect</b></span>
+          </Link>
 
           <div className="fc-topbar-spacer" />
 

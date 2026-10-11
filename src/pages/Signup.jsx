@@ -231,7 +231,7 @@ export default function Signup() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f0fdf4",
+        background: "#f7f8f5",
         padding: "20px"
       }}
     >
@@ -241,7 +241,7 @@ export default function Signup() {
           background: "#fff",
           width: "100%",
           maxWidth: "440px",
-          borderRadius: "20px",
+          borderRadius: "16px",
           boxShadow:
             "0 4px 24px rgba(0,0,0,0.08)",
           padding: "36px 32px"
@@ -280,7 +280,7 @@ export default function Signup() {
           style={{
             display: "flex",
             background: "#f3f4f6",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "4px",
             marginBottom: "20px"
           }}
@@ -355,7 +355,7 @@ export default function Signup() {
           <input
             type="text"
 
-            placeholder="Full Name"
+            aria-label="Full Name" placeholder="Full Name"
 
             required
 
@@ -376,7 +376,7 @@ export default function Signup() {
             <input
               type="email"
 
-              placeholder="Email"
+              aria-label="Email" placeholder="Email"
 
               required
 
@@ -396,7 +396,7 @@ export default function Signup() {
             <input
               type="tel"
 
-              placeholder="0712345678"
+              aria-label="Phone number" placeholder="0712345678"
 
               required
 
@@ -417,7 +417,7 @@ export default function Signup() {
           <input
             type="password"
 
-            placeholder="Password"
+            aria-label="Password" placeholder="Password"
 
             required
 
@@ -479,8 +479,7 @@ export default function Signup() {
                     padding:
                       "8px 16px",
 
-                    borderRadius:
-                      "20px",
+                    borderRadius: "16px",
 
                     border:
                       role === r
@@ -521,8 +520,7 @@ export default function Signup() {
                   "#dc2626",
                 padding:
                   "12px",
-                borderRadius:
-                  "10px",
+                borderRadius: "12px",
                 marginBottom:
                   "14px",
                 fontSize:
@@ -544,8 +542,7 @@ export default function Signup() {
                   "#15803d",
                 padding:
                   "12px",
-                borderRadius:
-                  "10px",
+                borderRadius: "12px",
                 marginBottom:
                   "14px",
                 fontSize:
@@ -576,8 +573,8 @@ export default function Signup() {
             }}
           >
             {loading
-              ? "Creating Account..."
-              : "Create Account"}
+              ? "Creating account..."
+              : "Create account"}
           </button>
 
         </form>
@@ -621,7 +618,7 @@ export default function Signup() {
 const inputStyle = {
   width: "100%",
   padding: "13px 14px",
-  borderRadius: "10px",
+  borderRadius: "12px",
   border: "1.5px solid #ddd",
   marginBottom: "14px",
   fontSize: "14px",

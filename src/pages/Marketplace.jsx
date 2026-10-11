@@ -33,7 +33,7 @@ const UNITS = [
 
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
   background: "#fff", color: "#111827"
@@ -314,7 +314,7 @@ function handleContactSeller(product) {
           }}>
             <div>
               <h1 style={{
-                margin: 0, fontSize: "clamp(28px, 8vw, 36px)", fontWeight: "800",
+                margin: 0, fontSize: "clamp(28px, 8vw, 36px)", fontWeight: "700",
                 color: "#111827", letterSpacing: "-1px"
               }}>
                 Marketplace
@@ -330,8 +330,8 @@ function handleContactSeller(product) {
                   aria-label={`View order (${cart.length} items)`}
                   style={{
                     height: "44px", padding: "0 16px",
-                    border: "1.5px solid #22c55e", borderRadius: "12px",
-                    background: "#f0fdf4", color: "#16a34a",
+                    border: "1.5px solid #15803d", borderRadius: "12px",
+                    background: "#f0fdf4", color: "#15803d",
                     fontWeight: "700", cursor: "pointer", fontSize: "14px",
                     display: "flex", alignItems: "center", gap: "8px"
                   }}
@@ -344,10 +344,10 @@ function handleContactSeller(product) {
                 style={{
                   height: "44px", padding: "0 20px", border: "none",
                   borderRadius: "12px",
-                  background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                  background: "#15803d",
                   color: "white", fontWeight: "700", cursor: "pointer",
                   fontSize: "14px", display: "flex", alignItems: "center",
-                  gap: "8px", boxShadow: "0 6px 20px rgba(34,197,94,0.3)"
+                  gap: "8px", boxShadow: "none"
                 }}
               >
                 <Plus size={18} /> List Product
@@ -378,7 +378,7 @@ function handleContactSeller(product) {
               <button
                 onClick={() => setCategoryOpen(!categoryOpen)}
                 style={{
-                  height: "44px", padding: "0 16px", borderRadius: "10px",
+                  height: "44px", padding: "0 16px", borderRadius: "12px",
                   border: "1.5px solid #e5e7eb", background: "#fff",
                   cursor: "pointer", fontSize: "14px", color: "#374151",
                   display: "flex", alignItems: "center", gap: "8px",
@@ -392,7 +392,7 @@ function handleContactSeller(product) {
               {categoryOpen && (
                 <div style={{
                   position: "absolute", top: "50px", left: 0,
-                  background: "#fff", borderRadius: "14px",
+                  background: "#fff", borderRadius: "12px",
                   boxShadow: "0 10px 40px rgba(0,0,0,0.12)",
                   border: "1px solid #f0f0f0", zIndex: 999,
                   minWidth: "200px", overflow: "hidden"
@@ -404,7 +404,7 @@ function handleContactSeller(product) {
                       style={{
                         padding: "11px 16px", cursor: "pointer",
                         fontSize: "14px",
-                        color: category === cat.value ? "#22c55e" : "#374151",
+                        color: category === cat.value ? "#15803d" : "#374151",
                         fontWeight: category === cat.value ? "600" : "400",
                         background: category === cat.value ? "#f0fdf4" : "#fff",
                         display: "flex", justifyContent: "space-between",
@@ -422,10 +422,10 @@ function handleContactSeller(product) {
             <button
               onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
               style={{
-                height: "44px", padding: "0 16px", borderRadius: "10px",
-                border: `1.5px solid ${showVerifiedOnly ? "#22c55e" : "#e5e7eb"}`,
+                height: "44px", padding: "0 16px", borderRadius: "12px",
+                border: `1.5px solid ${showVerifiedOnly ? "#15803d" : "#e5e7eb"}`,
                 background: showVerifiedOnly ? "#f0fdf4" : "#fff",
-                color: showVerifiedOnly ? "#22c55e" : "#6b7280",
+                color: showVerifiedOnly ? "#15803d" : "#6b7280",
                 cursor: "pointer", fontSize: "14px", fontWeight: "600"
               }}
             >
@@ -465,7 +465,7 @@ function handleContactSeller(product) {
           {!loading && filtered.length === 0 && (
             <div style={{
               textAlign: "center", padding: "80px 20px",
-              background: "#fff", borderRadius: "24px",
+              background: "#fff", borderRadius: "16px",
               border: "1px solid #f0f0f0"
             }}>
               <ShoppingBag size={64} color="#e5e7eb"
@@ -484,7 +484,7 @@ function handleContactSeller(product) {
               <button
                 onClick={startListing}
                 style={{
-                  minHeight: "44px", padding: "12px 24px", background: "#22c55e",
+                  minHeight: "44px", padding: "12px 24px", background: "#15803d",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px", cursor: "pointer"
                 }}
@@ -526,7 +526,7 @@ function handleContactSeller(product) {
             <button
               onClick={() => setView("list")}
               style={{
-                width: "38px", height: "38px", borderRadius: "10px",
+                width: "38px", height: "38px", borderRadius: "12px",
                 border: "1.5px solid #e5e7eb", background: "#fff",
                 cursor: "pointer", display: "flex",
                 alignItems: "center", justifyContent: "center"
@@ -537,7 +537,7 @@ function handleContactSeller(product) {
             <div>
               <h1 style={{
                 margin: 0, fontSize: "28px",
-                fontWeight: "800", color: "#111827"
+                fontWeight: "700", color: "#111827"
               }}>
                 List a Product
               </h1>
@@ -548,9 +548,9 @@ function handleContactSeller(product) {
           </div>
 
           <div style={{
-            background: "#fff", borderRadius: "20px",
+            background: "#fff", borderRadius: "16px",
             border: "1px solid #e5e7eb", padding: "28px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)"
+            boxShadow: "var(--fc-shadow-card)"
           }}>
             <form onSubmit={handleAddProduct}>
 
@@ -643,7 +643,7 @@ function handleContactSeller(product) {
               <div style={{ marginBottom: "20px" }}>
                 <label style={labelStyle}>
                   WhatsApp Number
-                  <span style={{ color: "#22c55e", fontSize: "11px", fontWeight: "500", marginLeft: "6px" }}>
+                  <span style={{ color: "#15803d", fontSize: "11px", fontWeight: "500", marginLeft: "6px" }}>
                     (Buyers will contact you here)
                   </span>
                 </label>
@@ -676,7 +676,7 @@ function handleContactSeller(product) {
                     background: form.imagePreview ? "#f0fdf4" : "#fafafa",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "#22c55e"}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "#15803d"}
                   onMouseLeave={e => e.currentTarget.style.borderColor = "#d1fae5"}
                 >
                   {form.imagePreview ? (
@@ -686,7 +686,7 @@ function handleContactSeller(product) {
                         alt="Preview"
                         style={{
                           maxHeight: "160px", maxWidth: "100%",
-                          borderRadius: "10px", objectFit: "cover"
+                          borderRadius: "12px", objectFit: "cover"
                         }}
                       />
                       <button
@@ -747,11 +747,11 @@ function handleContactSeller(product) {
                   width: "100%", padding: "14px",
                   background: submitting
                     ? "#86efac"
-                    : "linear-gradient(135deg,#22c55e,#16a34a)",
+                    : "#15803d",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: submitting ? "not-allowed" : "pointer",
-                  boxShadow: "0 6px 20px rgba(34,197,94,0.25)"
+                  boxShadow: "none"
                 }}
               >
                 {submitting ? "Listing product..." : "List Product"}
@@ -771,7 +771,7 @@ function handleContactSeller(product) {
             <button
               onClick={() => setView("list")}
               style={{
-                width: "38px", height: "38px", borderRadius: "10px",
+                width: "38px", height: "38px", borderRadius: "12px",
                 border: "1.5px solid #e5e7eb", background: "#fff",
                 cursor: "pointer", display: "flex",
                 alignItems: "center", justifyContent: "center"
@@ -782,7 +782,7 @@ function handleContactSeller(product) {
             <div>
               <h1 style={{
                 margin: 0, fontSize: "28px",
-                fontWeight: "800", color: "#111827"
+                fontWeight: "700", color: "#111827"
               }}>
                 Your Cart
               </h1>
@@ -795,7 +795,7 @@ function handleContactSeller(product) {
           {cart.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "20px",
+              background: "#fff", borderRadius: "16px",
               border: "1px solid #f0f0f0"
             }}>
               <ShoppingCart size={48} color="#e5e7eb"
@@ -810,8 +810,8 @@ function handleContactSeller(product) {
                 onClick={() => setView("list")}
                 style={{
                   marginTop: "16px", padding: "10px 20px",
-                  background: "#22c55e", color: "#fff",
-                  border: "none", borderRadius: "10px",
+                  background: "#15803d", color: "#fff",
+                  border: "none", borderRadius: "12px",
                   cursor: "pointer", fontWeight: "600"
                 }}
               >
@@ -821,7 +821,7 @@ function handleContactSeller(product) {
           ) : (
             <div>
               <div style={{
-                background: "#fff", borderRadius: "20px",
+                background: "#fff", borderRadius: "16px",
                 border: "1px solid #e5e7eb",
                 overflow: "hidden", marginBottom: "20px"
               }}>
@@ -868,7 +868,7 @@ function handleContactSeller(product) {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{
-                        fontWeight: "700", color: "#22c55e", fontSize: "15px"
+                        fontWeight: "700", color: "#15803d", fontSize: "15px"
                       }}>
                         KES {Number(item.price).toLocaleString()}
                       </div>
@@ -890,19 +890,19 @@ function handleContactSeller(product) {
               <div style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", padding: "16px 20px",
-                background: "#f0fdf4", borderRadius: "14px",
+                background: "#f0fdf4", borderRadius: "12px",
                 marginBottom: "24px"
               }}>
                 <span style={{ fontWeight: "600", fontSize: "15px" }}>Total</span>
                 <span style={{
-                  fontWeight: "800", fontSize: "20px", color: "#22c55e"
+                  fontWeight: "700", fontSize: "20px", color: "#15803d"
                 }}>
                   KES {total.toLocaleString()}
                 </span>
               </div>
 
               <div style={{
-                background: "#fff", borderRadius: "20px",
+                background: "#fff", borderRadius: "16px",
                 border: "1px solid #e5e7eb",
                 padding: "24px", marginBottom: "16px"
               }}>
@@ -938,11 +938,11 @@ function handleContactSeller(product) {
                   width: "100%", padding: "14px",
                   background: paymentLoading
                     ? "#86efac"
-                    : "linear-gradient(135deg,#22c55e,#16a34a)",
+                    : "#15803d",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: paymentLoading ? "not-allowed" : "pointer",
-                  boxShadow: "0 6px 20px rgba(34,197,94,0.25)"
+                  boxShadow: "none"
                 }}
               >
                 {paymentLoading ? "Sending..." : "Send order request"}
@@ -961,10 +961,10 @@ function contactButton(primary) {
     // wraps to one button per row on narrow two-column phone layouts
     flex: "1 1 104px", minHeight: "44px", padding: "0 10px",
     display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-    borderRadius: "10px", fontWeight: "700", fontSize: "13px",
+    borderRadius: "12px", fontWeight: "700", fontSize: "13px",
     textDecoration: "none", cursor: "pointer",
-    border: "1.5px solid #22c55e",
-    background: primary ? "#22c55e" : "#f0fdf4",
+    border: "1.5px solid #15803d",
+    background: primary ? "#15803d" : "#f0fdf4",
     color: primary ? "#fff" : "#15803d"
   };
 }
@@ -1022,7 +1022,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#fff", borderRadius: "18px",
+        background: "#fff", borderRadius: "16px",
         border: `1px solid ${product.sold_out ? "#fecaca" : "#f0f0f0"}`,
         overflow: "hidden",
         boxShadow: hovered
@@ -1058,9 +1058,9 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         {/* CATEGORY BADGE */}
         <div style={{
           position: "absolute", top: "12px", left: "12px",
-          background: "rgba(255,255,255,0.92)", borderRadius: "20px",
+          background: "rgba(255,255,255,0.92)", borderRadius: "16px",
           padding: "4px 10px", fontSize: "12px", fontWeight: "600",
-          color: "#374151", backdropFilter: "blur(8px)"
+          color: "#374151",
         }}>
           {categoryLabel}
         </div>
@@ -1073,10 +1073,10 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
             <span style={{
-              background: "#ef4444", color: "#fff", fontWeight: "800",
-              fontSize: "14px", padding: "8px 20px", borderRadius: "20px"
+              background: "#fff", color: "#b91c1c", fontWeight: "700",
+              fontSize: "13px", padding: "6px 14px", borderRadius: "999px"
             }}>
-              OUT OF STOCK
+              Out of stock
             </span>
           </div>
         )}
@@ -1085,9 +1085,10 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         {product.is_verified && (
           <div style={{
             position: "absolute", top: "12px", right: "12px",
-            background: "#22c55e", borderRadius: "20px",
-            padding: "4px 10px", fontSize: "11px",
-            fontWeight: "700", color: "#fff"
+            display: "flex", alignItems: "center", gap: "4px",
+            background: "rgba(255,255,255,0.92)", borderRadius: "16px",
+            padding: "4px 10px", fontSize: "12px",
+            fontWeight: "600", color: "#166534"
           }}>
             <Check size={14} aria-hidden="true" /> Verified
           </div>
@@ -1098,7 +1099,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           <div style={{
             position: "absolute", top: "14px", right: "14px",
             width: "10px", height: "10px", borderRadius: "50%",
-            background: "#22c55e",
+            background: "#15803d",
             boxShadow: "0 0 0 3px rgba(34,197,94,0.3)"
           }} />
         )}
@@ -1114,7 +1115,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           {product.product_name}
         </h3>
 
-        <div style={{ marginBottom: "6px", fontSize: "18px", fontWeight: "800", color: "#16a34a", lineHeight: 1.25, overflowWrap: "anywhere" }}>
+        <div style={{ marginBottom: "6px", fontSize: "18px", fontWeight: "700", color: "#111827", lineHeight: 1.25, overflowWrap: "anywhere" }}>
           {priceText(product)}
           <span style={{ fontSize: "12px", fontWeight: "400", color: "#9ca3af" }}>
             {unitSuffix(product.unit)}
@@ -1124,7 +1125,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         {!product.sold_out && (
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
             <span style={{
-              fontSize: "12px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px",
+              fontSize: "12px", fontWeight: "700", padding: "3px 10px", borderRadius: "16px",
               ...(product.availability === "on_order"
                 ? { background: "#eff6ff", color: "#1d4ed8" }
                 : { background: "#f0fdf4", color: "#15803d" })
@@ -1176,8 +1177,8 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
     style={{
       width: "100%", padding: "12px", marginBottom: "8px",
       minHeight: "44px",
-      background: "linear-gradient(135deg,#22c55e,#16a34a)",
-      color: "#fff", border: "none", borderRadius: "10px",
+      background: "#15803d",
+      color: "#fff", border: "none", borderRadius: "12px",
       fontWeight: "700", fontSize: "13px", cursor: "pointer"
     }}
   >
@@ -1191,7 +1192,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
   <div style={{
     minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center",
     background: "#f3f4f6", color: "#6b7280", border: "1.5px solid #e5e7eb",
-    borderRadius: "10px", fontWeight: "700", fontSize: "13px"
+    borderRadius: "12px", fontWeight: "700", fontSize: "13px"
   }}>
     Out of stock
   </div>
@@ -1226,8 +1227,8 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
               style={{
                 width: "100%", padding: "10px",
                 background: showSellerPanel ? "#1e3a2e" : "#0f2318",
-                color: "#22c55e", border: "1.5px solid #22c55e",
-                borderRadius: "10px", fontWeight: "700",
+                color: "#15803d", border: "1.5px solid #15803d",
+                borderRadius: "12px", fontWeight: "700",
                 fontSize: "12px", cursor: "pointer",
                 letterSpacing: "0.05em", transition: "all 0.2s"
               }}

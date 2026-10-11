@@ -105,29 +105,29 @@ export default function Finance() {
         gap: "15px",
         marginBottom: "25px"
       }}>
-        <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "10px", background: "#f0fdf4" }}>
+        <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "12px", background: "#f0fdf4" }}>
           <h3 style={{ margin: "0 0 8px", color: "#6b7280", fontSize: "14px" }}>Total Income</h3>
-          <h1 style={{ margin: 0, color: "#16a34a" }}>KES {totalIncome.toLocaleString()}</h1>
+          <h1 style={{ margin: 0, color: "#15803d" }}>KES {totalIncome.toLocaleString()}</h1>
         </div>
 
-        <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "10px", background: "#fef2f2" }}>
+        <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "12px", background: "#fef2f2" }}>
           <h3 style={{ margin: "0 0 8px", color: "#6b7280", fontSize: "14px" }}>Total Expenses</h3>
           <h1 style={{ margin: 0, color: "#dc2626" }}>KES {totalExpenses.toLocaleString()}</h1>
         </div>
 
         <div style={{
-          border: "1px solid #ddd", padding: "20px", borderRadius: "10px",
+          border: "1px solid #ddd", padding: "20px", borderRadius: "12px",
           background: profit >= 0 ? "#f0fdf4" : "#fef2f2"
         }}>
           <h3 style={{ margin: "0 0 8px", color: "#6b7280", fontSize: "14px" }}>Net Profit</h3>
-          <h1 style={{ margin: 0, color: profit >= 0 ? "#16a34a" : "#dc2626" }}>
+          <h1 style={{ margin: 0, color: profit >= 0 ? "#15803d" : "#dc2626" }}>
             KES {profit.toLocaleString()}
           </h1>
         </div>
       </div>
 
       {/* FORM */}
-      <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "10px", marginBottom: "30px" }}>
+      <div style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "12px", marginBottom: "30px" }}>
         <h2>Add Financial Record</h2>
 
         <select
@@ -164,8 +164,8 @@ export default function Finance() {
         <button
           onClick={addRecord}
           style={{
-            padding: "12px 24px", background: "#16a34a", color: "white",
-            border: "none", borderRadius: "10px", fontWeight: "700",
+            padding: "12px 24px", background: "#15803d", color: "white",
+            border: "none", borderRadius: "12px", fontWeight: "700",
             fontSize: "14px", cursor: "pointer"
           }}
         >
@@ -187,7 +187,7 @@ export default function Finance() {
           <div
             key={r.id}
             style={{
-              border: "1px solid #ddd", padding: "15px", borderRadius: "10px",
+              border: "1px solid #ddd", padding: "15px", borderRadius: "12px",
               marginBottom: "10px", display: "flex", justifyContent: "space-between",
               alignItems: "flex-start", background: r.type === "income" ? "#f0fdf4" : "#fef2f2"
             }}
@@ -200,14 +200,14 @@ export default function Finance() {
             <div style={{ textAlign: "right" }}>
               <p style={{
                 fontWeight: "700", fontSize: "16px", margin: "0 0 4px",
-                color: r.type === "income" ? "#16a34a" : "#dc2626"
+                color: r.type === "income" ? "#15803d" : "#dc2626"
               }}>
                 {r.type === "income" ? "+" : "-"} KES {Number(r.amount).toLocaleString()}
               </p>
               <span style={{
                 fontSize: "11px", fontWeight: "600", padding: "2px 8px",
-                borderRadius: "20px", background: r.type === "income" ? "#dcfce7" : "#fee2e2",
-                color: r.type === "income" ? "#16a34a" : "#dc2626"
+                borderRadius: "16px", background: r.type === "income" ? "#dcfce7" : "#fee2e2",
+                color: r.type === "income" ? "#15803d" : "#dc2626"
               }}>
                 {r.type.toUpperCase()}
               </span>

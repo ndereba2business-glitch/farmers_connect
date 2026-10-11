@@ -37,7 +37,7 @@ const ACTIVITY_TYPES = [
 
 const TYPE_COLORS = {
   broiler: { bg: "#fff7e6", color: "#d97706" },
-  layer: { bg: "#edf9f1", color: "#16a34a" },
+  layer: { bg: "#edf9f1", color: "#15803d" },
   dual_purpose: { bg: "#f3f0ff", color: "#7c3aed" },
   indigenous: { bg: "#fff0eb", color: "#ea580c" },
 };
@@ -75,7 +75,7 @@ function generateVaccinationSchedule(hatchDate, batchType) {
 }
 
 const inputStyle = {
-  width: "100%", padding: "11px 14px", borderRadius: "10px",
+  width: "100%", padding: "11px 14px", borderRadius: "12px",
   border: "1.5px solid #e5e7eb", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
   background: "#fff", color: "#111827"
@@ -206,7 +206,7 @@ export default function MyFarm() {
             alignItems: "flex-start", marginBottom: "24px"
           }}>
             <div>
-              <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "800", color: "#111827", letterSpacing: "-1px" }}>
+              <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
                 My Farm
               </h1>
               <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
@@ -218,10 +218,10 @@ export default function MyFarm() {
               style={{
                 height: "44px", padding: "0 20px", border: "none",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                background: "#15803d",
                 color: "white", fontWeight: "700", cursor: "pointer",
                 fontSize: "14px", display: "flex", alignItems: "center",
-                gap: "8px", boxShadow: "0 6px 20px rgba(34,197,94,0.3)"
+                gap: "8px", boxShadow: "none"
               }}
             >
               <Plus size={18} /> Add Batch
@@ -238,7 +238,7 @@ export default function MyFarm() {
                 className="fc-tap"
                 onClick={() => setActiveTab(tab.key)}
                 style={{
-                  padding: "8px 20px", borderRadius: "20px",
+                  padding: "8px 20px", borderRadius: "16px",
                   border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
                   background: activeTab === tab.key ? "#111827" : "#fff",
                   color: activeTab === tab.key ? "#fff" : "#6b7280",
@@ -253,7 +253,7 @@ export default function MyFarm() {
           {loading && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {[1, 2].map(i => (
-                <div key={i} style={{ height: "200px", borderRadius: "20px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "200px", borderRadius: "16px", background: "#f3f4f6" }} />
               ))}
             </div>
           )}
@@ -262,7 +262,7 @@ export default function MyFarm() {
             activeBatches.length === 0 ? (
               <div style={{
                 textAlign: "center", padding: "80px 20px",
-                background: "#fff", borderRadius: "24px", border: "1px solid #f0f0f0"
+                background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
               }}>
                 <Egg size={64} color="#e5e7eb" style={{ marginBottom: "16px" }} />
                 <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
@@ -275,7 +275,7 @@ export default function MyFarm() {
                   onClick={() => setView("add")}
                   style={{
                     padding: "12px 24px",
-                    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                    background: "#15803d",
                     color: "#fff", border: "none", borderRadius: "12px",
                     fontWeight: "700", fontSize: "14px", cursor: "pointer"
                   }}
@@ -305,7 +305,7 @@ export default function MyFarm() {
             completedBatches.length === 0 ? (
               <div style={{
                 textAlign: "center", padding: "60px 20px",
-                background: "#fff", borderRadius: "24px", border: "1px solid #f0f0f0"
+                background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
               }}>
                 <CheckCircle2 size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
                 <p style={{ color: "#9ca3af", fontSize: "15px" }}>No completed batches yet.</p>
@@ -337,7 +337,7 @@ export default function MyFarm() {
             <button
               onClick={() => setView("list")}
               style={{
-                width: "38px", height: "38px", borderRadius: "10px",
+                width: "38px", height: "38px", borderRadius: "12px",
                 border: "1.5px solid #e5e7eb", background: "#fff",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
               }}
@@ -345,7 +345,7 @@ export default function MyFarm() {
               <X size={18} color="#374151" />
             </button>
             <div>
-              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "800", color: "#111827" }}>
+              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "700", color: "#111827" }}>
                 Add Chick Batch
               </h1>
               <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
@@ -355,9 +355,9 @@ export default function MyFarm() {
           </div>
 
           <div style={{
-            background: "#fff", borderRadius: "20px",
+            background: "#fff", borderRadius: "16px",
             border: "1px solid #e5e7eb", padding: "28px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)"
+            boxShadow: "var(--fc-shadow-card)"
           }}>
             <form onSubmit={handleAddBatch}>
               <div style={{ marginBottom: "20px" }}>
@@ -415,7 +415,7 @@ export default function MyFarm() {
               <div style={{ marginBottom: "24px" }}>
                 <label style={labelStyle}>Notes (Optional)</label>
                 <textarea
-                  placeholder="Any additional notes..."
+                  aria-label="Any additional notes" placeholder="Any additional notes..."
                   value={form.notes}
                   onChange={e => setForm({ ...form, notes: e.target.value })}
                   style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }}
@@ -426,8 +426,8 @@ export default function MyFarm() {
                 borderRadius: "12px", padding: "14px 16px",
                 marginBottom: "24px", display: "flex", alignItems: "flex-start", gap: "10px"
               }}>
-                <Syringe size={16} color="#16a34a" style={{ marginTop: "2px", flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: "13px", color: "#16a34a", fontWeight: "500" }}>
+                <Syringe size={16} color="#15803d" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <p style={{ margin: 0, fontSize: "13px", color: "#15803d", fontWeight: "500" }}>
                   A vaccination schedule will be auto-generated based on the hatch date and batch type.
                 </p>
               </div>
@@ -435,7 +435,7 @@ export default function MyFarm() {
                 type="submit" disabled={saving}
                 style={{
                   width: "100%", padding: "14px",
-                  background: saving ? "#86efac" : "linear-gradient(135deg,#22c55e,#16a34a)",
+                  background: saving ? "#86efac" : "#15803d",
                   color: "#fff", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: saving ? "not-allowed" : "pointer"
@@ -631,9 +631,9 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
 
   return (
     <div style={{
-      background: "#fff", borderRadius: "20px",
+      background: "#fff", borderRadius: "16px",
       border: "1px solid #e5e7eb",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.04)", overflow: "hidden"
+      boxShadow: "var(--fc-shadow-card)", overflow: "hidden"
     }}>
       <div style={{ padding: "20px 24px" }}>
 
@@ -645,11 +645,11 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
             <div style={{
-              width: "44px", height: "44px", borderRadius: "14px",
+              width: "44px", height: "44px", borderRadius: "12px",
               background: "#edf9f1", display: "flex",
               alignItems: "center", justifyContent: "center", flexShrink: 0
             }}>
-              <Egg size={22} color="#22c55e" />
+              <Egg size={22} color="#15803d" />
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#111827" }}>
@@ -658,7 +658,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               <div style={{ display: "flex", gap: "8px", marginTop: "6px", flexWrap: "wrap", alignItems: "center" }}>
                 <span style={{
                   background: typeColor.bg, color: typeColor.color,
-                  fontSize: "12px", fontWeight: "600", padding: "3px 10px", borderRadius: "20px"
+                  fontSize: "12px", fontWeight: "600", padding: "3px 10px", borderRadius: "16px"
                 }}>
                   {typeLabel}
                 </span>
@@ -680,15 +680,17 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               <span style={{
                 display: "flex", alignItems: "center", gap: "4px",
                 background: "#fef2f2", color: "#ef4444",
-                fontSize: "12px", fontWeight: "600", padding: "4px 10px", borderRadius: "20px"
+                fontSize: "12px", fontWeight: "600", padding: "4px 10px", borderRadius: "16px"
               }}>
                 <AlertTriangle size={12} /> {overdueCount} overdue
               </span>
             )}
             <button
               onClick={() => onDelete(batch.id)}
+              aria-label={`Delete batch ${batch.batch_name}`}
+              className="fc-tap"
               style={{
-                width: "32px", height: "32px", borderRadius: "8px",
+                width: "44px", height: "32px", borderRadius: "8px",
                 border: "1px solid #fee2e2", background: "#fff",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
               }}
@@ -704,11 +706,11 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <span>Vaccination Progress</span>
             <span>{completed}/{total} completed</span>
           </div>
-          <div style={{ height: "8px", background: "#f3f4f6", borderRadius: "20px", overflow: "hidden" }}>
+          <div style={{ height: "8px", background: "#f3f4f6", borderRadius: "16px", overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${progress}%`,
-              background: "linear-gradient(135deg,#22c55e,#16a34a)",
-              borderRadius: "20px", transition: "width 0.5s ease"
+              background: "#15803d",
+              borderRadius: "16px", transition: "width 0.5s ease"
             }} />
           </div>
         </div>
@@ -716,10 +718,11 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {/* NEXT VACCINE */}
         {nextVaccine && (
           <div style={{
-            padding: "12px 14px", borderRadius: "12px",
-            background: "#f0fdf4", border: "1px solid #dcfce7", marginBottom: "14px"
+            padding: "12px 14px", borderRadius: "12px", marginBottom: "14px",
+            background: nextVaccine.scheduled_date < today ? "#fef2f2" : nextVaccine.scheduled_date === today ? "#fffbeb" : "#f9fafb",
+            border: `1px solid ${nextVaccine.scheduled_date < today ? "#fecaca" : nextVaccine.scheduled_date === today ? "#fde68a" : "#e5e7eb"}`
           }}>
-            <p style={{ margin: "0 0 2px", fontSize: "11px", color: "#9ca3af", fontWeight: "600", textTransform: "uppercase" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "12px", color: "#6b7280", fontWeight: "600" }}>
               Next vaccination
             </p>
             <p style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
@@ -727,8 +730,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             </p>
             <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
               Day {nextVaccine.day_number} · {nextVaccine.scheduled_date}
-              {nextVaccine.scheduled_date === today && <span style={{ color: "#f59e0b", fontWeight: "700" }}> · TODAY</span>}
-              {nextVaccine.scheduled_date < today && <span style={{ color: "#ef4444", fontWeight: "700" }}> · OVERDUE</span>}
+              {nextVaccine.scheduled_date === today && <span style={{ color: "#b45309", fontWeight: "700" }}> · Today</span>}
+              {nextVaccine.scheduled_date < today && <span style={{ color: "#b91c1c", fontWeight: "700" }}> · Overdue</span>}
             </p>
           </div>
         )}
@@ -741,7 +744,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               flex: 1, padding: "9px 14px",
               background: showMortality ? "#fef2f2" : "#f9fafb",
               border: `1px solid ${showMortality ? "#fecaca" : "#e5e7eb"}`,
-              borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
+              borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
               color: showMortality ? "#ef4444" : "#374151",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
@@ -754,7 +757,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               flex: 1, padding: "9px 14px",
               background: showExpense ? "#fffbeb" : "#f9fafb",
               border: `1px solid ${showExpense ? "#fde68a" : "#e5e7eb"}`,
-              borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
+              borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
               color: showExpense ? "#d97706" : "#374151",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
@@ -767,7 +770,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               style={{
                 flex: 1, padding: "9px 14px",
                 background: "#f9fafb", border: "1px solid #e5e7eb",
-                borderRadius: "10px", cursor: "pointer",
+                borderRadius: "12px", cursor: "pointer",
                 fontWeight: "600", fontSize: "13px", color: "#374151",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
               }}
@@ -801,7 +804,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                   style={inputStyle} />
               </div>
             </div>
-            <input placeholder="Notes e.g. suspected disease"
+            <input aria-label="Notes" placeholder="Notes e.g. suspected disease"
               value={mortalityForm.notes}
               onChange={e => setMortalityForm({ ...mortalityForm, notes: e.target.value })}
               style={{ ...inputStyle, marginBottom: "10px" }} />
@@ -889,7 +892,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {/* ACTIVITY TYPE TABS */}
         <div style={{
           display: "flex", background: "#f3f4f6",
-          borderRadius: "10px", padding: "3px",
+          borderRadius: "12px", padding: "3px",
           marginBottom: "12px", gap: "2px"
         }}>
           {ACTIVITY_TYPES.map(type => (
@@ -912,21 +915,21 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         </div>
         <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
           <input
-            placeholder="Quantity (e.g. 5)"
+            aria-label="Quantity" placeholder="Quantity (e.g. 5)"
             type="number"
             value={activityForm.quantity}
             onChange={e => setActivityForm({ ...activityForm, quantity: e.target.value })}
             style={inputStyle}
           />
           <input
-            placeholder="Unit (kg, trays...)"
+            aria-label="Unit" placeholder="Unit (kg, trays...)"
             value={activityForm.unit}
             onChange={e => setActivityForm({ ...activityForm, unit: e.target.value })}
             style={inputStyle}
           />
         </div>
         <textarea
-          placeholder="Notes (optional)"
+          aria-label="Notes" placeholder="Notes (optional)"
           value={activityForm.notes}
           onChange={e => setActivityForm({ ...activityForm, notes: e.target.value })}
           style={{ ...inputStyle, minHeight: "70px", resize: "vertical", marginBottom: "10px" }}
@@ -936,8 +939,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           disabled={savingActivity}
           style={{
             width: "100%", padding: "12px",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)",
-            color: "#fff", border: "none", borderRadius: "10px",
+            background: "#15803d",
+            color: "#fff", border: "none", borderRadius: "12px",
             fontWeight: "700", fontSize: "14px", cursor: "pointer"
           }}
         >
@@ -1023,20 +1026,20 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               </div>
               <div>
                 <label style={labelStyle}>Buyer (optional)</label>
-                <input placeholder="Buyer name"
+                <input aria-label="Buyer name" placeholder="Buyer name"
                   value={saleForm.buyer}
                   onChange={e => setSaleForm({ ...saleForm, buyer: e.target.value })}
                   style={inputStyle} />
               </div>
             </div>
-            <textarea placeholder="Notes (optional)"
+            <textarea aria-label="Notes" placeholder="Notes (optional)"
               value={saleForm.notes}
               onChange={e => setSaleForm({ ...saleForm, notes: e.target.value })}
               style={{ ...inputStyle, minHeight: "70px", resize: "vertical", marginBottom: "12px" }} />
             <button type="submit" disabled={savingSale} style={{
               width: "100%", padding: "13px",
-              background: "linear-gradient(135deg,#22c55e,#16a34a)",
-              color: "#fff", border: "none", borderRadius: "10px",
+              background: "#15803d",
+              color: "#fff", border: "none", borderRadius: "12px",
               fontWeight: "700", fontSize: "14px", cursor: "pointer"
             }}>
               {savingSale ? "Saving..." : "Save Sale"}
@@ -1070,15 +1073,15 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 Batch P&L
               </p>
               <p style={{
-                margin: 0, fontSize: "18px", fontWeight: "800",
-                color: netPL >= 0 ? "#16a34a" : "#ef4444"
+                margin: 0, fontSize: "18px", fontWeight: "700",
+                color: netPL >= 0 ? "#15803d" : "#ef4444"
               }}>
                 {netPL >= 0 ? "+" : ""}KES {netPL.toLocaleString()}
               </p>
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#22c55e" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#15803d" }}>
               Revenue: KES {totalRevenue.toLocaleString()}
             </p>
             <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#ef4444" }}>
@@ -1104,7 +1107,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               <div key={sale.id} style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", padding: "10px 12px",
-                background: "#f9fafb", borderRadius: "10px",
+                background: "#f9fafb", borderRadius: "12px",
                 marginBottom: "6px"
               }}>
                 <div>
@@ -1115,7 +1118,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                     {sale.sale_date}{sale.buyer_name ? ` · ${sale.buyer_name}` : ""}
                   </p>
                 </div>
-                <p style={{ margin: 0, fontWeight: "700", fontSize: "14px", color: "#22c55e" }}>
+                <p style={{ margin: 0, fontWeight: "700", fontSize: "14px", color: "#15803d" }}>
                   +KES {Number(sale.total_amount).toLocaleString()}
                 </p>
               </div>
@@ -1162,7 +1165,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                       <input
                         type="checkbox" checked={task.completed}
                         onChange={() => onToggleVaccination(task)}
-                        style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0, accentColor: "#22c55e" }}
+                        style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0, accentColor: "#15803d" }}
                       />
                       <div style={{ flex: 1 }}>
                         <p style={{
@@ -1176,7 +1179,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                           Day {task.day_number} · {task.method?.replace("_", " ")} · {task.scheduled_date}
                         </p>
                       </div>
-                      {task.completed ? <CheckCircle2 size={16} color="#22c55e" />
+                      {task.completed ? <CheckCircle2 size={16} color="#15803d" />
                         : isOverdue ? <AlertTriangle size={16} color="#ef4444" />
                         : isDueToday ? <Clock size={16} color="#f59e0b" />
                         : <Calendar size={16} color="#9ca3af" />}

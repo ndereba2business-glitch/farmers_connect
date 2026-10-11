@@ -8,7 +8,7 @@ export async function login(page, baseUrl, { email, password }) {
   await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded" });
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
-  await page.click('button:has-text("Login")');
+  await page.click('button:has-text("Log in")');
   await page.waitForURL(u => !u.pathname.startsWith("/login"), { timeout: TIMEOUT });
   await skipTourIfShown(page);
 }

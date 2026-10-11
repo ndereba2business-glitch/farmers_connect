@@ -145,7 +145,7 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f0fdf4",
+        background: "#f7f8f5",
         padding: "20px"
       }}
     >
@@ -194,7 +194,7 @@ export default function Login() {
           style={{
             display: "flex",
             background: "#f3f4f6",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "4px",
             marginBottom: "20px"
           }}
@@ -266,7 +266,7 @@ export default function Login() {
           <input
             type="email"
 
-            placeholder="Email"
+            aria-label="Email" placeholder="Email"
 
             value={email}
 
@@ -279,7 +279,7 @@ export default function Login() {
             style={{
               width: "100%",
               padding: "14px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               border: "1px solid #ddd",
               marginBottom: "15px",
               fontSize: "15px",
@@ -292,7 +292,7 @@ export default function Login() {
           <input
             type="tel"
 
-            placeholder="0712345678"
+            aria-label="Phone number" placeholder="0712345678"
 
             value={phone}
 
@@ -305,7 +305,7 @@ export default function Login() {
             style={{
               width: "100%",
               padding: "14px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               border: "1px solid #ddd",
               marginBottom: "15px",
               fontSize: "15px",
@@ -318,7 +318,7 @@ export default function Login() {
         <input
           type="password"
 
-          placeholder="Password"
+          aria-label="Password" placeholder="Password"
 
           value={password}
 
@@ -331,7 +331,7 @@ export default function Login() {
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             border: "1px solid #ddd",
             marginBottom: "20px",
             fontSize: "15px",
@@ -346,7 +346,7 @@ export default function Login() {
               background: "#fef2f2",
               color: "#dc2626",
               padding: "12px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               marginBottom: "14px",
               fontSize: "14px"
             }}
@@ -364,18 +364,18 @@ export default function Login() {
           style={{
             width: "100%",
             padding: "14px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             border: "none",
             background: "#15803d",
             color: "white",
-            fontWeight: "bold",
+            fontWeight: "700",
             cursor: "pointer",
             fontSize: "15px"
           }}
         >
           {loading
             ? "Logging in..."
-            : "Login"}
+            : "Log in"}
         </button>
 
         <GoogleButton />
@@ -400,10 +400,10 @@ export default function Login() {
               color: "#15803d",
               marginLeft: "6px",
               cursor: "pointer",
-              fontWeight: "bold"
+              fontWeight: "700"
             }}
           >
-            Signup
+            Sign up
           </span>
 
         </p>
