@@ -21,7 +21,7 @@ Three signed-in roles plus admin:
 Things that are easy to get wrong because they were deliberately changed:
 - **Community is one group chat** (`community_chat`, at `/community`). The old posts feed and the separate "Messages" chat are gone, and their tables were dropped. Members only insert; the database sets the sender's name, badge and reply preview, refuses blocked words, and removal goes through `community_remove_message()`
 - **Notifications are created by the database**, not the browser: triggers for events, and `sync_my_reminders()` (called by the bell) for vaccinations, tasks and visits that are due. The browser may only write to the signed-in person's own inbox, so a notification for someone else must be a trigger. Each person's switches live in `notification_preferences` and are enforced by an insert guard. In-app only: no push, no SMS
-- **Clucky is a real AI model** behind the `clucky` edge function (`supabase/functions/clucky/`). The Anthropic key is the function secret `ANTHROPIC_API_KEY`; the model is `claude-opus-5-5` unless `CLUCKY_MODEL` says otherwise, and `CLUCKY_DAILY_LIMIT` (default 30) caps questions per account per day
+- **Clucky is a real AI model** behind the `clucky` edge function (`supabase/functions/clucky/`), currently Google Gemini through the Interactions API of `@google/genai`. The key is the function secret `GEMINI_API_KEY`; the model is `gemini-3.5-flash-lite` unless `GEMINI_MODEL` says otherwise, and `CLUCKY_DAILY_LIMIT` (default 30) caps questions per account per day. The browser never calls the AI service and never holds its key. The vendor is isolated in `providers/` (`AiProvider` in `providers/types.ts`): to change it, add a provider file and select it in `providers/index.ts`; `index.ts`, `prompt.ts`, the page and the database stay as they are. The daily count lives in `clucky_usage`, which only the function can touch (`clucky_take_question()`), so clearing the chat does not reset it. Only county, batches and overdue vaccines are sent as farm context: no name, email or phone number
 - **Google sign-in** only shows once the Google provider is enabled in Supabase; the button checks `/auth/v1/settings`
 - **Feed amounts** come from week-by-week tables in `src/lib/feedPlan.js`. Don't replace them with a flat amount per phase
 - **Visitors who are not signed in have no database access at all**, and anonymous sign-in sessions are refused on every table by a restrictive rule named `block_anonymous_sessions`. The public landing page must not query Supabase
@@ -100,6 +100,7 @@ This app is for farmers likely using mid-range/low-end Android phones on mobile 
 - Secret leak check of the production build: `npm run check:secrets`
 - Apply migrations to the linked project: `supabase db push` (after a rolled-back dry run of the SQL)
 - Deploy an edge function without Docker: `supabase functions deploy clucky --use-api`. Set its secrets with `supabase secrets set NAME=value` or in the dashboard, never in `.env`
+- Check the deployed Clucky function (sign-in required; with `TEST_FARMER_EMAIL` and `TEST_FARMER_PASSWORD` in `.env.test.local` also empty and over-long questions, a real answer and a follow-up): `npm run test:clucky-live`
 - No TypeScript types file exists (JS project), so there is nothing to regenerate after schema changes
 
 ## Git commit conventions

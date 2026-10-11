@@ -80,10 +80,10 @@ export function cluckyErrorMessage(code, details = {}) {
     case "declined":
       return "Clucky couldn't answer that one. Try asking it another way, or ask a vet. Your question is still in the box.";
     case "busy":
-      return "Clucky is busy right now. Wait a moment and try again. Your question is still in the box.";
+      return "Clucky is having trouble connecting right now. Please try again in a moment. Your question is still in the box.";
     case "offline":
       return "You seem to be offline. Check your connection and try again. Your question is still in the box.";
     default:
-      return "Clucky couldn't answer just now. Try again in a moment. Your question is still in the box.";
+      return "Clucky is having trouble connecting right now. Please try again in a moment. Your question is still in the box.";
   }
 }
