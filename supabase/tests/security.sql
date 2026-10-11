@@ -187,6 +187,45 @@ begin
   select count(*) filter (where user_email = email_f), count(*) filter (where user_email = email_a) into n, i
     from public.clucky_messages where content like 'sec-test%';
   if n = 0 and i = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K4 clearing a chat touched the wrong rows; '; end if;
+
+  -- the daily allowance: counted apart from the chat, so clearing the chat
+  -- (which the farmer just did above) cannot reset it
+  delete from public.clucky_usage where user_id = farmer;
+  b := public.clucky_take_question(farmer, 2) and public.clucky_take_question(farmer, 2);
+  if b and not public.clucky_take_question(farmer, 2) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K5 Clucky daily limit not enforced; '; end if;
+  select questions into n from public.clucky_usage where user_id = farmer;
+  if n = 2 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL K6 a refused question was still counted (%s); ', n); end if;
+  perform public.clucky_refund_question(farmer);
+  if public.clucky_take_question(farmer, 2) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K7 a refunded question was not given back; '; end if;
+  perform public.clucky_refund_question(farmer); perform public.clucky_refund_question(farmer); perform public.clucky_refund_question(farmer);
+  select questions into n from public.clucky_usage where user_id = farmer;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL K8 refunds went below zero or were lost (%s); ', n); end if;
+  perform public.clucky_take_question(farmer, 2);
+
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+  begin
+    select count(*) into n from public.clucky_usage;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K9 member read Clucky usage counts; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    update public.clucky_usage set questions = 0 where user_id = farmer;
+    get diagnostics n = row_count;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K10 member reset their own Clucky allowance; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    perform public.clucky_refund_question(farmer);
+    failed := failed + 1; report := report || 'FAIL K11 member refunded themselves a Clucky question; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    perform public.clucky_take_question(sup_a, 1);
+    failed := failed + 1; report := report || 'FAIL K12 member used up another account''s Clucky allowance; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  reset role;
   perform set_config('request.jwt.claims', claims_f, true);
   set local role authenticated;
 
@@ -552,11 +591,12 @@ begin
 
   -- removing default access must not lock real users out: a signed-in
   -- farmer can query every table (the rules decide which rows come back).
-  -- contact_events is the one exception: it is write-only on purpose, so
+  -- Two exceptions, closed on purpose: clucky_usage belongs to the edge
+  -- function alone, and contact_events is write-only, so
   -- nobody can read who contacted whom (check F6).
   n := 0;
   for rec in select c.relname from pg_class c
-              where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and c.relname <> 'contact_events' loop
+              where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and c.relname not in ('contact_events', 'clucky_usage') loop
     begin
       execute format('select count(*) from public.%I', rec.relname) into i;
     exception when insufficient_privilege then
