@@ -39,6 +39,12 @@ export function toGeminiSteps(messages: ChatMessage[]): GeminiStep[] {
     }));
 }
 
+function statusOf(error: unknown): number {
+  // deno-lint-ignore no-explicit-any
+  const e = (error || {}) as any;
+  return Number(e.status ?? e.statusCode) || 0;
+}
+
 // Turns whatever the SDK threw into one of our three failure codes.
 // Reads the status and a short reason only: never the message body, which
 // could echo part of the request.
@@ -69,20 +75,32 @@ export function createGeminiProvider(client: GeminiClient, model: string = DEFAU
       let streamError = "";
       let usage: AiResult["usage"];
 
+      const open = (withThinkingLevel: boolean) => client.interactions.create({
+        model,
+        input: toGeminiSteps(request.messages),
+        system_instruction: request.system,
+        stream: true,
+        store: false,
+        generation_config: {
+          max_output_tokens: request.maxOutputTokens,
+          // A chat answer needs a little thought, not a long deliberation:
+          // thinking is billed as output.
+          ...(withThinkingLevel ? { thinking_level: "low" } : {})
+        }
+      }, { timeout_ms: TIMEOUT_MS });
+
       try {
-        const stream = await client.interactions.create({
-          model,
-          input: toGeminiSteps(request.messages),
-          system_instruction: request.system,
-          stream: true,
-          store: false,
-          generation_config: {
-            max_output_tokens: request.maxOutputTokens,
-            // A chat answer needs a little thought, not a long deliberation:
-            // thinking is billed as output.
-            thinking_level: "low"
-          }
-        }, { timeout_ms: TIMEOUT_MS });
+        let stream: AsyncIterable<StreamEvent>;
+        try {
+          stream = await open(true);
+        } catch (error) {
+          // Not every model accepts a thinking level. If the request itself
+          // was refused (and not because of the key), ask once more without
+          // it, so a model named in GEMINI_MODEL does not fail every question.
+          const refused = geminiFailure(error);
+          if (statusOf(error) !== 400 || refused.code === "not_configured") throw refused;
+          stream = await open(false);
+        }
 
         for await (const event of stream) {
           if (event.event_type === "step.delta" && event.delta?.type === "text" && event.delta.text) {

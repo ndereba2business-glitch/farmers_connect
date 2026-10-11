@@ -139,8 +139,8 @@ export function createMockBackend() {
       const events = [];
       if (mode === "declined") {
         events.push({ t: "delta", text: "I can't help" }, { t: "error", code: "declined" });
-      } else if (mode === "busy") {
-        events.push({ t: "error", code: "busy" });
+      } else if (mode === "busy" || mode === "failed") {
+        events.push({ t: "error", code: mode });
       } else {
         // sent in pieces, with a hand-over first, to exercise the reader
         events.push({ t: "delta", text: "discarded draft" }, { t: "reset" });

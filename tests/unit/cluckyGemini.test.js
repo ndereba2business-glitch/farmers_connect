@@ -132,6 +132,29 @@ test("failures become one of three plain codes", async () => {
   }
 });
 
+test("a model that refuses the thinking setting is asked once more without it", async () => {
+  const calls = [];
+  const client = {
+    interactions: {
+      async create(params) {
+        calls.push(params);
+        if (params.generation_config.thinking_level) throw { name: "BadRequestError", status: 400, body: '{"error":{"message":"unsupported field"}}' };
+        return (async function* () { yield delta("Answer."); yield completed(); })();
+      }
+    }
+  };
+  const result = await createGeminiProvider(client, "some-other-model").generate(REQUEST, () => {});
+  assert.equal(result.text, "Answer.");
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].generation_config.thinking_level, undefined);
+  assert.equal(calls[1].generation_config.max_output_tokens, 2000, "the cost ceiling stays");
+
+  // a rejected key is not retried: nothing would change
+  const badKey = fakeClient([], { fail: { name: "BadRequestError", status: 400, body: "API_KEY_INVALID" } });
+  await assert.rejects(createGeminiProvider(badKey).generate(REQUEST, () => {}), error => error.code === "not_configured");
+  assert.equal(badKey.calls.length, 1);
+});
+
 test("a stream that breaks before any text is a failure; one that breaks after keeps what arrived", async () => {
   await assert.rejects(
     createGeminiProvider(fakeClient([{ event_type: "error", error: { code: "unavailable" } }])).generate(REQUEST, () => {}),

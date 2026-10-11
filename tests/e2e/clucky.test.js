@@ -109,7 +109,8 @@ for (const [mode, expected] of [
   ["not_configured", /isn't switched on yet/],
   ["daily_limit", /limit of 30 questions[\s\S]*Ask Vet/],
   ["declined", /couldn't answer that one/],
-  ["busy", /busy right now/]
+  ["busy", /having trouble connecting right now. Please try again in a moment/],
+  ["failed", /having trouble connecting right now. Please try again in a moment/]
 ]) {
   test(`when Clucky reports "${mode}", it says so and the question is kept`, { timeout: 60000 }, async () => {
     backend.db.clucky.mode = mode;
