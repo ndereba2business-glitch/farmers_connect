@@ -1,57 +1,62 @@
 // Clucky AI: the poultry assistant behind /clucky.
 //
 // The browser sends one question; this function works out who is asking,
-// adds their farm records and recent conversation, asks Claude, and
-// streams the answer back as it is written. The Anthropic API key lives
-// only here, as a function secret (ANTHROPIC_API_KEY). It is never sent
-// to the browser.
+// checks their daily allowance, adds their recent conversation and a short
+// summary of their farm, asks the AI service, and streams the answer back
+// as it is written.
+//
+// Which AI service answers is decided in providers/ (Gemini today). The
+// API key lives only there, as a function secret. It is never sent to the
+// browser, never logged, and never returned in a response.
 //
 // Reply format: newline-delimited JSON, one event per line.
 //   {"t":"delta","text":"..."}   a piece of the answer
-//   {"t":"reset"}                discard what was shown so far (the first
-//                                model declined and another took over)
 //   {"t":"done","truncated":bool}
-//   {"t":"error","code":"..."}   declined | busy | failed
+//   {"t":"error","code":"..."}   declined | busy | failed | not_configured
 // Problems found before the answer starts come back as ordinary JSON with
 // an HTTP error status and a `code`: not_signed_in, not_configured,
 // empty, too_long, daily_limit.
-import Anthropic from "@anthropic-ai/sdk";
+//
+// Secrets: GEMINI_API_KEY (required), GEMINI_MODEL, CLUCKY_DAILY_LIMIT,
+// CLUCKY_ALLOWED_ORIGINS (comma-separated; any origin when unset).
 import { createClient } from "@supabase/supabase-js";
 import {
-  HISTORY_MESSAGES, SYSTEM_PROMPT, buildFarmContext, checkQuestion, modelOptions, toModelMessages,
+  HISTORY_MESSAGES, SYSTEM_PROMPT, buildFarmContext, checkQuestion, toModelMessages,
   type Batch, type OverdueVaccine, type StoredMessage
 } from "./prompt.ts";
+import { getProvider } from "./providers/index.ts";
+import { AiError } from "./providers/types.ts";
 
 // Background work that must finish even if the farmer leaves the page.
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
-const MODEL = Deno.env.get("CLUCKY_MODEL") || "claude-opus-5-5";
-const DAILY_LIMIT = Number(Deno.env.get("CLUCKY_DAILY_LIMIT")) || 30;
-// Room for the model's own reasoning plus a phone-sized answer. A ceiling
-// on what one question can cost, not a target.
-const MAX_TOKENS = 8000;
+const DAILY_LIMIT = Math.max(1, Math.floor(Number(Deno.env.get("CLUCKY_DAILY_LIMIT")) || 30));
+// Room for a phone-sized answer plus the model's own brief reasoning.
+const MAX_OUTPUT_TOKENS = 2000;
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS"
-};
+const ALLOWED_ORIGINS = (Deno.env.get("CLUCKY_ALLOWED_ORIGINS") || "")
+  .split(",").map(o => o.trim().replace(/\/$/, "")).filter(Boolean);
 
-function json(status: number, body: Record<string, unknown>): Response {
-  return new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
-}
-
-// Why the model call failed, as a code the app can explain.
-function failureCode(error: unknown): "not_configured" | "busy" | "failed" {
-  if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) return "not_configured";
-  if (error instanceof Anthropic.RateLimitError) return "busy";
-  if (error instanceof Anthropic.APIConnectionError) return "busy";
-  if (error instanceof Anthropic.APIError && (error.status ?? 0) >= 500) return "busy";
-  return "failed";
+// The sign-in token, not the origin, is what protects this endpoint: a
+// request from anywhere still needs a valid Farmers Connect session. The
+// origin list is a second fence for browsers, used once the owner sets it.
+function corsFor(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") || "";
+  const allow = ALLOWED_ORIGINS.length === 0 ? "*" : ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allow,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin"
+  };
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const cors = corsFor(req);
+  const json = (status: number, body: Record<string, unknown>) =>
+    new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
+
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json(405, { code: "failed" });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -64,10 +69,11 @@ Deno.serve(async (req) => {
   const { data: auth } = await asUser.auth.getUser();
   const user = auth?.user;
   const identity = user?.email || user?.phone;
-  if (!user || !identity) return json(401, { code: "not_signed_in" });
+  // An anonymous session is not an account: it gets no questions.
+  if (!user || !identity || user.is_anonymous) return json(401, { code: "not_signed_in" });
 
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) return json(503, { code: "not_configured" });
+  const provider = getProvider();
+  if (!provider) return json(503, { code: "not_configured" });
 
   let payload: { message?: unknown };
   try {
@@ -79,22 +85,33 @@ Deno.serve(async (req) => {
   if (!checked.ok) return json(400, { code: checked.code });
   const question = checked.question;
 
-  // Writes the conversation and the notification; never handed anything
-  // the caller chose except the question text itself.
+  // Writes the conversation, the allowance and the notification; never
+  // handed anything the caller chose except the question text itself.
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { count: askedToday, error: countError } = await admin
-    .from("clucky_messages").select("id", { count: "exact", head: true })
-    .eq("user_email", identity).eq("role", "user").gte("created_at", since);
-  if (countError) return json(500, { code: "failed" });
-  if ((askedToday || 0) >= DAILY_LIMIT) return json(429, { code: "daily_limit", limit: DAILY_LIMIT });
+  // Counted before any money is spent, in one statement, so two requests
+  // sent at once cannot both slip under the limit. Clearing the chat does
+  // not reset it: the count lives in its own table.
+  const { data: allowed, error: limitError } = await admin.rpc("clucky_take_question", {
+    p_user_id: user.id, p_limit: DAILY_LIMIT
+  });
+  if (limitError) {
+    console.error("clucky: allowance check failed —", limitError.code || "unknown");
+    return json(500, { code: "failed" });
+  }
+  if (!allowed) return json(429, { code: "daily_limit", limit: DAILY_LIMIT });
+
+  // Gives the question back when nothing was answered.
+  const refund = async () => {
+    const { error } = await admin.rpc("clucky_refund_question", { p_user_id: user.id });
+    if (error) console.error("clucky: refund failed —", error.code || "unknown");
+  };
 
   const today = new Date().toISOString().slice(0, 10);
   const [historyResult, profileResult, batchResult, vaccineResult] = await Promise.all([
     admin.from("clucky_messages").select("role, content")
       .eq("user_email", identity).order("created_at", { ascending: false }).limit(HISTORY_MESSAGES),
-    asUser.from("farmer_profiles").select("full_name, county").eq("user_email", identity).maybeSingle(),
+    asUser.from("farmer_profiles").select("county").eq("user_email", identity).maybeSingle(),
     asUser.from("farm_batches").select("batch_name, batch_type, hatch_date, current_count, quantity")
       .eq("user_email", identity).eq("status", "active").order("hatch_date", { ascending: false }).limit(8),
     asUser.from("vaccination_tasks").select("vaccine_name, scheduled_date, farm_batches(batch_name, status)")
@@ -109,8 +126,9 @@ Deno.serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     .map((v: any) => ({ vaccine_name: v.vaccine_name, scheduled_date: v.scheduled_date, batch_name: v.farm_batches?.batch_name }));
 
+  // Only what changes the advice goes to the AI service: the county, the
+  // batches and overdue vaccines. No name, email, phone number or farm name.
   const farmContext = buildFarmContext({
-    name: profileResult.data?.full_name,
     county: profileResult.data?.county,
     role: user.user_metadata?.role,
     batches: (batchResult.data || []) as Batch[],
@@ -119,27 +137,10 @@ Deno.serve(async (req) => {
 
   const { data: saved, error: saveError } = await admin
     .from("clucky_messages").insert({ user_email: identity, role: "user", content: question }).select("id").single();
-  if (saveError) return json(500, { code: "failed" });
-
-  const anthropic = new Anthropic({ apiKey });
-  const options = modelOptions(MODEL);
-  const stream = anthropic.beta.messages.stream({
-    model: MODEL,
-    max_tokens: MAX_TOKENS,
-    system: [
-      // stable instructions first, the person's own records after
-      { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
-      { type: "text", text: farmContext }
-    ],
-    messages: toModelMessages(history, question),
-    // A short chat answer doesn't need deep deliberation; low effort keeps
-    // replies quick and cheap on a phone.
-    ...(options.effort ? { output_config: { effort: "low" as const } } : {}),
-    // Questions about Newcastle disease or bird flu are ordinary here, but
-    // can look alarming to a safety filter. If the first model declines,
-    // the API retries on the fallback it recommends instead of failing.
-    ...(options.fallbacks ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {})
-  });
+  if (saveError) {
+    await refund();
+    return json(500, { code: "failed" });
+  }
 
   const encoder = new TextEncoder();
   let clientGone = false;
@@ -159,32 +160,21 @@ Deno.serve(async (req) => {
 
   const work = (async () => {
     try {
-      for await (const event of stream) {
-        if (event.type === "content_block_start" && event.content_block.type === "fallback") {
-          send({ t: "reset" });
-        } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-          send({ t: "delta", text: event.delta.text });
-        }
-      }
+      const result = await provider.generate({
+        system: `${SYSTEM_PROMPT}\n\n${farmContext}`,
+        messages: toModelMessages(history, question),
+        maxOutputTokens: MAX_OUTPUT_TOKENS
+      }, text => send({ t: "delta", text }));
 
-      const final = await stream.finalMessage();
-
-      // The answer is the text written after the last hand-over, if any.
-      let answer = "";
-      for (const block of final.content) {
-        if (block.type === "fallback") answer = "";
-        else if (block.type === "text") answer += block.text;
-      }
-      answer = answer.trim();
-
-      if (final.stop_reason === "refusal" || !answer) {
-        // Nothing useful came back: don't count the question against today's limit.
+      if (result.declined) {
+        // Nothing useful came back: don't keep or count the question.
         await admin.from("clucky_messages").delete().eq("id", saved.id);
+        await refund();
         send({ t: "error", code: "declined" });
         return;
       }
 
-      await admin.from("clucky_messages").insert({ user_email: identity, role: "assistant", content: answer });
+      await admin.from("clucky_messages").insert({ user_email: identity, role: "assistant", content: result.text });
 
       // Only worth a notification if the farmer left before it finished.
       if (clientGone) {
@@ -198,11 +188,16 @@ Deno.serve(async (req) => {
         });
       }
 
-      send({ t: "done", truncated: final.stop_reason === "max_tokens" });
+      // Sizes only, for watching cost. Never the question or the answer.
+      console.log(`clucky: answered model=${provider.model} in=${result.usage?.inputTokens ?? "?"} out=${result.usage?.outputTokens ?? "?"}`);
+      send({ t: "done", truncated: result.truncated });
     } catch (error) {
-      console.error("clucky: model call failed —", error instanceof Error ? error.message : error);
+      const code = error instanceof AiError ? error.code : "failed";
+      const detail = error instanceof AiError ? error.detail : (error instanceof Error ? error.name : "unknown");
+      console.error(`clucky: ${provider.name} call failed — ${code} (${detail})`);
       await admin.from("clucky_messages").delete().eq("id", saved.id);
-      send({ t: "error", code: failureCode(error) });
+      await refund();
+      send({ t: "error", code });
     } finally {
       try { controller.close(); } catch { /* the client already went away */ }
     }
@@ -212,7 +207,7 @@ Deno.serve(async (req) => {
 
   return new Response(body, {
     headers: {
-      ...CORS,
+      ...cors,
       "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       "X-Accel-Buffering": "no"

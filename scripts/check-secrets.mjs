@@ -4,6 +4,8 @@
 //
 // Fails if dist/ contains:
 //   - a Supabase service-role key (a JWT whose payload has role service_role)
+//   - anything shaped like a Google API key, or the name GEMINI_API_KEY
+//     (the Gemini key behind Clucky lives only in the edge function's secrets)
 //   - the value of any .env variable other than the two meant to be public
 //     (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY)
 // Warns about VITE_-prefixed variables whose names look secret: Vite
@@ -60,9 +62,12 @@ for (const [key] of Object.entries(env)) {
 }
 
 const jwtPattern = /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g;
+const googleKeyPattern = /AIza[0-9A-Za-z_-]{35}/;
 for (const file of files(dist)) {
   const text = readFileSync(file, "utf8");
   const rel = file.slice(root.length);
+  if (googleKeyPattern.test(text)) problems.push(`${rel}: contains what looks like a Google API key`);
+  if (text.includes("GEMINI_API_KEY")) problems.push(`${rel}: mentions GEMINI_API_KEY, which belongs only in the edge function`);
   for (const token of text.match(jwtPattern) || []) {
     if (jwtRole(token) === "service_role") problems.push(`${rel}: contains a Supabase service-role key`);
   }

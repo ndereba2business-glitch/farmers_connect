@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { applyEvent, cluckyErrorMessage, createEventParser, startingAnswer } from "../../src/lib/clucky.js";
 import {
   HISTORY_MESSAGES, MAX_QUESTION_LENGTH, SYSTEM_PROMPT,
-  buildFarmContext, checkQuestion, modelOptions, toModelMessages
+  buildFarmContext, checkQuestion, toModelMessages
 } from "../../supabase/functions/clucky/prompt.ts";
 
 function read(chunks) {
@@ -62,6 +62,12 @@ test("every problem is explained, and the farmer is never left guessing", () => 
   for (const code of ["busy", "offline", "failed", "anything else", undefined]) {
     assert.match(cluckyErrorMessage(code), /still in the box/, String(code));
   }
+  // whatever went wrong at the AI service, the farmer sees one calm line
+  for (const code of ["busy", "failed", "PERMISSION_DENIED: API key AIza...", undefined]) {
+    const message = cluckyErrorMessage(code);
+    assert.match(message, /having trouble connecting right now\. Please try again in a moment/, String(code));
+    assert.doesNotMatch(message, /AIza|API|key|error|stack|Gemini|Google/i, "nothing technical reaches the farmer");
+  }
 });
 
 // ---------- what the model is told ----------
@@ -72,13 +78,21 @@ test("Clucky is told to stay on poultry, answer in plain text and defer to vets"
   assert.match(SYSTEM_PROMPT, /Do not give drug doses/);
   assert.match(SYSTEM_PROMPT, /Ask Vet/);
   assert.match(SYSTEM_PROMPT, /Reply in the language the farmer wrote in/);
+  assert.match(SYSTEM_PROMPT, /Never state a diagnosis as certain/);
+  assert.match(SYSTEM_PROMPT, /Never make up a medicine or brand name, a dose, a withdrawal period/);
+  assert.match(SYSTEM_PROMPT, /say so plainly/);
+  assert.match(SYSTEM_PROMPT, /one continuing conversation/);
+  assert.match(SYSTEM_PROMPT, /ask one or two short questions instead of guessing/);
+  for (const sign of ["sudden deaths", "severe breathing trouble", "paralysis", "suspected poisoning", "serious injury"]) {
+    assert.match(SYSTEM_PROMPT, new RegExp(sign), `"${sign}" is treated as urgent`);
+  }
   assert.doesNotMatch(SYSTEM_PROMPT, /\d{4}-\d{2}-\d{2}/, "no dates: the instructions stay identical between requests");
 });
 
 test("the farmer's records are summarised briefly, with each batch's age", () => {
   const today = new Date("2026-10-09T08:00:00Z");
   const context = buildFarmContext({
-    name: " Wanjiru ", county: "Kiambu",
+    name: " Wanjiru ", farm_name: "Wanjiru Farm", email: "wanjiru@example.com", phone: "0712345678", county: " Kiambu ",
     batches: [
       { batch_name: "House 1", batch_type: "broiler", hatch_date: "2026-09-18", current_count: 480, quantity: 500 },
       { batch_name: "", batch_type: "dual_purpose", hatch_date: null, current_count: null, quantity: 60 }
@@ -87,7 +101,8 @@ test("the farmer's records are summarised briefly, with each batch's age", () =>
   }, today);
 
   assert.match(context, /^Today is 2026-10-09\./);
-  assert.match(context, /Farmer: Wanjiru, Kiambu County\./);
+  assert.match(context, /The farm is in Kiambu County, Kenya\./);
+  assert.doesNotMatch(context, /Wanjiru|example\.com|0712345678/, "no name, email or phone number goes to the AI service");
   assert.match(context, /- House 1: broilers, 480 birds, 21 days old \(week 4\)/);
   assert.match(context, /- Unnamed batch: dual-purpose \(improved kienyeji\), 60 birds/);
   assert.match(context, /- Gumboro \(House 1\), due 2026-10-02/);
@@ -96,7 +111,7 @@ test("the farmer's records are summarised briefly, with each batch's age", () =>
 test("an account with no records says so instead of inventing a farm", () => {
   const context = buildFarmContext({}, new Date("2026-10-09T08:00:00Z"));
   assert.match(context, /have not recorded any active batches/);
-  assert.doesNotMatch(context, /Farmer:/);
+  assert.doesNotMatch(context, /County/);
   assert.doesNotMatch(context, /overdue/);
   assert.match(buildFarmContext({ role: "vet" }), /belongs to a vet/);
 });
@@ -126,10 +141,4 @@ test("the conversation sent to the model is recent, starts with a question and e
   const startsWithAnswer = toModelMessages([{ role: "assistant", content: "old answer" }, { role: "user", content: "q" }], "next");
   assert.deepEqual(startsWithAnswer.map(m => m.content), ["q", "next"]);
   assert.deepEqual(toModelMessages([], "first"), [{ role: "user", content: "first" }]);
-});
-
-test("request options match what each model accepts", () => {
-  assert.deepEqual(modelOptions("claude-opus-5-5"), { fallbacks: true, effort: true });
-  assert.deepEqual(modelOptions("claude-sonnet-5-5"), { fallbacks: true, effort: true });
-  assert.deepEqual(modelOptions("claude-haiku-4-5"), { fallbacks: false, effort: false });
 });
