@@ -1,7 +1,8 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { readSignInProblem } from "./lib/signInReturn";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
 // multi-megabyte bundle for the whole app.
@@ -85,6 +86,22 @@ function LoadingScreen({ label }) {
 
 function AppRoutes() {
   const { user, role, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // =========================
+  // BACK FROM GOOGLE, REFUSED
+  // Supabase puts the reason in the address and signs nobody in. Say so
+  // on the login page, where the person can try again, and tidy the
+  // address. Waits for `loading` so Supabase has read the address first.
+  // =========================
+  useEffect(() => {
+    if (loading) return;
+    const problem = readSignInProblem(window.location.href);
+    if (!problem) return;
+    if (user) navigate(window.location.pathname, { replace: true });
+    else navigate("/login", { replace: true, state: { signInProblem: problem } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // =========================
   // LOADING SCREEN

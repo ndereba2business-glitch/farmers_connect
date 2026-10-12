@@ -95,11 +95,19 @@ export function createMockBackend() {
     return { ...product, supplier: sp && sp.verification_status === "verified" ? { business_name: sp.business_name, verification_status: sp.verification_status } : null };
   }
 
-  // Installs the mock for one browser context, signed in (or not) as `user`.
-  async function attach(context, { signedInAs = null } = {}) {
-    let current = signedInAs ? db.users.get(signedInAs) : null;
+  // What Supabase puts after the "#" when it sends someone back from Google.
+  function googleReturnHash(user) {
+    const { access_token, refresh_token, expires_in, token_type } = session(user);
+    return "#" + new URLSearchParams({ access_token, refresh_token, expires_in, token_type }).toString();
+  }
 
-    if (current) {
+  // Installs the mock for one browser context, signed in (or not) as `user`.
+  // returningAs: the account Google just vouched for. Nothing is stored in
+  // the browser yet; the app has to build the session from the address.
+  async function attach(context, { signedInAs = null, returningAs = null } = {}) {
+    let current = db.users.get(signedInAs || returningAs) || null;
+
+    if (signedInAs && current) {
       await context.addInitScript(([key, value]) => localStorage.setItem(key, value),
         ["sb-e2e-auth-token", JSON.stringify(session(current))]);
     }
@@ -369,5 +377,5 @@ export function createMockBackend() {
     });
   }
 
-  return { db, addUser, attach };
+  return { db, addUser, attach, googleReturnHash };
 }

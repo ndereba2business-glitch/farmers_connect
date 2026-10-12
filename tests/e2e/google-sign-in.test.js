@@ -144,6 +144,79 @@ test("a parked role can never make an admin, change an existing role, or apply w
   await c.context.close();
 });
 
+const greeting = (page) => page.locator("text=/Good (morning|afternoon|evening)/");
+
+test("back from Google: the address signs the person in, and they stay signed in", { timeout: 60000 }, async () => {
+  const backend = createMockBackend();
+  const user = backend.addUser({ email: "wanjiru@google.test", role: "farmer" });
+  const { context, page, errors } = await newUserPage(app.browser);
+  await backend.attach(context, { returningAs: user.email });
+
+  await page.goto(`${app.url}/${backend.googleReturnHash(user)}`, { waitUntil: "domcontentloaded" });
+  await greeting(page).waitFor();
+  assert.doesNotMatch(page.url(), /access_token|refresh_token/, "the tokens don't stay in the address bar");
+  assert.ok(await page.evaluate(() => localStorage.getItem("sb-e2e-auth-token")), "the session is kept on this phone");
+
+  // closing the tab and coming back: no second trip to Google
+  await page.goto(`${app.url}/my-farm`, { waitUntil: "domcontentloaded" });
+  await page.locator("aside nav a").first().waitFor();
+  assert.equal(new URL(page.url()).pathname, "/my-farm");
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("back from Google, refused: the login page says so in our own words", { timeout: 60000 }, async () => {
+  const backend = createMockBackend();
+  backend.db.googleEnabled = true;
+  const refusal = "error=access_denied&error_code=signup_disabled&error_description=Call+0700000000+to+unlock";
+  const { context, page, errors } = await visitor(backend, `/?${refusal}#${refusal}`);
+
+  await page.waitForURL(u => u.pathname === "/login");
+  const alert = page.locator('[role="alert"]');
+  await alert.waitFor();
+  assert.match(await alert.innerText(), /New accounts can't be created right now/);
+  assert.doesNotMatch(await page.locator("body").innerText(), /0700000000/, "text from the link is never shown");
+  assert.doesNotMatch(page.url(), /error/, "the address is tidied");
+  await googleButton(page).waitFor();
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("signed out: the landing page opens without the database, and private pages ask for a login", { timeout: 60000 }, async () => {
+  const backend = createMockBackend();
+  const { context, page } = await visitor(backend, "/");
+  const queries = [];
+  page.on("request", r => { if (r.url().startsWith(`${MOCK_SUPABASE_URL}/rest/`)) queries.push(r.url()); });
+
+  await page.locator("h1").first().waitFor();
+  await page.locator("a", { hasText: "Log in" }).first().waitFor();
+  await page.waitForTimeout(500);
+  assert.equal(new URL(page.url()).pathname, "/", "no bounce to the login page");
+  assert.deepEqual(queries, [], "the landing page never queries Supabase");
+
+  for (const path of ["/my-farm", "/clucky", "/vet", "/supplier", "/admin"]) {
+    await page.goto(`${app.url}${path}`, { waitUntil: "domcontentloaded" });
+    await page.waitForURL(u => u.pathname === "/login");
+  }
+  await context.close();
+});
+
+test("signing in with Google gives no way into another role's pages", { timeout: 60000 }, async () => {
+  const backend = createMockBackend();
+  const user = backend.addUser({ email: "farmer-only@google.test", role: "farmer" });
+  const { context, page } = await newUserPage(app.browser);
+  await backend.attach(context, { returningAs: user.email });
+
+  await page.goto(`${app.url}/${backend.googleReturnHash(user)}`, { waitUntil: "domcontentloaded" });
+  await greeting(page).waitFor();
+  for (const path of ["/admin", "/verifications", "/vet", "/supplier"]) {
+    await page.goto(`${app.url}${path}`, { waitUntil: "domcontentloaded" });
+    await greeting(page).waitFor();
+    assert.equal(new URL(page.url()).pathname, "/", `${path}: a farmer is sent home`);
+  }
+  await context.close();
+});
+
 for (const width of [320, 360, 768, 1280]) {
   test(`login and signup with the Google button at ${width}px`, { timeout: 60000 }, async () => {
     const backend = createMockBackend();
