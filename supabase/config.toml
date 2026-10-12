@@ -426,3 +426,19 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/clucky/deno.json"
 entrypoint = "./functions/clucky/index.ts"
+
+# Deletes an account and everything it owns. Sign-in required; the function
+# also checks a typed confirmation and a password or a fresh sign-in.
+[functions.delete-account]
+enabled = true
+verify_jwt = true
+import_map = "./functions/delete-account/deno.json"
+entrypoint = "./functions/delete-account/index.ts"
+
+# The public deletion and privacy request form, for people who cannot sign
+# in. No sign-in on purpose; it writes one rate-limited row and nothing else.
+[functions.account-request]
+enabled = true
+verify_jwt = false
+import_map = "./functions/account-request/deno.json"
+entrypoint = "./functions/account-request/index.ts"
