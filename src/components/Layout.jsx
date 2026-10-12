@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
 import OnboardingTour from "./OnboardingTour";
+import TermsGate from "./TermsGate";
 import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
@@ -83,6 +84,7 @@ export default function Layout() {
     <div className="fc-layout">
 
       <OnboardingTour />
+      <TermsGate />
 
       {/* MOBILE BACKDROP OVERLAY */}
       {sidebarOpen && (
@@ -160,6 +162,11 @@ export default function Layout() {
             <LogOut size={18} aria-hidden="true" />
             Sign Out
           </button>
+
+          <p className="fc-policy-links">
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms and rules</Link>
+          </p>
         </div>
       </aside>
 

@@ -30,6 +30,13 @@ export default function LandingFooter() {
             <Link to="/signup">Get started</Link>
             <Link to="/login">Log in</Link>
           </nav>
+
+          <nav aria-label="Policies" className="lp-footer-col">
+            <h3>Policies</h3>
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms and Community Rules</Link>
+            <Link to="/delete-account">Delete your account</Link>
+          </nav>
         </div>
 
         <div className="lp-footer-bottom">

@@ -1,0 +1,43 @@
+/* Public policy pages (lg-): plain, readable text on any phone. */
+.lg-root { min-height: 100vh; display: flex; flex-direction: column; background: var(--fc-bg); color: var(--fc-ink); }
+.lg-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px;
+  background: var(--fc-surface); border-bottom: 1px solid var(--fc-line);
+}
+.lg-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; color: var(--fc-ink); text-decoration: none; }
+.lg-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px; font-size: 14px; font-weight: 600; color: var(--fc-primary); text-decoration: none; }
+
+.lg-main { width: 100%; max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; flex: 1; }
+.lg-main h1 { margin: 0; font-size: clamp(26px, 7vw, 34px); font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.lg-updated { margin: 6px 0 20px; font-size: 13px; color: var(--fc-muted); }
+.lg-main h2 { margin: 32px 0 8px; font-size: 19px; font-weight: 700; scroll-margin-top: 16px; }
+.lg-main h3 { margin: 20px 0 6px; font-size: 15.5px; font-weight: 700; }
+.lg-main p, .lg-main li { font-size: 15px; line-height: 1.65; color: var(--fc-ink-2); overflow-wrap: anywhere; }
+.lg-main p { margin: 0 0 12px; }
+.lg-main ul, .lg-main ol { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 6px; }
+.lg-main a { color: var(--fc-primary); font-weight: 600; }
+.lg-lead { font-size: 16px !important; color: var(--fc-ink) !important; }
+.lg-box { margin: 16px 0; padding: 14px 16px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-md); background: var(--fc-surface); }
+.lg-box > :last-child { margin-bottom: 0; }
+.lg-box--warn { border-color: #fde68a; background: var(--fc-warning-soft); }
+
+/* a wide table scrolls inside itself, never the page */
+.lg-table-wrap { overflow-x: auto; margin: 0 0 12px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-md); background: var(--fc-surface); }
+.lg-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 14px; }
+.lg-table th, .lg-table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--fc-line); line-height: 1.5; color: var(--fc-ink-2); }
+.lg-table th { font-size: 12.5px; font-weight: 600; color: var(--fc-muted); }
+.lg-table tr:last-child td { border-bottom: none; }
+
+.lg-form { display: grid; gap: 14px; }
+.lg-form .fc-btn { justify-self: start; }
+.lg-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.lg-done { padding: 14px 16px; border: 1px solid var(--fc-primary-line); border-radius: var(--fc-radius-md); background: var(--fc-primary-soft); color: #166534; font-size: 15px; line-height: 1.55; }
+.lg-error { margin: 0; padding: 10px 12px; border-radius: var(--fc-radius-sm); background: var(--fc-danger-soft); color: var(--fc-danger); font-size: 14px; font-weight: 600; }
+.lg-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.lg-actions .fc-btn { text-decoration: none; }
+.lg-actions a.fc-btn--primary { color: #fff; }
+
+.lg-foot { padding: 20px 16px 28px; border-top: 1px solid var(--fc-line); background: var(--fc-surface); text-align: center; }
+.lg-foot nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 20px; }
+.lg-foot a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--fc-primary); text-decoration: none; }
+.lg-foot p { margin: 8px 0 0; font-size: 13px; color: var(--fc-muted); }

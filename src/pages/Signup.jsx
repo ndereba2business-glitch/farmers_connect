@@ -4,6 +4,8 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import GoogleButton from "../components/GoogleButton";
+import { MINIMUM_AGE, TERMS_VERSION } from "../config/legal";
+import "../components/Account.css";
 
 export default function Signup() {
 
@@ -35,6 +37,9 @@ export default function Signup() {
 
   const [success, setSuccess] =
     useState("");
+
+  const [agreed, setAgreed] =
+    useState(false);
 
   // =========================
   // REDIRECT IF LOGGED IN
@@ -181,6 +186,15 @@ export default function Signup() {
               avatar_url: ""
             }
           ]);
+      }
+
+      // Record the acceptance on the profile the database created at
+      // sign-up. If this does not save, TermsGate asks again on first use.
+      if (userIdentity) {
+        await supabase
+          .from("farmer_profiles")
+          .update({ terms_accepted_at: new Date().toISOString(), terms_version: TERMS_VERSION })
+          .eq("user_email", userIdentity);
       }
 
       // =========================
@@ -553,11 +567,26 @@ export default function Signup() {
             </div>
           )}
 
+          {/* TERMS: accepted before the account exists */}
+          <label className="ac-check" style={{ marginBottom: "14px" }}>
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={e => setAgreed(e.target.checked)}
+              required
+            />
+            <span>
+              I am {MINIMUM_AGE} or older, and I agree to the{" "}
+              <Link to="/terms" target="_blank" rel="noopener">Terms and Community Rules</Link> and have read the{" "}
+              <Link to="/privacy" target="_blank" rel="noopener">Privacy Policy</Link>.
+            </span>
+          </label>
+
           {/* BUTTON */}
           <button
             type="submit"
 
-            disabled={loading}
+            disabled={loading || !agreed}
 
             style={{
               width: "100%",

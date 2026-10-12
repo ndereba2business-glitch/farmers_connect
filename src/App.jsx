@@ -33,6 +33,10 @@ const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
 const MyFarmers = lazy(() => import("./pages/MyFarmers"));
 const Appointments = lazy(() => import("./pages/Appointments"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const DeleteAccountPage = lazy(() => import("./pages/legal/DeleteAccountPage"));
+const AccountDeleted = lazy(() => import("./pages/legal/AccountDeleted"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -125,6 +129,14 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/signup" element={<Signup />} />
+
+        {/* Policies. Open to everyone, signed in or not, and they read
+            nothing from the database: these are the addresses given to
+            the Play Store. */}
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/delete-account" element={<DeleteAccountPage />} />
+        <Route path="/account-deleted" element={<AccountDeleted />} />
 
 
         {/* Old standalone verification forms wrote to tables that never

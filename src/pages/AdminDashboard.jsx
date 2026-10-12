@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import CommunityModeration from "../components/CommunityModeration";
 import AdminListings from "../components/AdminListings";
+import AdminRequests from "../components/AdminRequests";
 import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall, IdCard, MapPin, Siren, Package, Phone, Truck
 } from "lucide-react";
 
@@ -185,7 +186,7 @@ export default function AdminDashboard() {
         background: "#f3f4f6", borderRadius: "12px",
         padding: "4px", marginBottom: "20px", width: "fit-content", flexWrap: "wrap"
       }}>
-        {["vets", "suppliers", "community", "users", "products", "batches"].map(tab => (
+        {["vets", "suppliers", "community", "requests", "users", "products", "batches"].map(tab => (
           <button
             key={tab}
             className="fc-tap"
@@ -572,6 +573,9 @@ export default function AdminDashboard() {
 
       {/* ═══════════ PRODUCTS TABLE ═══════════ */}
       {activeTab === "products" && <AdminListings products={products} onChanged={loadData} />}
+
+      {/* ═══════════ ACCOUNT REQUESTS AND REPORTS ═══════════ */}
+      {activeTab === "requests" && <AdminRequests />}
 
       {/* ═══════════ BATCHES TABLE ═══════════ */}
       {activeTab === "batches" && (

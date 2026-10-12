@@ -332,6 +332,11 @@ option > svg.lucide:first-child {
   .fc-quick { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* Privacy and Terms, at the foot of every signed-in menu. */
+.fc-policy-links { display: flex; flex-wrap: wrap; gap: 0 16px; margin: 4px 0 0; padding: 0 4px; }
+.fc-policy-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600; color: var(--fc-muted); text-decoration: none; }
+.fc-policy-links a:hover { color: var(--fc-primary); text-decoration: underline; }
+
 .fc-section-title {
   margin: 0 0 16px;
   font-size: var(--fs-section, 18px);

@@ -1,7 +1,7 @@
 import BrandMark from "../components/BrandMark";
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
 import GoogleButton from "../components/GoogleButton";
@@ -30,6 +30,10 @@ export default function Login() {
   const navigate =
     useNavigate();
 
+  // Only a path on this site is honoured, never a full address.
+  const requested = new URLSearchParams(window.location.search).get("next") || "";
+  const nextPath = requested.startsWith("/") && !requested.startsWith("//") ? requested : "";
+
   // =========================
   // AUTO REDIRECT IF LOGGED IN
   // =========================
@@ -43,7 +47,7 @@ export default function Login() {
         await supabase.auth.getSession();
 
       if (data.session) {
-        navigate("/");
+        navigate(nextPath || "/");
       }
     }
 
@@ -119,6 +123,12 @@ export default function Login() {
     // app_metadata is authoritative for admin status).
     const role =
       extractRole(data.user);
+
+    // Sent here from a page that needs a sign-in: go back to it.
+    if (nextPath) {
+      navigate(nextPath);
+      return;
+    }
 
     // REDIRECT BASED ON ROLE
     if (role === "vet") {
@@ -408,6 +418,12 @@ export default function Login() {
             Sign up
           </span>
 
+        </p>
+
+        <p className="fc-policy-links" style={{ justifyContent: "center" }}>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/terms">Terms and rules</Link>
+          <Link to="/delete-account">Delete account</Link>
         </p>
 
       </div>
