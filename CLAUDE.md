@@ -47,7 +47,7 @@ losing their input.
 - State: React context only (`AuthContext`, `ToastContext`) — there is no Redux
 - Styling: plain CSS files and inline styles — there is no Tailwind. The visual system (colours, three radii, one card shadow, type and icon rules, shared `fc-card` / `fc-btn` / `fc-stats` / `fc-quick` classes) is written down in `src/styles/tokens.css`; read its header before styling anything
 - Icons: lucide-react only, never emoji as icons (reaction emoji in the community chat are content and stay). Charts: recharts (farmer dashboard only)
-- Brand mark: `src/components/BrandMark.jsx`. The same artwork is `public/favicon.svg` and the PNGs in `public/icons/`, regenerated with `node scripts/build-icons.mjs`
+- Brand mark: a rooster's head on a maize-yellow tile, drawn by `src/components/BrandMark.jsx`. The artwork has one copy, `src/components/brandMarkArt.js`; `public/favicon.svg` and the PNGs in `public/icons/` are generated from it with `node scripts/build-icons.mjs`, so run that after changing it
 - Backend: Supabase (auth, Postgres with row-level security, storage, realtime, edge functions — no separate backend framework)
 - Deploy: Vercel (merging to `main` deploys to production)
 
