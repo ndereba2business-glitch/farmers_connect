@@ -12,7 +12,9 @@ import type { AiProvider } from "./types.ts";
 // Returns null when the key has not been set, so the caller can say that
 // Clucky is not switched on instead of failing obscurely.
 export function getProvider(): AiProvider | null {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  // A key pasted with a space, a line break or its quotation marks still
+  // around it is rejected by Google as invalid, so those are removed.
+  const apiKey = (Deno.env.get("GEMINI_API_KEY") || "").trim().replace(/^["']+|["']+$/g, "").trim();
   if (!apiKey) return null;
   const model = Deno.env.get("GEMINI_MODEL")?.trim() || DEFAULT_GEMINI_MODEL;
   const client = new GoogleGenAI({ apiKey }) as unknown as GeminiClient;

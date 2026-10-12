@@ -8,7 +8,9 @@
 // The call is stateless. The conversation is kept in our own database and
 // sent with each question, and `store: false` tells Google not to keep a
 // copy of the exchange for later retrieval.
-import { AiError, type AiFailure, type AiProvider, type AiRequest, type AiResult, type ChatMessage } from "./types.ts";
+import {
+  AiError, type AiFailure, type AiProvider, type AiRequest, type AiResult, type AiSetupProblem, type ChatMessage
+} from "./types.ts";
 
 // The lowest-cost current Flash model. Override with the GEMINI_MODEL secret.
 export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
@@ -54,14 +56,31 @@ export function geminiFailure(error: unknown): AiError {
   const status = Number(e.status ?? e.statusCode) || 0;
   const name = typeof e.name === "string" ? e.name : "Error";
   const body = typeof e.body === "string" ? e.body : "";
-  const badKey = /API_KEY_INVALID|API key not valid|API key expired|API_KEY_SERVICE_BLOCKED/i.test(body);
+  // Google names the cause with a fixed token such as API_KEY_INVALID.
+  // Only capitals and underscores are accepted, so nothing else in the
+  // body (a message, part of the request) can ride along into the logs.
+  const googleReason = /"reason"\s*:\s*"([A-Z][A-Z_]{2,59})"/.exec(body)?.[1] || "";
+
+  // Three different things the owner may have to fix, kept apart so the
+  // logs and the live check can say which.
+  let reason: AiSetupProblem | undefined;
+  if (/API_KEY_INVALID|API_KEY_EXPIRED|API key not valid|API key expired/i.test(body) || status === 401) {
+    reason = "key_rejected";
+  } else if (/API_KEY_[A-Z_]*BLOCKED|SERVICE_DISABLED/.test(body) || status === 403) {
+    // a real key that may not make this call: restricted to other APIs,
+    // to certain websites or addresses, or the API is off for its project
+    reason = "not_permitted";
+  } else if (status === 404) {
+    reason = "model_not_found";
+  }
 
   let code: AiFailure = "failed";
-  if (badKey || status === 401 || status === 403 || status === 404) code = "not_configured";
+  if (reason) code = "not_configured";
   else if (status === 429 || status >= 500) code = "busy";
   else if (/Connection|Timeout|Abort/i.test(name)) code = "busy";
 
-  return new AiError(code, `${name}${status ? ` ${status}` : ""}${badKey ? " (API key rejected)" : ""}`);
+  const parts = [name, status || "", googleReason, reason ? `(${reason})` : ""].filter(Boolean);
+  return new AiError(code, parts.join(" "), reason);
 }
 
 export function createGeminiProvider(client: GeminiClient, model: string = DEFAULT_GEMINI_MODEL): AiProvider {
