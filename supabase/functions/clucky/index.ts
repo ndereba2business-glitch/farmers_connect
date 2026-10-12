@@ -27,7 +27,7 @@
 // unset), CLUCKY_ALLOWED_ORIGINS (comma-separated; any origin when unset).
 import { createClient } from "@supabase/supabase-js";
 import {
-  HISTORY_MESSAGES, SYSTEM_PROMPT, buildFarmContext, checkQuestion, toModelMessages,
+  HISTORY_MESSAGES, SYSTEM_PROMPT, buildFarmContext, checkQuestion, styleNote, toModelMessages,
   type Batch, type OverdueVaccine, type StoredMessage
 } from "./prompt.ts";
 import { getProvider } from "./providers/index.ts";
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
   const work = (async () => {
     try {
       const result = await provider.generate({
-        system: `${SYSTEM_PROMPT}\n\n${farmContext}`,
+        system: [SYSTEM_PROMPT, farmContext, styleNote(history, question)].filter(Boolean).join("\n\n"),
         messages: toModelMessages(history, question),
         maxOutputTokens: MAX_OUTPUT_TOKENS
       }, text => send({ t: "delta", text }));

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import CommunityModeration from "../components/CommunityModeration";
 import CluckyUsage from "../components/CluckyUsage";
+import AdminListings from "../components/AdminListings";
 import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall, IdCard, MapPin, Siren, Package, Phone, Truck
 } from "lucide-react";
 
@@ -574,62 +575,7 @@ export default function AdminDashboard() {
       )}
 
       {/* ═══════════ PRODUCTS TABLE ═══════════ */}
-      {activeTab === "products" && (
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-              {["Title", "Category", "Price", "Seller", "Status"].map(h => (
-                <th key={h} style={{
-                  padding: "14px 20px", textAlign: "left",
-                  fontSize: "12px", fontWeight: "600",
-                  color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em"
-                }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
-                  No products yet.
-                </td>
-              </tr>
-            ) : products.map((product, i) => (
-              <tr key={product.id} style={{
-                borderBottom: i < products.length - 1 ? "1px solid #f9f9f9" : "none"
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <td style={{ padding: "14px 20px", fontWeight: "600", fontSize: "14px", color: "#111827" }}>
-                  {product.product_name}
-                </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
-                  {product.category}
-                </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", fontWeight: "600", color: "#15803d" }}>
-                  KES {Number(product.price).toLocaleString()}
-                </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
-                  {product.supplier_name || "—"}
-                </td>
-                <td style={{ padding: "14px 20px" }}>
-                  <span style={{
-                    background: product.sold_out ? "#fee2e2" : "#dcfce7",
-                    color: product.sold_out ? "#ef4444" : "#15803d",
-                    fontSize: "12px", fontWeight: "700",
-                    padding: "3px 10px", borderRadius: "16px"
-                  }}>
-                    {product.sold_out ? "sold out" : "active"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {activeTab === "products" && <AdminListings products={products} onChanged={loadData} />}
 
       {/* ═══════════ BATCHES TABLE ═══════════ */}
       {activeTab === "batches" && (

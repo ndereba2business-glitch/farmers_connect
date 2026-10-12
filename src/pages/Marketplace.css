@@ -12,3 +12,19 @@
     gap: 8px !important;
   }
 }
+/* the list could not be fetched: say so and offer another go */
+.mk-load-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #fecaca;
+  border-radius: var(--fc-radius-md);
+  background: var(--fc-danger-soft);
+  color: var(--fc-danger);
+  font-size: 14px;
+  font-weight: 600;
+}

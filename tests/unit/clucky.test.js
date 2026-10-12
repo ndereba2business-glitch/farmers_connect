@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { applyEvent, cluckyErrorMessage, createEventParser, startingAnswer } from "../../src/lib/clucky.js";
 import {
   HISTORY_MESSAGES, MAX_QUESTION_LENGTH, SYSTEM_PROMPT,
-  buildFarmContext, checkQuestion, toModelMessages
+  buildFarmContext, checkQuestion, styleNote, toModelMessages
 } from "../../supabase/functions/clucky/prompt.ts";
 
 function read(chunks) {
@@ -82,11 +82,97 @@ test("Clucky is told to stay on poultry, answer in plain text and defer to vets"
   assert.match(SYSTEM_PROMPT, /Never make up a medicine or brand name, a dose, a withdrawal period/);
   assert.match(SYSTEM_PROMPT, /say so plainly/);
   assert.match(SYSTEM_PROMPT, /one continuing conversation/);
-  assert.match(SYSTEM_PROMPT, /ask one or two short questions instead of guessing/);
-  for (const sign of ["sudden deaths", "severe breathing trouble", "paralysis", "suspected poisoning", "serious injury"]) {
+  assert.match(SYSTEM_PROMPT, /ask for the one or two facts that matter most/);
+  assert.match(SYSTEM_PROMPT, /never hold back urgent advice while you wait for an answer/);
+  for (const sign of ["sudden deaths", "deaths that are rising day by day", "severe breathing trouble", "paralysis", "suspected poisoning", "serious injury"]) {
     assert.match(SYSTEM_PROMPT, new RegExp(sign), `"${sign}" is treated as urgent`);
   }
   assert.doesNotMatch(SYSTEM_PROMPT, /\d{4}-\d{2}-\d{2}/, "no dates: the instructions stay identical between requests");
+  assert.doesNotMatch(SYSTEM_PROMPT, /[`*#]/, "the instructions themselves are plain text, like the answers asked for");
+});
+
+test("Clucky has a character, and the character never outranks the safety rules", () => {
+  assert.match(SYSTEM_PROMPT, /You are a chicken, and a sharp one/);
+  assert.match(SYSTEM_PROMPT, /The advice always comes first/);
+  // sparing and varied, not a sign-off on every answer
+  assert.match(SYSTEM_PROMPT, /roughly one answer in three/);
+  assert.match(SYSTEM_PROMPT, /Never reuse a line or its pattern/);
+  assert.match(SYSTEM_PROMPT, /They are not a list to work through/);
+  // nothing playful about sick or dying birds
+  assert.match(SYSTEM_PROMPT, /Drop the chicken talk completely when the subject is serious/);
+  assert.match(SYSTEM_PROMPT, /must never feel you are making light of it/);
+  assert.match(SYSTEM_PROMPT, /the health and safety rules win/);
+  assert.ok(
+    SYSTEM_PROMPT.indexOf("Who you are:") < SYSTEM_PROMPT.indexOf("Health and safety:"),
+    "the safety rules are read last, after the personality"
+  );
+});
+
+test("a full answer is asked for only when the question needs one", () => {
+  for (const part of ["The direct answer", "Why:", "The practical steps, most important first", "What to watch", "How to stop it happening again", "One follow-up question"]) {
+    assert.match(SYSTEM_PROMPT, new RegExp(part));
+  }
+  assert.match(SYSTEM_PROMPT, /a way of thinking, not a form to fill in/);
+  assert.match(SYSTEM_PROMPT, /leave out every part the question does not need/);
+  assert.match(SYSTEM_PROMPT, /do not ask for what you can already see/);
+});
+
+test("Clucky is told to be careful with medicines, honest about doubt and neutral about sellers", () => {
+  assert.match(SYSTEM_PROMPT, /Never suggest antibiotics as a first step, routinely, "just in case" or without a diagnosis/);
+  assert.match(SYSTEM_PROMPT, /only an examination or a lab test can confirm/);
+  assert.match(SYSTEM_PROMPT, /move sick birds away from the healthy ones/);
+  assert.match(SYSTEM_PROMPT, /a statistic or a price/);
+  assert.match(SYSTEM_PROMPT, /Never name or recommend a particular business, shop or brand/);
+  assert.match(SYSTEM_PROMPT, /It is not a guarantee of their products or prices/);
+});
+
+test("a question about sick or dying birds switches the chicken talk off, in English and Swahili", () => {
+  const serious = [
+    "My broilers are dying, 12 dead since yesterday",
+    "3 of my layers died this morning",
+    "They are coughing and gasping at night",
+    "bloody droppings in the brooder",
+    "I lost 40 birds this week",
+    "Is this Newcastle disease?",
+    "kuku wangu wamekufa watatu leo",
+    "Kuku ni wagonjwa na wanakohoa",
+    "kuku ana damu kwa kinyesi",
+    "My chicks look weak and are not eating"
+  ];
+  for (const question of serious) {
+    assert.match(styleNote([], question), /no chicken expressions/, question);
+  }
+  const calm = [
+    "What diet is best for layers at 20 weeks?",
+    "How much feed does a broiler eat per day?",
+    "Can you illustrate how to build a brooder?",
+    "When do kienyeji hens start laying?",
+    "Ninaweza kuuza mayai wapi?",
+    "How do I record a sale in My Farm?"
+  ];
+  for (const question of calm) {
+    assert.equal(styleNote([], question), "", question);
+  }
+});
+
+test("a chicken line is never allowed two answers in a row", () => {
+  const afterAJoke = [
+    { role: "user", content: "How many nest boxes for 50 layers?" },
+    { role: "assistant", content: "About 10 to 12 boxes, one for every four or five hens. That's my two clucks' worth!" }
+  ];
+  assert.match(styleNote(afterAJoke, "And how high off the floor?"), /Keep this answer plain/);
+
+  const afterAPlainAnswer = [
+    { role: "user", content: "How many nest boxes for 50 layers?" },
+    { role: "assistant", content: "About 10 to 12 boxes, one for every four or five hens." }
+  ];
+  assert.equal(styleNote(afterAPlainAnswer, "And how high off the floor?"), "");
+
+  // only the most recent answer counts, and a serious question still wins
+  const olderJoke = [...afterAJoke, { role: "user", content: "ok" }, { role: "assistant", content: "Put them 45 to 60 cm up." }];
+  assert.equal(styleNote(olderJoke, "What about lighting?"), "");
+  assert.match(styleNote(afterAJoke, "Two hens died overnight"), /no chicken expressions/);
+  assert.equal(styleNote([], "Any tips for a new farmer?"), "");
 });
 
 test("the farmer's records are summarised briefly, with each batch's age", () => {

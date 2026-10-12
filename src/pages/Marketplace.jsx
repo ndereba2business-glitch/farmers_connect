@@ -10,6 +10,9 @@ import { useAuth } from "../context/AuthContext";
 import { IN_APP_ORDERING } from "../config/features";
 import { AVAILABILITY, freshness, minOrderText, priceText, unitSuffix } from "../lib/productListing";
 import { productMessage, recordContact, telHref, whatsappHref } from "../lib/contactSupplier";
+import { removeImageByUrl } from "../lib/imageUpload";
+import { useToast } from "../context/ToastContext";
+import ConfirmDialog from "../components/ConfirmDialog";
 import "./Marketplace.css";
 
 const CATEGORIES = [
@@ -58,6 +61,7 @@ export default function Marketplace() {
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [currentUserPhone, setCurrentUserPhone] = useState("");
@@ -110,16 +114,24 @@ export default function Marketplace() {
   // -----------------------------
   // FETCH PRODUCTS
   // -----------------------------
-  async function fetchProducts() {
-    setLoading(true);
+  // quiet: refresh after a change without swapping the list for skeletons.
+  async function fetchProducts({ quiet = false } = {}) {
+    if (!quiet) setLoading(true);
     // The embedded supplier is only readable when it's verified (or your own),
     // so a non-null verified status is safe to show as a trust badge.
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("products")
       .select("*, supplier:supplier_profiles(business_name, verification_status)")
-      .order("created_at", { ascending: false });
-    setProducts(data || []);
+      .order("created_at", { ascending: false })
+      .limit(300);
     setLoading(false);
+    if (error) {
+      // keep whatever is already on screen; only an empty page needs the banner
+      setLoadError(true);
+      return;
+    }
+    setLoadError(false);
+    setProducts(data || []);
   }
 
   useEffect(() => {
@@ -128,7 +140,7 @@ export default function Marketplace() {
       .channel("products-live")
       .on("postgres_changes",
         { event: "*", schema: "public", table: "products" },
-        fetchProducts
+        () => fetchProducts({ quiet: true })
       )
       .subscribe();
     return () => supabase.removeChannel(channel);
@@ -461,8 +473,16 @@ function handleContactSeller(product) {
             </div>
           )}
 
+          {/* COULD NOT LOAD */}
+          {!loading && loadError && (
+            <div role="alert" className="mk-load-error">
+              <span>We couldn't load the marketplace. Check your connection and try again.</span>
+              <button type="button" className="fc-btn fc-btn--secondary" onClick={() => fetchProducts()}>Try again</button>
+            </div>
+          )}
+
           {/* EMPTY STATE */}
-          {!loading && filtered.length === 0 && (
+          {!loading && !loadError && filtered.length === 0 && (
             <div style={{
               textAlign: "center", padding: "80px 20px",
               background: "#fff", borderRadius: "16px",
@@ -508,7 +528,8 @@ function handleContactSeller(product) {
                   onAddToCart={addToCart}
                   onContactSeller={handleContactSeller}
                   currentUserEmail={currentUserEmail}
-                  onProductUpdated={fetchProducts}
+                  currentUserId={currentUserId}
+                  onProductUpdated={() => fetchProducts({ quiet: true })}
                 />
               ))}
             </div>
@@ -970,11 +991,14 @@ function contactButton(primary) {
 }
 
 // ======================== PRODUCT CARD ========================
-function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, onProductUpdated }) {
+function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, currentUserId, onProductUpdated }) {
+  const toast = useToast();
   const [hovered, setHovered] = useState(false);
   const [showSellerPanel, setShowSellerPanel] = useState(false);
   const [newStock, setNewStock] = useState(product.stock || 0);
   const [updating, setUpdating] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [removeError, setRemoveError] = useState("");
 
   const isSeller = currentUserEmail && (
     product.user_email === currentUserEmail ||
@@ -987,33 +1011,59 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
     medicine: "Medicine", other: "Other"
   }[product.category] || product.category;
 
-  async function handleUpdateStock() {
+  // A change the database's rules refuse comes back with no error and no
+  // rows, so "nothing changed" is checked as well as "something failed".
+  async function saveChange(changes, successMessage) {
+    if (updating) return;
     setUpdating(true);
-    await supabase
+    const { data, error } = await supabase
       .from("products")
-      .update({ stock: Number(newStock), sold_out: false })
-      .eq("id", product.id);
+      .update(changes)
+      .eq("id", product.id)
+      .select("id");
     setUpdating(false);
+    if (error || !data?.length) {
+      toast.error(error
+        ? "That change didn't save. Check your connection and try again."
+        : "That change didn't save. Only the person who listed this can change it.");
+      return;
+    }
+    toast.success(successMessage);
     onProductUpdated();
   }
 
-  async function handleSoldOut() {
-    setUpdating(true);
-    await supabase
-      .from("products")
-      .update({ stock: 0, sold_out: true })
-      .eq("id", product.id);
-    setUpdating(false);
-    onProductUpdated();
+  function handleUpdateStock() {
+    const stock = Math.max(0, Math.floor(Number(newStock) || 0));
+    saveChange({ stock, sold_out: false }, `Stock updated to ${stock}.`);
   }
 
-  async function handleRemove() {
-    if (!window.confirm(
-      `Remove "${product.product_name}" from the marketplace?`
-    )) return;
+  function handleSoldOut() {
+    saveChange({ stock: 0, sold_out: true }, `"${product.product_name}" is marked out of stock.`);
+  }
+
+  // The listing leaves the page only once the database confirms it is
+  // gone; a failure keeps the question open so it can be tried again.
+  async function confirmRemove() {
+    if (updating) return;
     setUpdating(true);
-    await supabase.from("products").delete().eq("id", product.id);
+    setRemoveError("");
+    const { data, error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", product.id)
+      .select("id");
     setUpdating(false);
+    if (error) {
+      setRemoveError("The listing wasn't removed. Check your connection and try again.");
+      return;
+    }
+    if (!data?.length) {
+      setRemoveError("The listing wasn't removed. Only the person who listed it can remove it.");
+      return;
+    }
+    removeImageByUrl(product.image_url, currentUserId);
+    setConfirmingRemove(false);
+    toast.success(`"${product.product_name}" was removed from the marketplace.`);
     onProductUpdated();
   }
 
@@ -1299,7 +1349,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                     <Package size={14} aria-hidden="true" /> {product.sold_out ? "Out of stock" : "Mark out of stock"}
                   </button>
                   <button
-                    onClick={handleRemove}
+                    onClick={() => { setRemoveError(""); setConfirmingRemove(true); }}
                     disabled={updating}
                     style={{
                       flex: 1, padding: "8px", background: "#fff",
@@ -1318,6 +1368,24 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           </div>
         )}
       </div>
+
+      {confirmingRemove && (
+        <ConfirmDialog
+          title={`Remove "${product.product_name}"?`}
+          confirmLabel="Remove listing"
+          busyLabel="Removing..."
+          cancelLabel="Keep listing"
+          danger
+          icon={Trash2}
+          busy={updating}
+          error={removeError}
+          onCancel={() => setConfirmingRemove(false)}
+          onConfirm={confirmRemove}
+        >
+          <p>This takes the listing and its photo off the marketplace for good. Buyers will no longer see it.</p>
+          <p>If you have only run out for now, use "Mark out of stock" instead.</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

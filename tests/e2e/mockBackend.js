@@ -23,6 +23,9 @@ export function createMockBackend() {
     contact_events: [],
     writes: [],
     googleEnabled: false,      // what /auth/v1/settings reports
+    // true: the database refuses to delete a product, as a constraint or a
+    // dropped connection would. Lets a test see what the page does then.
+    productDeleteFails: false,
     // Any other table a test wants to use, as { table_name: [rows] }
     // (an empty list is enough to switch it on). Rows with a user_email
     // can only be read, added or deleted by that user, like the
@@ -65,6 +68,8 @@ export function createMockBackend() {
 
   const ownProfileIds = (user) => db.supplier_profiles.filter(p => p.user_id === user?.id).map(p => p.id);
   const ownsProduct = (user, p) => !!user && (p.user_email === user.email || ownProfileIds(user).includes(p.supplier_id));
+  // products_admin_delete: an admin may take any listing down, and sees hidden ones
+  const mayDeleteProduct = (user, p) => ownsProduct(user, p) || !!user?.admin;
 
   // PostgREST-style filters: ?col=eq.value, ?col=in.(a,b)
   function matches(row, params) {
@@ -240,7 +245,7 @@ export function createMockBackend() {
 
       if (table === "products") {
         if (method === "GET") {
-          const visible = db.products.filter(p => p.is_active || ownsProduct(current, p));
+          const visible = db.products.filter(p => p.is_active || ownsProduct(current, p) || current?.admin);
           const rows = visible.filter(p => matches(p, params));
           const embed = (url.searchParams.get("select") || "").includes("supplier:");
           return reply(200, embed ? rows.map(withSupplier) : rows);
@@ -268,8 +273,12 @@ export function createMockBackend() {
           return reply(200, targets);
         }
         if (method === "DELETE") {
-          db.products = db.products.filter(p => !targets.includes(p));
-          return reply(200, targets);
+          if (db.productDeleteFails) {
+            return route.fulfill({ status: 409, contentType: "application/json", body: JSON.stringify({ code: "23514", message: "violates check constraint" }) });
+          }
+          const gone = db.products.filter(p => matches(p, params) && mayDeleteProduct(current, p));
+          db.products = db.products.filter(p => !gone.includes(p));
+          return reply(200, gone);
         }
       }
 
