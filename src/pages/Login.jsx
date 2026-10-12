@@ -1,7 +1,7 @@
 import BrandMark from "../components/BrandMark";
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
 import GoogleButton from "../components/GoogleButton";
@@ -23,8 +23,9 @@ export default function Login() {
   const [loading, setLoading] =
     useState(false);
 
+  // A sign-in that came back refused (App.jsx) arrives here with its reason.
   const [error, setError] =
-    useState("");
+    useState(useLocation().state?.signInProblem || "");
 
   const navigate =
     useNavigate();
@@ -342,6 +343,7 @@ export default function Login() {
         {/* ERROR */}
         {error && (
           <div
+            role="alert"
             style={{
               background: "#fef2f2",
               color: "#dc2626",

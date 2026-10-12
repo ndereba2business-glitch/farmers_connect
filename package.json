@@ -14,7 +14,8 @@
     "test:live": "node --test --test-concurrency=1 tests/e2e/live.test.js",
     "test:clucky-live": "node --test tests/live/clucky.live.test.js",
     "test:security": "node scripts/test-security.mjs",
-    "check:secrets": "vite build && node scripts/check-secrets.mjs"
+    "check:secrets": "vite build && node scripts/check-secrets.mjs",
+    "check:auth-urls": "node scripts/check-auth-urls.mjs https://farmers-connect-azure.vercel.app"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
