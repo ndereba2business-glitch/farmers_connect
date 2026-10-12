@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { Suspense, lazy, useEffect } from 'react';
 import { readSignInProblem } from "./lib/signInReturn";
+import { POLICIES_PUBLISHED } from "./config/features";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
 // multi-megabyte bundle for the whole app.
@@ -133,8 +134,8 @@ function AppRoutes() {
         {/* Policies. Open to everyone, signed in or not, and they read
             nothing from the database: these are the addresses given to
             the Play Store. */}
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<Terms />} />
+        {POLICIES_PUBLISHED && <Route path="/privacy" element={<PrivacyPolicy />} />}
+        {POLICIES_PUBLISHED && <Route path="/terms" element={<Terms />} />}
         <Route path="/delete-account" element={<DeleteAccountPage />} />
         <Route path="/account-deleted" element={<AccountDeleted />} />
 

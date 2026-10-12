@@ -8,7 +8,9 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../..", import.meta.url));
 
 export async function startApp({ env = {} } = {}) {
-  Object.assign(process.env, env);
+  // The policy pages and the terms dialog are switched on for tests, so
+  // they are covered before the owner publishes them (src/config/features.js).
+  Object.assign(process.env, { VITE_POLICIES_PUBLISHED: "true" }, env);
   const server = await createServer({
     root,
     logLevel: "silent",

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { APP_NAME, MINIMUM_AGE, TERMS_VERSION } from "../config/legal";
+import { POLICIES_PUBLISHED } from "../config/features";
 import "./Account.css";
 
 // Asks a signed-in person to accept the Terms and Community Rules before
@@ -18,6 +19,8 @@ export default function TermsGate() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // Nobody is asked to accept documents the owner has not yet published.
+  if (!POLICIES_PUBLISHED) return null;
   // Until the profile has loaded there is nothing to judge by, and a
   // profile that could not be read must not lock anyone out.
   if (!profile || !userEmail) return null;

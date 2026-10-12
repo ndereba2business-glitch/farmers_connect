@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import BrandMark from "../../components/BrandMark";
 import { useAuth } from "../../context/AuthContext";
 import { APP_NAME } from "../../config/legal";
+import { POLICIES_PUBLISHED } from "../../config/features";
 import "./Legal.css";
 
 // The frame around the public policy pages. They are readable signed in or
@@ -44,8 +45,8 @@ export default function LegalLayout({ title, updated, children }) {
 
       <footer className="lg-foot">
         <nav aria-label="Policies">
-          <Link to="/privacy">Privacy Policy</Link>
-          <Link to="/terms">Terms and Community Rules</Link>
+          {POLICIES_PUBLISHED && <Link to="/privacy">Privacy Policy</Link>}
+          {POLICIES_PUBLISHED && <Link to="/terms">Terms and Community Rules</Link>}
           <Link to="/delete-account">Delete your account</Link>
         </nav>
         <p>© {new Date().getFullYear()} {APP_NAME}</p>

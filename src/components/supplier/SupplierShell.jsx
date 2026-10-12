@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import NotificationsBell from "../NotificationsBell";
 import OnboardingTour from "../OnboardingTour";
 import TermsGate from "../TermsGate";
+import { POLICIES_PUBLISHED } from "../../config/features";
 import { SupplierContext } from "./supplierContext";
 import { VERIFICATION_META, initialsOf } from "./supplierFormat";
 import "./SupplierShell.css";
@@ -220,10 +221,12 @@ export default function SupplierShell() {
             <button className="ss-signout" onClick={handleLogout}>
               <LogOut size={18} aria-hidden="true" /> Sign out
             </button>
-            <p className="fc-policy-links">
-              <Link to="/privacy">Privacy</Link>
-              <Link to="/terms">Terms and rules</Link>
-            </p>
+            {POLICIES_PUBLISHED && (
+              <p className="fc-policy-links">
+                <Link to="/privacy">Privacy</Link>
+                <Link to="/terms">Terms and rules</Link>
+              </p>
+            )}
           </div>
         </aside>
 

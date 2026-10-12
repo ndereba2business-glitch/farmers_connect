@@ -5,6 +5,7 @@ import DeleteAccountSection from "../../components/DeleteAccountSection";
 import { useAuth } from "../../context/AuthContext";
 import { APP_NAME, CONTACT_EMAIL, operatorName } from "../../config/legal";
 import { DELETED_ITEMS, KEPT_ITEMS, requestErrorMessage, sendAccountRequest } from "../../lib/account";
+import { POLICIES_PUBLISHED } from "../../config/features";
 import "../../components/Account.css";
 
 // For people who cannot sign in. It writes one request that an admin
@@ -132,7 +133,7 @@ export default function DeleteAccountPage() {
       <ul>{KEPT_ITEMS.map(item => <li key={item}>{item}</li>)}</ul>
       <p>
         Copies held in our hosting providers' backups and logs are removed on those providers' own schedules. Nothing else is
-        retained. The full detail is in the <Link to="/privacy#deletion">Privacy Policy</Link>.
+        retained.{POLICIES_PUBLISHED && <> The full detail is in the <Link to="/privacy#deletion">Privacy Policy</Link>.</>}
       </p>
 
       <h2 id="part">5. Deleting only some of your data</h2>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { CONFIRM_WORD, DELETED_ITEMS, KEPT_ITEMS, deleteErrorMessage, deleteMyAccount, hasPassword } from "../lib/account";
+import { POLICIES_PUBLISHED } from "../config/features";
 import "./Account.css";
 
 // The form that actually deletes the account: the word DELETE, and the
@@ -141,7 +142,7 @@ export default function DeleteAccountSection({ headingLevel = 2 }) {
         <ul>{DELETED_ITEMS.map(item => <li key={item}>{item}</li>)}</ul>
         <h3>Kept</h3>
         <ul>{KEPT_ITEMS.map(item => <li key={item}>{item}</li>)}</ul>
-        <p>More detail is in the <Link to="/privacy#deletion">Privacy Policy</Link>.</p>
+        {POLICIES_PUBLISHED && <p>More detail is in the <Link to="/privacy#deletion">Privacy Policy</Link>.</p>}
       </details>
 
       {role === "admin" ? (

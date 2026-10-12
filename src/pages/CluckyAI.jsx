@@ -10,6 +10,7 @@ import {
 } from "../lib/clucky";
 import ReportDialog from "../components/ReportDialog";
 import { ANSWER_REASONS, reportContent } from "../lib/safety";
+import { POLICIES_PUBLISHED } from "../config/features";
 import "../components/Account.css";
 import "./Clucky.css";
 
@@ -319,7 +320,8 @@ export default function CluckyAI() {
           </ul>
           <p>
             Your name, email address and phone number are not sent. Do not type private details into a question. Google may keep
-            and use what it receives as described in our <Link to="/privacy#ai">Privacy Policy</Link>.
+            what it receives for a limited time, use it to improve its products, and have it read by trained reviewers
+            {POLICIES_PUBLISHED ? <>, as described in our <Link to="/privacy#ai">Privacy Policy</Link>.</> : "."}
           </p>
           {consentError && <p role="alert" className="fc-dialog-error">{consentError}</p>}
           <button type="button" className="fc-btn fc-btn--primary" onClick={agree} disabled={agreeing}>

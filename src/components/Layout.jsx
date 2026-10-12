@@ -13,7 +13,7 @@ import {
   Package, Calculator, Menu, X, CalendarClock
 } from "lucide-react";
 import "./Layout.css";
-import { IN_APP_ORDERING } from "../config/features";
+import { IN_APP_ORDERING, POLICIES_PUBLISHED } from "../config/features";
 
 const FARMER_NAV = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -163,10 +163,12 @@ export default function Layout() {
             Sign Out
           </button>
 
-          <p className="fc-policy-links">
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/terms">Terms and rules</Link>
-          </p>
+          {POLICIES_PUBLISHED && (
+            <p className="fc-policy-links">
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/terms">Terms and rules</Link>
+            </p>
+          )}
         </div>
       </aside>
 

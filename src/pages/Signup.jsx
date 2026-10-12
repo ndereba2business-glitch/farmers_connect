@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import GoogleButton from "../components/GoogleButton";
 import { MINIMUM_AGE, TERMS_VERSION } from "../config/legal";
+import { POLICIES_PUBLISHED } from "../config/features";
 import "../components/Account.css";
 
 export default function Signup() {
@@ -38,8 +39,9 @@ export default function Signup() {
   const [success, setSuccess] =
     useState("");
 
+  // With the policies unpublished there is nothing to agree to yet.
   const [agreed, setAgreed] =
-    useState(false);
+    useState(!POLICIES_PUBLISHED);
 
   // =========================
   // REDIRECT IF LOGGED IN
@@ -190,7 +192,7 @@ export default function Signup() {
 
       // Record the acceptance on the profile the database created at
       // sign-up. If this does not save, TermsGate asks again on first use.
-      if (userIdentity) {
+      if (userIdentity && POLICIES_PUBLISHED) {
         await supabase
           .from("farmer_profiles")
           .update({ terms_accepted_at: new Date().toISOString(), terms_version: TERMS_VERSION })
@@ -568,7 +570,7 @@ export default function Signup() {
           )}
 
           {/* TERMS: accepted before the account exists */}
-          <label className="ac-check" style={{ marginBottom: "14px" }}>
+          {POLICIES_PUBLISHED && <label className="ac-check" style={{ marginBottom: "14px" }}>
             <input
               type="checkbox"
               checked={agreed}
@@ -580,7 +582,7 @@ export default function Signup() {
               <Link to="/terms" target="_blank" rel="noopener">Terms and Community Rules</Link> and have read the{" "}
               <Link to="/privacy" target="_blank" rel="noopener">Privacy Policy</Link>.
             </span>
-          </label>
+          </label>}
 
           {/* BUTTON */}
           <button
