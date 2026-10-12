@@ -26,6 +26,8 @@ export function createMockBackend() {
     // true: the database refuses to delete a product, as a constraint or a
     // dropped connection would. Lets a test see what the page does then.
     productDeleteFails: false,
+    // Tables whose reads fail with a server error, as on a dropped connection.
+    failingTables: new Set(),
     // Any other table a test wants to use, as { table_name: [rows] }
     // (an empty list is enough to switch it on). Rows with a user_email
     // can only be read, added or deleted by that user, like the
@@ -182,6 +184,10 @@ export function createMockBackend() {
       };
       const body = () => { const b = JSON.parse(req.postData() || "{}"); return Array.isArray(b) ? b : [b]; };
       const params = [...url.searchParams.entries()];
+
+      if (method === "GET" && db.failingTables.has(table)) {
+        return route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ code: "XX000", message: "server error" }) });
+      }
 
       if (table === "rpc/community_remove_message") {
         const { p_message_id } = JSON.parse(req.postData() || "{}");
