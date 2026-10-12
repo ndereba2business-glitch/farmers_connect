@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Clock, Eye, EyeOff, MapPin, MessageCircle, Package, Pencil, Plus, RefreshCw, Search, Store } from "lucide-react";
+import { Clock, Eye, EyeOff, MapPin, MessageCircle, Package, Pencil, Plus, RefreshCw, Search, Store, Trash2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import ConfirmDialog from "../components/ConfirmDialog";
+import { removeImageByUrl } from "../lib/imageUpload";
 import { useSupplier } from "../components/supplier/supplierContext";
 import { needsCheck, productStatus, useSupplierProducts } from "../components/supplier/useSupplierProducts";
 import { CONTACT_WINDOW_DAYS, contactsLabel, useContactSummary } from "../components/supplier/useContactSummary";
@@ -33,7 +36,7 @@ const STATUS_FILTERS = [
 const matchesStatus = (p, status) =>
   status === "all" || (status === "stale" ? needsCheck(p) : productStatus(p).key === status);
 
-function ProductCard({ product, contacts, busy, onToggleActive, onAvailability, onConfirm }) {
+function ProductCard({ product, contacts, busy, onToggleActive, onAvailability, onConfirm, onDelete }) {
   const status = productStatus(product);
   const fresh = freshness(product);
   const stale = needsCheck(product);
@@ -94,6 +97,9 @@ function ProductCard({ product, contacts, busy, onToggleActive, onAvailability, 
             ? <><EyeOff size={15} aria-hidden="true" /> Deactivate</>
             : <><Eye size={15} aria-hidden="true" /> Activate</>}
         </button>
+        <button type="button" className="sf-btn sf-btn--danger sf-btn--sm spl-delete" disabled={busy} onClick={() => onDelete(product)}>
+          <Trash2 size={15} aria-hidden="true" /> Delete
+        </button>
       </div>
     </li>
   );
@@ -118,6 +124,7 @@ function ListSkeleton() {
 
 export default function SupplierProducts() {
   const toast = useToast();
+  const { user } = useAuth();
   const { profile, profileLoading, profileError, retryProfile } = useSupplier();
   const data = useSupplierProducts(profile?.id);
   const contactSummary = useContactSummary(profile?.id);
@@ -128,6 +135,9 @@ export default function SupplierProducts() {
     STATUS_FILTERS.some(f => f.value === searchParams.get("status")) ? searchParams.get("status") : "all");
   const [sort, setSort] = useState("newest");
   const [busyId, setBusyId] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -172,6 +182,32 @@ export default function SupplierProducts() {
   // Any new value works: the database replaces it with its own clock.
   function confirmStillAccurate(product) {
     saveChange(product, { updated_at: new Date().toISOString() }, `Thanks. "${product.product_name}" now shows as updated today.`);
+  }
+
+  // The card leaves the list only after the database confirms the delete.
+  async function deleteProduct() {
+    if (deleteBusy || !deleting) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    const { data: rows, error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", deleting.id)
+      .eq("supplier_id", profile.id)
+      .select("id");
+    setDeleteBusy(false);
+    if (error) {
+      setDeleteError("The product wasn't deleted. Check your connection and try again.");
+      return;
+    }
+    if (!rows?.length) {
+      setDeleteError("The product wasn't deleted. It may already be gone. Refresh the page to check.");
+      return;
+    }
+    removeImageByUrl(deleting.image_url, user?.id);
+    toast.success(`"${deleting.product_name}" was deleted.`);
+    setDeleting(null);
+    data.refresh();
   }
 
   function clearFilters() {
@@ -291,10 +327,29 @@ export default function SupplierProducts() {
             {shown.map(p => (
               <ProductCard key={p.id} product={p} busy={busyId === p.id} onToggleActive={toggleActive}
                 contacts={contactSummary.byProduct[p.id]}
-                onAvailability={changeAvailability} onConfirm={confirmStillAccurate} />
+                onAvailability={changeAvailability} onConfirm={confirmStillAccurate}
+                onDelete={p => { setDeleteError(""); setDeleting(p); }} />
             ))}
           </ul>
         </>
+      )}
+
+      {deleting && (
+        <ConfirmDialog
+          title={`Delete "${deleting.product_name}"?`}
+          confirmLabel="Delete"
+          busyLabel="Deleting..."
+          cancelLabel="Keep product"
+          danger
+          icon={Trash2}
+          busy={deleteBusy}
+          error={deleteError}
+          onCancel={() => setDeleting(null)}
+          onConfirm={deleteProduct}
+        >
+          <p>This removes the product and its photo for good. Your contact counts are kept.</p>
+          <p>If you might sell it again, choose Deactivate instead: it stays saved but farmers won't see it.</p>
+        </ConfirmDialog>
       )}
     </div>
   );
