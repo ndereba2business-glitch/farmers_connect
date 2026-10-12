@@ -16,7 +16,7 @@ do $$
 declare
   sup_a uuid; email_a text; sup_b uuid; email_b text; farmer uuid; email_f text; farmer_profile uuid;
   sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
-  msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid;
+  msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid; list_f uuid; list_g uuid;
   claims_a text; claims_b text; claims_f text;
   n int; i int; v text; b boolean; rec record;
   passed int := 0; failed int := 0; report text := '';
@@ -605,10 +605,68 @@ begin
   end loop;
   if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H17 signed-in user locked out of %s table(s); ', n); end if;
 
+  -- ============================ removing a marketplace listing =========
+  -- A farmer's own listing (no supplier profile) that another member has
+  -- already contacted: the case that used to be impossible to delete.
+  reset role;
+  insert into public.products (product_name, category, price, unit, user_email)
+    values ('sec-test farmer listing', 'chickens', 500, 'per_bird', email_f) returning id into list_f;
+  insert into public.products (product_name, category, price, unit, user_email)
+    values ('sec-test reported listing', 'chickens', 500, 'per_bird', email_f) returning id into list_g;
+
+  perform set_config('request.jwt.claims', claims_b, true);
+  set local role authenticated;
+  insert into public.contact_events (product_id, channel) values (list_f, 'whatsapp');
+
+  delete from public.products where id = list_f;
+  get diagnostics n = row_count;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL L1 another member removed a listing that is not theirs; '; end if;
+
+  -- an account that only calls itself an admin is not one
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_b, 'email', email_b, 'phone', '', 'role', 'authenticated',
+    'user_metadata', json_build_object('role', 'admin'))::text, true);
+  delete from public.products where id = list_g;
+  get diagnostics n = row_count;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL L2 a self-declared admin removed a listing; '; end if;
+
+  perform set_config('request.jwt.claims', claims_f, true);
+  begin
+    delete from public.products where id = list_f;
+    get diagnostics n = row_count;
+    if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL L3 the owner could not remove their own listing; '; end if;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL L3 removing a contacted listing raised %s; ', sqlstate);
+  end;
+
+  reset role;
+  select count(*) into n from public.contact_events where product_id = list_f;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL L4 the contact record did not survive the listing (%s rows); ', n); end if;
+
+  -- a real admin can take a listing down, and its owner is told (unless
+  -- they have switched all notifications off)
+  select not exists (select 1 from public.farmer_profiles p where p.user_email = email_f and p.notifications_enabled is false) into b;
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_b, 'email', email_b, 'phone', '', 'role', 'authenticated',
+    'app_metadata', json_build_object('role', 'admin'))::text, true);
+  set local role authenticated;
+  delete from public.products where id = list_g;
+  get diagnostics n = row_count;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL L5 an admin could not remove a listing; '; end if;
+
+  reset role;
+  select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'product-removed:' || list_g;
+  if n = (case when b then 1 else 0 end) then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL L6 owner notice after an admin removal: %s; ', n); end if;
+
   -- ============================ anonymous (not signed in) =============
   reset role;
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
   set local role anon;
+
+  begin
+    delete from public.products where id = prod_a;
+    get diagnostics n = row_count;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL A5 a visitor removed a listing; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
 
   -- "no rows" and "permission denied" both mean nothing leaked
   begin

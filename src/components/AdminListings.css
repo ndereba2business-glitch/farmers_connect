@@ -1,0 +1,13 @@
+/* Admin > Products: one listing per row, stacked on phones (al-). */
+.al-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.al-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: center; justify-items: start; }
+.al-main { min-width: 0; width: 100%; }
+.al-name { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--fc-ink); overflow-wrap: anywhere; }
+.al-meta { margin: 0; font-size: 13px; line-height: 1.5; color: var(--fc-muted); overflow-wrap: anywhere; }
+.al-remove { width: 100%; }
+.al-empty { margin: 0; text-align: center; color: var(--fc-muted); font-size: 14px; }
+
+@media (min-width: 768px) {
+  .al-row { grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; }
+  .al-remove { width: auto; }
+}

@@ -95,6 +95,7 @@
 
 /* Phase 5: availability control and freshness */
 .spl-avail { grid-column: 1 / -1; }
+.spl-delete { grid-column: 1 / -1; }
 .spl-avail .sf-input { min-height: 44px; font-weight: 600; }
 .spl-stale-text { color: var(--ss-red); font-weight: 700; }
 .spl-check {
