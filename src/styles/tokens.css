@@ -7,7 +7,7 @@
 
   COLOUR
     Brand green is for the mark and the navigation. Primary green is for
-    the one main action on a screen. Maize is the seed in the logo and
+    the one main action on a screen. Maize is the tile of the logo and
     nothing else gets it by default: it is an accent, not a second brand
     colour. Green is NOT applied to something just because it is about
     farming; most of the interface is ink on white.
@@ -55,7 +55,7 @@
   /* colour */
   --fc-brand: #14532d;
   --fc-brand-ink: #f7f5ec;
-  --fc-accent: #f2b01e;
+  --fc-accent: #e3b34e;
 
   --fc-primary: #15803d;
   --fc-primary-hover: #166534;
