@@ -126,6 +126,15 @@ test("Clucky is told to be careful with medicines, honest about doubt and neutra
   assert.match(SYSTEM_PROMPT, /It is not a guarantee of their products or prices/);
 });
 
+test("Clucky is told to check its sums, and to say what protects people when birds are dying", () => {
+  // found by reading real answers: "one box for every 4 to 5 hens" next to "about 5 boxes" for 50 hens
+  assert.match(SYSTEM_PROMPT, /do the sum before you write the answer and show it/);
+  assert.match(SYSTEM_PROMPT, /a rule and a result that disagree is worse than no number at all/);
+  assert.match(SYSTEM_PROMPT, /also say these two things every time/);
+  assert.match(SYSTEM_PROMPT, /the county veterinary office should be told/);
+  assert.match(SYSTEM_PROMPT, /sick or dead birds must not be eaten, sold or given away/);
+});
+
 test("a question about sick or dying birds switches the chicken talk off, in English and Swahili", () => {
   const serious = [
     "My broilers are dying, 12 dead since yesterday",
