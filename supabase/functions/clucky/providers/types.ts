@@ -31,15 +31,28 @@ export type AiResult = {
 //   failed          anything else
 export type AiFailure = "not_configured" | "busy" | "failed";
 
+// Which of the owner's settings is wrong when the code is not_configured.
+// Each one has a different fix, and none of them says anything secret:
+//   key_missing      the secret has not been set
+//   key_rejected     the service does not accept the key (mistyped,
+//                    deleted, expired, or pasted with extra characters)
+//   not_permitted    the key is real but may not make this call (the API
+//                    is not enabled for it, or it is restricted)
+//   model_not_found  the model name does not exist for this key
+export type AiSetupProblem = "key_missing" | "key_rejected" | "not_permitted" | "model_not_found";
+
 export class AiError extends Error {
   code: AiFailure;
   // Safe to log: never contains the key, the question or the answer.
   detail: string;
-  constructor(code: AiFailure, detail: string) {
+  // Set only when code is not_configured.
+  reason?: AiSetupProblem;
+  constructor(code: AiFailure, detail: string, reason?: AiSetupProblem) {
     super(`${code}: ${detail}`);
     this.name = "AiError";
     this.code = code;
     this.detail = detail;
+    this.reason = reason;
   }
 }
 

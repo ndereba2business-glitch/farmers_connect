@@ -13,6 +13,9 @@
 //   {"t":"delta","text":"..."}   a piece of the answer
 //   {"t":"done","truncated":bool}
 //   {"t":"error","code":"..."}   declined | busy | failed | not_configured
+// A not_configured reply also carries "reason" (key_missing, key_rejected,
+// not_permitted or model_not_found) so the owner can tell which setting to
+// fix. The app shows the farmer the same sentence for all of them.
 // Problems found before the answer starts come back as ordinary JSON with
 // an HTTP error status and a `code`: not_signed_in, not_configured,
 // empty, too_long, daily_limit.
@@ -73,7 +76,7 @@ Deno.serve(async (req) => {
   if (!user || !identity || user.is_anonymous) return json(401, { code: "not_signed_in" });
 
   const provider = getProvider();
-  if (!provider) return json(503, { code: "not_configured" });
+  if (!provider) return json(503, { code: "not_configured", reason: "key_missing" });
 
   let payload: { message?: unknown };
   try {
@@ -193,11 +196,12 @@ Deno.serve(async (req) => {
       send({ t: "done", truncated: result.truncated });
     } catch (error) {
       const code = error instanceof AiError ? error.code : "failed";
+      const reason = error instanceof AiError ? error.reason : undefined;
       const detail = error instanceof AiError ? error.detail : (error instanceof Error ? error.name : "unknown");
-      console.error(`clucky: ${provider.name} call failed — ${code} (${detail})`);
+      console.error(`clucky: ${provider.name} call failed — ${code} (${detail}) model=${provider.model}`);
       await admin.from("clucky_messages").delete().eq("id", saved.id);
       await refund();
-      send({ t: "error", code });
+      send(reason ? { t: "error", code, reason } : { t: "error", code });
     } finally {
       try { controller.close(); } catch { /* the client already went away */ }
     }

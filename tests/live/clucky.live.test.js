@@ -60,14 +60,29 @@ function ask(message, bearer) {
   });
 }
 
-// Reads the streamed reply exactly as the app does.
+// Reads the streamed reply exactly as the app does, and also keeps the
+// "reason" the function attaches when a setting is wrong.
 async function readAnswer(response) {
   let answer = startingAnswer();
-  const parser = createEventParser(event => { answer = applyEvent(answer, event); });
+  let reason;
+  const parser = createEventParser(event => {
+    answer = applyEvent(answer, event);
+    if (event.reason) reason = event.reason;
+  });
   parser.push(await response.text());
   parser.finish();
-  return answer;
+  return { ...answer, reason };
 }
+
+// What the owner has to do for each setup problem the function reports.
+const SETUP_HELP = {
+  key_missing: "the GEMINI_API_KEY function secret is not set",
+  key_rejected: "Google does not accept the key in the GEMINI_API_KEY function secret: create a new key in Google AI Studio and set it again",
+  not_permitted: "the Gemini key is real but may not make this call: check its API restrictions, and that the Gemini API is enabled for its Google project",
+  model_not_found: "the model name does not exist for this key: check the GEMINI_MODEL function secret, or the default in providers/gemini.ts"
+};
+const explain = (answer) =>
+  `code: ${answer.code}${answer.reason ? `, reason: ${answer.reason} — ${SETUP_HELP[answer.reason] || "see the function logs"}` : ""}`;
 
 // Whatever comes back, it must never carry a credential or internals.
 function assertNothingLeaks(text) {
@@ -117,7 +132,7 @@ test("a farmer gets a useful answer, and a follow-up keeps the thread", { skip: 
   if (first.status === 429) return t.skip("the test farmer has used today's questions");
   assert.equal(first.status, 200);
   const firstAnswer = await readAnswer(first);
-  assert.equal(firstAnswer.status, "done", `first answer finished (code: ${firstAnswer.code})`);
+  assert.equal(firstAnswer.status, "done", `first answer finished (${explain(firstAnswer)})`);
   assert.ok(firstAnswer.text.length > 40, "the answer has substance");
   assertNothingLeaks(firstAnswer.text);
 
@@ -125,7 +140,7 @@ test("a farmer gets a useful answer, and a follow-up keeps the thread", { skip: 
   const second = await ask("They are 4 weeks old and about 20 birds are affected.", bearer);
   assert.equal(second.status, 200);
   const secondAnswer = await readAnswer(second);
-  assert.equal(secondAnswer.status, "done", `follow-up finished (code: ${secondAnswer.code})`);
+  assert.equal(secondAnswer.status, "done", `follow-up finished (${explain(secondAnswer)})`);
   assert.match(secondAnswer.text, /cough|breath|respirat|vet|week|bird|kukohoa|daktari/i, "the follow-up is answered in context");
   assertNothingLeaks(secondAnswer.text);
 });

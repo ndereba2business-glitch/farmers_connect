@@ -132,6 +132,29 @@ test("failures become one of three plain codes", async () => {
   }
 });
 
+test("a setup problem says which setting is wrong, so the owner knows what to fix", () => {
+  const cases = [
+    [{ name: "BadRequestError", status: 400, body: '{"error":{"details":[{"reason":"API_KEY_INVALID"}]}}' }, "key_rejected"],
+    [{ name: "BadRequestError", status: 400, body: '{"error":{"message":"API key expired. Please renew the API key.","details":[{"reason":"API_KEY_EXPIRED"}]}}' }, "key_rejected"],
+    [{ name: "UnauthorizedError", status: 401 }, "key_rejected"],
+    // a real key that is not allowed to call Gemini is a different fix
+    [{ name: "PermissionDeniedError", status: 403, body: '{"error":{"details":[{"reason":"API_KEY_SERVICE_BLOCKED"}]}}' }, "not_permitted"],
+    [{ name: "PermissionDeniedError", status: 403, body: '{"error":{"details":[{"reason":"API_KEY_HTTP_REFERRER_BLOCKED"}]}}' }, "not_permitted"],
+    [{ name: "PermissionDeniedError", status: 403, body: '{"error":{"details":[{"reason":"SERVICE_DISABLED"}]}}' }, "not_permitted"],
+    [{ name: "PermissionDeniedError", status: 403 }, "not_permitted"],
+    [{ name: "NotFoundError", status: 404 }, "model_not_found"]
+  ];
+  for (const [thrown, reason] of cases) {
+    const failure = geminiFailure(thrown);
+    assert.equal(failure.code, "not_configured", thrown.name);
+    assert.equal(failure.reason, reason, thrown.name);
+    assert.match(failure.detail, new RegExp(reason));
+  }
+  // anything that is not the owner's setup carries no reason
+  assert.equal(geminiFailure({ name: "RateLimitError", status: 429 }).reason, undefined);
+  assert.equal(geminiFailure(new Error("x")).reason, undefined);
+});
+
 test("a model that refuses the thinking setting is asked once more without it", async () => {
   const calls = [];
   const client = {
@@ -187,4 +210,16 @@ test("blank turns are left out of what is sent", () => {
     toGeminiSteps([{ role: "user", content: "q" }, { role: "assistant", content: "  " }, { role: "user", content: "again" }]).map(s => s.content[0].text),
     ["q", "again"]
   );
+});
+
+test("Google's own reason token reaches the logs, and nothing else from the reply does", () => {
+  const failure = geminiFailure({
+    name: "BadRequestError", status: 400,
+    body: '{"error":{"message":"API key not valid. Please pass a valid API key.","details":[{"reason":"API_KEY_INVALID","metadata":{"service":"generativelanguage.googleapis.com"}}]}}'
+  });
+  assert.equal(failure.detail, "BadRequestError 400 API_KEY_INVALID (key_rejected)");
+
+  // a "reason" that is not a plain token is ignored rather than logged
+  const odd = geminiFailure({ name: "BadRequestError", status: 400, body: '{"reason":"the key AIzaSyD-not-a-real-key-000000000000000 is bad"}' });
+  assert.doesNotMatch(odd.detail, /AIza|the key/);
 });
