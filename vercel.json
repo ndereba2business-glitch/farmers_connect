@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "farmers-connect-fidelis-ndereba-s-projects.vercel.app"
+        }
+      ],
+      "destination": "https://farmers-connect-azure.vercel.app/:path*",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
