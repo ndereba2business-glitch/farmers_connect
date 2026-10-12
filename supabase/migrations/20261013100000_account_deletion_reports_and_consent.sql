@@ -42,6 +42,8 @@ comment on column public.farmer_profiles.clucky_consent_at is
 create table if not exists public.user_blocks (
   blocker text not null default public.request_identity(),
   blocked text not null check (char_length(btrim(blocked)) between 3 and 320),
+  -- the name the blocker saw, so their list of blocked members can show it
+  blocked_name text check (blocked_name is null or char_length(blocked_name) <= 60),
   created_at timestamptz not null default now(),
   primary key (blocker, blocked),
   constraint user_blocks_not_self check (blocker <> blocked)

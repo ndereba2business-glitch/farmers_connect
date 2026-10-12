@@ -1,5 +1,6 @@
 import NotificationSettings from "../components/NotificationSettings";
 import DeleteAccountSection from "../components/DeleteAccountSection";
+import BlockedMembers from "../components/BlockedMembers";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -659,6 +660,8 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      <BlockedMembers />
 
       <DeleteAccountSection />
 

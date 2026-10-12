@@ -290,3 +290,6 @@
   }
   .ck-list { padding: 18px; }
 }
+
+/* hidden until the person has agreed to AI processing */
+.ck-composer[hidden] { display: none; }

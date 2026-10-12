@@ -159,6 +159,8 @@ export function createMockBackend() {
       const problem = (status, code, extra = {}) =>
         route.fulfill({ status, headers: cors, contentType: "application/json", body: JSON.stringify({ code, ...extra }) });
       if (!current) return problem(401, "not_signed_in");
+      // nothing is sent to the AI service before the person has agreed
+      if (!current.cluckyConsentAt) return problem(403, "consent_required");
 
       const { message } = JSON.parse(req.postData() || "{}");
       const { mode, reply } = db.clucky;

@@ -9,7 +9,6 @@ import { after, before, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { newUserPage, startApp } from "./harness.js";
 import { MOCK_ANON_KEY, MOCK_SUPABASE_URL, createMockBackend } from "./mockBackend.js";
-import { login } from "./flows.js";
 
 const FARMER = { email: "farmer@account.test", password: "farmer-pass", role: "farmer" };
 const VET = { email: "vet@account.test", password: "vet-pass", role: "vet" };

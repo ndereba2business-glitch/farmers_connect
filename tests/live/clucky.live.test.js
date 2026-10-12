@@ -121,8 +121,35 @@ test("an over-long question is refused before anything is spent", { skip: noFarm
   assert.equal(body.code, "too_long");
 });
 
+// Records (or withdraws) the test farmer's agreement to AI processing, the
+// way the Clucky page does: on their own profile, as themselves.
+async function setConsent(bearer, at) {
+  const response = await fetch(`${URL_BASE}/rest/v1/farmer_profiles?user_email=eq.${encodeURIComponent(creds.TEST_FARMER_EMAIL)}`, {
+    method: "PATCH",
+    headers: { apikey: ANON, Authorization: `Bearer ${bearer}`, "Content-Type": "application/json", Prefer: "return=representation" },
+    body: JSON.stringify({ clucky_consent_at: at })
+  });
+  assert.equal(response.status, 200, "the test farmer can update their own profile");
+  assert.equal((await response.json()).length, 1, "the test farmer has a profile");
+}
+
+test("nothing is sent to the AI service until the farmer has agreed", { skip: noFarmer, timeout: 60000 }, async () => {
+  const bearer = await signIn();
+  await setConsent(bearer, null);
+  try {
+    const response = await ask("How warm should a brooder be?", bearer);
+    const body = await response.json();
+    if (response.status === 503) return assert.equal(body.code, "not_configured");
+    assert.equal(response.status, 403);
+    assert.equal(body.code, "consent_required");
+  } finally {
+    await setConsent(bearer, new Date().toISOString());
+  }
+});
+
 test("a farmer gets a useful answer, and a follow-up keeps the thread", { skip: noFarmer, timeout: 180000 }, async (t) => {
   const bearer = await signIn();
+  await setConsent(bearer, new Date().toISOString());
 
   const first = await ask("My chickens are coughing. What should I check?", bearer);
   if (first.status === 503) {
