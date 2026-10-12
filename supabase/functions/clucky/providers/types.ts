@@ -27,9 +27,12 @@ export type AiResult = {
 
 // Why a call failed, in terms the app can explain to a farmer:
 //   not_configured  the key or model name is wrong: only the owner can fix it
-//   busy            rate limited, overloaded or unreachable: worth retrying
+//   busy            throttled for a moment, overloaded or unreachable:
+//                   worth retrying shortly
+//   quota           the service's allowance for the day is used up: retrying
+//                   now is pointless. This is the one a free plan runs into
 //   failed          anything else
-export type AiFailure = "not_configured" | "busy" | "failed";
+export type AiFailure = "not_configured" | "busy" | "quota" | "failed";
 
 // Which of the owner's settings is wrong when the code is not_configured.
 // Each one has a different fix, and none of them says anything secret:
@@ -47,12 +50,15 @@ export class AiError extends Error {
   detail: string;
   // Set only when code is not_configured.
   reason?: AiSetupProblem;
-  constructor(code: AiFailure, detail: string, reason?: AiSetupProblem) {
+  // Set when the service said how long to wait before trying again.
+  retryAfterMs?: number;
+  constructor(code: AiFailure, detail: string, reason?: AiSetupProblem, retryAfterMs?: number) {
     super(`${code}: ${detail}`);
     this.name = "AiError";
     this.code = code;
     this.detail = detail;
     this.reason = reason;
+    this.retryAfterMs = retryAfterMs;
   }
 }
 

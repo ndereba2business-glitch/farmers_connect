@@ -76,7 +76,9 @@ export function cluckyErrorMessage(code, details = {}) {
     case "too_long":
       return `That question is too long. Keep it under ${MAX_QUESTION_LENGTH.toLocaleString()} characters.`;
     case "daily_limit":
-      return `You've reached today's limit of ${details.limit || 30} questions. Clucky will be ready again tomorrow. If birds are sick or dying, use Ask Vet now.`;
+      return `You've reached today's limit of ${details.limit || 15} questions. Clucky will be ready again tomorrow. If birds are sick or dying, use Ask Vet now.`;
+    case "service_limit":
+      return "Clucky has answered as many questions as it can for now. Please try again later today or tomorrow. If birds are sick or dying, use Ask Vet now. Your question is still in the box.";
     case "declined":
       return "Clucky couldn't answer that one. Try asking it another way, or ask a vet. Your question is still in the box.";
     case "busy":

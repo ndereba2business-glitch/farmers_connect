@@ -135,6 +135,8 @@ export function createMockBackend() {
       db.clucky.asked.push({ user: current.email, message });
       if (mode === "not_configured") return problem(503, "not_configured");
       if (mode === "daily_limit") return problem(429, "daily_limit", { limit: 30 });
+      // the allowance everyone shares is used up: refused before any stream
+      if (mode === "service_limit") return problem(429, "service_limit");
 
       const events = [];
       if (mode === "declined") {
@@ -192,6 +194,10 @@ export function createMockBackend() {
 
       if (table.startsWith("rpc/")) db.rpcCalls.push({ name: table.slice(4), user: current?.email });
       if (table.startsWith("rpc/")) {
+        if (table === "rpc/clucky_usage_summary") {
+          if (!current?.admin) return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ code: "42501", message: "Admins only" }) });
+          return reply(200, db.cluckyUsage || []);
+        }
         if (table === "rpc/supplier_contact_summary") {
           const mine = ownProfileIds(current);
           const byProduct = new Map();

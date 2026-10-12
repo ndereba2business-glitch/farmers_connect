@@ -270,6 +270,8 @@
   font-size: 12px;
   text-align: center;
 }
+/* the two sentences wrap as wholes, never in the middle of one */
+.ck-foot span { display: inline-block; }
 /* a full-height tap area for the one link in the footer */
 .ck-foot a {
   display: inline-flex;
