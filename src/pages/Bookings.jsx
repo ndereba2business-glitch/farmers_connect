@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import VisitReportModal from "../components/VisitReportModal";
 import FarmerMessagesPanel from "../components/FarmerMessagesPanel";
+import SupplierDirectory from "../components/SupplierDirectory";
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
@@ -778,18 +779,9 @@ export default function Bookings() {
 
       {/* ====== SUPPLIERS TAB ====== */}
       {activeTab === "suppliers" && (
-        <div style={{
-          textAlign: "center", padding: "60px 20px",
-          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
-        }}>
-          <Store size={40} color="#9ca3af" aria-hidden="true" style={{ display: "block", margin: "0 auto 12px" }} />
-          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
-            Verified Suppliers Coming Soon
-          </h3>
-          <p style={{ color: "#9ca3af", fontSize: "14px" }}>
-            Find trusted feed, medicine and equipment suppliers near you.
-          </p>
-        </div>
+        <SupplierDirectory
+          intro="Need a vaccine, a medicine or a feed your vet mentioned? These suppliers have been approved by our team. Call or WhatsApp them to ask what they have and agree a price."
+        />
       )}
 
       {/* ====== BOOK A VISIT MODAL ====== */}

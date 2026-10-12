@@ -1,0 +1,76 @@
+/* Verified suppliers and what they list (sd-). Used on /suppliers and in
+   the Suppliers tab of Ask Vet. Mobile first: one column, 44px controls. */
+.sd-root { display: grid; gap: 16px; min-width: 0; }
+.sd-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sd-intro { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fc-muted); max-width: 70ch; }
+
+.sd-tools { display: grid; gap: 10px; min-width: 0; }
+.sd-search {
+  display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px;
+  border: 1px solid var(--fc-line); border-radius: var(--fc-radius-md); background: var(--fc-surface); color: var(--fc-muted);
+}
+.sd-search:focus-within { border-color: var(--fc-primary); outline: 2px solid var(--fc-primary-line); outline-offset: 1px; }
+.sd-search input {
+  flex: 1; min-width: 0; min-height: 44px; border: none; outline: none; background: transparent;
+  font-size: 16px; color: var(--fc-ink);
+}
+/* the chips scroll sideways inside their own row; the page never does */
+.sd-filter { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.sd-chip {
+  flex: none; min-height: 44px; padding: 0 14px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-pill);
+  background: var(--fc-surface); color: var(--fc-ink-2); font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.sd-chip--on { background: var(--fc-primary); border-color: var(--fc-primary); color: #fff; }
+
+.sd-count { margin: 0; font-size: 13px; color: var(--fc-muted); }
+.sd-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.sd-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+.sd-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sd-logo {
+  flex: none; width: 48px; height: 48px; border-radius: var(--fc-radius-md); overflow: hidden;
+  display: grid; place-items: center; background: var(--fc-brand); color: var(--fc-brand-ink); font-weight: 700;
+}
+.sd-logo img { width: 100%; height: 100%; object-fit: cover; }
+.sd-title { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.sd-title h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fc-ink); overflow-wrap: anywhere; }
+
+.sd-cats, .sd-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.sd-facts { flex-direction: column; gap: 4px; font-size: 13px; color: var(--fc-muted); }
+.sd-facts li { display: flex; align-items: flex-start; gap: 6px; overflow-wrap: anywhere; }
+.sd-facts svg { margin-top: 2px; }
+.sd-about { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--fc-ink-2); overflow-wrap: anywhere; }
+
+.sd-products { border-top: 1px solid var(--fc-line); padding-top: 12px; }
+.sd-products h4 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--fc-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.sd-products ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.sd-products li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; }
+.sd-product-name { font-size: 14px; font-weight: 600; color: var(--fc-ink); overflow-wrap: anywhere; }
+.sd-product-price { font-size: 14px; font-weight: 700; color: var(--fc-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sd-product-note { grid-column: 1 / -1; font-size: 12px; color: var(--fc-muted); }
+.sd-more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; font-size: 13.5px; font-weight: 600; color: var(--fc-primary); }
+.sd-none { margin: 0; font-size: 13px; color: var(--fc-muted); }
+
+.sd-contact { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.sd-contact > .fc-btn { flex: 1 1 120px; }
+
+.sd-error {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px;
+  border: 1px solid #fecaca; border-radius: var(--fc-radius-md); background: var(--fc-danger-soft); color: var(--fc-danger);
+  font-size: 14px; font-weight: 600;
+}
+.sd-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; color: var(--fc-muted); }
+.sd-empty h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
+.sd-empty p { margin: 0 0 6px; max-width: 46ch; font-size: 14px; line-height: 1.5; }
+
+.sd-skeleton span { display: block; height: 14px; border-radius: 6px; background: var(--fc-line); }
+.sd-skeleton span:nth-child(1) { width: 60%; height: 20px; }
+.sd-skeleton span:nth-child(2) { width: 85%; }
+.sd-skeleton span:nth-child(3) { width: 40%; }
+
+.sd-note { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--fc-muted); max-width: 80ch; }
+
+@media (min-width: 768px) {
+  .sd-tools { grid-template-columns: minmax(220px, 320px) minmax(0, 1fr); align-items: center; }
+  .sd-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
