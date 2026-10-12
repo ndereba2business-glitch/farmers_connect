@@ -8,7 +8,7 @@ for mid-range and low-end Android phones on slow or unreliable mobile data.
 
 | Role | What they can do |
 | --- | --- |
-| **Farmer** | Track batches and vaccinations, plan tasks, keep farm finances, work out feed with the feed calculator, keep a farm photo gallery, find suppliers in the marketplace, book and message a vet (Ask Vet), join the community chat and ask Clucky, the AI farm assistant |
+| **Farmer** | Track batches and vaccinations, plan tasks, work out feed with the feed calculator, keep a farm photo gallery, find suppliers in the marketplace, book and message a vet (Ask Vet), join the community chat and ask Clucky, the AI farm assistant |
 | **Vet** | Vet dashboard, appointments (accept or decline visits), the farmers they work with and their medical records, and a vet profile that an admin verifies |
 | **Supplier** | Their own dashboard, product listings with photos, stock and prices, and a supplier profile that an admin verifies |
 | **Admin** | Approve vets and suppliers, moderate the community (reports, paused members, blocked words), take down marketplace listings and see platform stats |
@@ -17,7 +17,7 @@ for mid-range and low-end Android phones on slow or unreliable mobile data.
 
 - **My Farm** – batches, vaccination schedules and medical records, with reminders when something is due.
 - **Feed calculator** – week-by-week feed amounts for broilers, layers and kienyeji birds, not a flat figure per phase.
-- **Tasks and finance** – a to-do list for the farm and a simple record of income and expenses.
+- **Tasks** – a to-do list for the farm.
 - **Marketplace (contact-first)** – farmers browse listings from verified suppliers and contact them by phone or WhatsApp. In-app ordering exists in the code but is switched off (`IN_APP_ORDERING` in `src/config/features.js`).
 - **Ask Vet** – find a vet, request a farm visit, filter by county, and see real suppliers and their listings.
 - **Community** – one group chat for everyone, with replies, reactions, reporting and moderation. Blocked words are refused by the database.
