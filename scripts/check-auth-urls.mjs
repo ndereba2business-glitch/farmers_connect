@@ -85,7 +85,13 @@ try {
   else {
     fail(`Supabase's Site URL is ${siteUrl}, not ${origin}`,
       `Supabase > Authentication > URL Configuration > Site URL: set it to ${origin}`);
-    if (!(await opensForAnyone(`${siteUrl}/`))) console.log(`      and ${siteUrl} does not open for the public, so those people are locked out`);
+    // vercel.json forwards the team's own copy of production to the public
+    // address, which hides this mistake for as long as Vercel lets the
+    // public reach that copy at all.
+    const res = await fetch(`${siteUrl}/`, { redirect: "manual" });
+    const forwardsTo = res.headers.get("location") || "";
+    if (forwardsTo.startsWith(origin)) console.log(`      for now ${siteUrl} forwards to ${origin}, so people still arrive (vercel.json); fix the setting anyway`);
+    else if (res.status !== 200) console.log(`      and ${siteUrl} does not open for the public, so those people are locked out`);
   }
 } catch (err) {
   console.error(`Could not finish the check: ${err.message}`);
