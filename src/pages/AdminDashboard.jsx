@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import CommunityModeration from "../components/CommunityModeration";
+import CluckyUsage from "../components/CluckyUsage";
 import AdminListings from "../components/AdminListings";
 import AdminRequests from "../components/AdminRequests";
 import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, CheckCircle2, XCircle, Ban, PhoneCall, IdCard, MapPin, Siren, Package, Phone, Truck
@@ -186,7 +187,7 @@ export default function AdminDashboard() {
         background: "#f3f4f6", borderRadius: "12px",
         padding: "4px", marginBottom: "20px", width: "fit-content", flexWrap: "wrap"
       }}>
-        {["vets", "suppliers", "community", "requests", "users", "products", "batches"].map(tab => (
+        {["vets", "suppliers", "community", "requests", "clucky", "users", "products", "batches"].map(tab => (
           <button
             key={tab}
             className="fc-tap"
@@ -240,6 +241,9 @@ export default function AdminDashboard() {
 
       {/* ═══════════ COMMUNITY TAB ═══════════ */}
       {activeTab === "community" && <CommunityModeration onOpenCount={setOpenReports} />}
+
+      {/* ═══════════ CLUCKY TAB: usage of the AI service ═══════════ */}
+      {activeTab === "clucky" && <CluckyUsage />}
 
       {/* ═══════════ VETS TAB ═══════════ */}
       {activeTab === "vets" && (

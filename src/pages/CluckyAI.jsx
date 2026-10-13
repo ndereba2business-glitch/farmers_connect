@@ -373,7 +373,8 @@ export default function CluckyAI() {
       </div>
 
       <p className="ck-foot">
-        AI answers can be wrong. Sick birds? <Link to="/bookings">Ask a vet</Link>
+        <span>AI can be wrong. Don't share personal details.</span>{" "}
+        <span>Sick birds? <Link to="/bookings">Ask a vet</Link></span>
       </p>
     </div>
   );

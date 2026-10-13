@@ -11,6 +11,12 @@ import {
 } from "../../supabase/functions/clucky/providers/gemini.ts";
 import { AiError } from "../../supabase/functions/clucky/providers/types.ts";
 
+// Tests never really wait between attempts; they record how long the
+// provider asked to wait instead.
+const waits = [];
+const noWait = async (ms) => { waits.push(ms); };
+const provider = (client, model) => createGeminiProvider(client, model, noWait);
+
 // A client that records what it was asked and replays the given events.
 function fakeClient(events, { fail } = {}) {
   const calls = [];
@@ -41,7 +47,7 @@ const REQUEST = {
 
 test("the whole conversation is sent, so a follow-up is understood", async () => {
   const client = fakeClient([delta("Keep them warm."), completed()]);
-  await createGeminiProvider(client).generate(REQUEST, () => {});
+  await provider(client).generate(REQUEST, () => {});
 
   const { params } = client.calls[0];
   assert.deepEqual(params.input.map(step => step.type), ["user_input", "model_output", "user_input"]);
@@ -52,7 +58,7 @@ test("the whole conversation is sent, so a follow-up is understood", async () =>
 
 test("nothing is stored at Google, the answer is streamed and the cost is capped", async () => {
   const client = fakeClient([delta("ok"), completed()]);
-  await createGeminiProvider(client).generate(REQUEST, () => {});
+  await provider(client).generate(REQUEST, () => {});
 
   const { params, options } = client.calls[0];
   assert.equal(params.store, false);
@@ -66,14 +72,14 @@ test("nothing is stored at Google, the answer is streamed and the cost is capped
 test("the model is the economical default unless one is named", async () => {
   assert.match(DEFAULT_GEMINI_MODEL, /^gemini-.*flash/);
   const byDefault = fakeClient([delta("a"), completed()]);
-  await createGeminiProvider(byDefault).generate(REQUEST, () => {});
+  await provider(byDefault).generate(REQUEST, () => {});
   assert.equal(byDefault.calls[0].params.model, DEFAULT_GEMINI_MODEL);
 
   const named = fakeClient([delta("a"), completed()]);
-  const provider = createGeminiProvider(named, "gemini-3.8-flash");
-  await provider.generate(REQUEST, () => {});
+  const chosen = provider(named, "gemini-3.8-flash");
+  await chosen.generate(REQUEST, () => {});
   assert.equal(named.calls[0].params.model, "gemini-3.8-flash");
-  assert.equal(provider.model, "gemini-3.8-flash");
+  assert.equal(chosen.model, "gemini-3.8-flash");
 });
 
 test("the answer arrives piece by piece and comes back whole", async () => {
@@ -87,7 +93,7 @@ test("the answer arrives piece by piece and comes back whole", async () => {
     delta("Call a vet if more start coughing."),
     completed("completed", { total_input_tokens: 900, total_output_tokens: 60 })
   ]);
-  const result = await createGeminiProvider(client).generate(REQUEST, text => pieces.push(text));
+  const result = await provider(client).generate(REQUEST, text => pieces.push(text));
 
   assert.deepEqual(pieces, ["Separate the sick birds. ", "Call a vet if more start coughing."]);
   assert.equal(result.text, "Separate the sick birds. Call a vet if more start coughing.");
@@ -99,15 +105,15 @@ test("the answer arrives piece by piece and comes back whole", async () => {
 
 test("an answer cut off at the ceiling is marked so the farmer can ask for the rest", async () => {
   const client = fakeClient([delta("Step 1: clean the drinkers"), completed("incomplete")]);
-  const result = await createGeminiProvider(client).generate(REQUEST, () => {});
+  const result = await provider(client).generate(REQUEST, () => {});
   assert.equal(result.truncated, true);
   assert.equal(result.declined, false);
 });
 
 test("an empty reply is reported as declined, not shown as a blank answer", async () => {
-  const blocked = await createGeminiProvider(fakeClient([completed()])).generate(REQUEST, () => {});
+  const blocked = await provider(fakeClient([completed()])).generate(REQUEST, () => {});
   assert.equal(blocked.declined, true);
-  const spaces = await createGeminiProvider(fakeClient([delta("  \n "), completed()])).generate(REQUEST, () => {});
+  const spaces = await provider(fakeClient([delta("  \n "), completed()])).generate(REQUEST, () => {});
   assert.equal(spaces.declined, true);
 });
 
@@ -125,7 +131,7 @@ test("failures become one of three plain codes", async () => {
   ];
   for (const [thrown, code] of cases) {
     await assert.rejects(
-      createGeminiProvider(fakeClient([], { fail: thrown })).generate(REQUEST, () => {}),
+      provider(fakeClient([], { fail: thrown })).generate(REQUEST, () => {}),
       error => error instanceof AiError && error.code === code,
       `${thrown.name} ${thrown.status ?? thrown.statusCode ?? ""} -> ${code}`
     );
@@ -166,7 +172,7 @@ test("a model that refuses the thinking setting is asked once more without it", 
       }
     }
   };
-  const result = await createGeminiProvider(client, "some-other-model").generate(REQUEST, () => {});
+  const result = await provider(client, "some-other-model").generate(REQUEST, () => {});
   assert.equal(result.text, "Answer.");
   assert.equal(calls.length, 2);
   assert.equal(calls[1].generation_config.thinking_level, undefined);
@@ -174,20 +180,20 @@ test("a model that refuses the thinking setting is asked once more without it", 
 
   // a rejected key is not retried: nothing would change
   const badKey = fakeClient([], { fail: { name: "BadRequestError", status: 400, body: "API_KEY_INVALID" } });
-  await assert.rejects(createGeminiProvider(badKey).generate(REQUEST, () => {}), error => error.code === "not_configured");
+  await assert.rejects(provider(badKey).generate(REQUEST, () => {}), error => error.code === "not_configured");
   assert.equal(badKey.calls.length, 1);
 });
 
 test("a stream that breaks before any text is a failure; one that breaks after keeps what arrived", async () => {
   await assert.rejects(
-    createGeminiProvider(fakeClient([{ event_type: "error", error: { code: "unavailable" } }])).generate(REQUEST, () => {}),
+    provider(fakeClient([{ event_type: "error", error: { code: "unavailable" } }])).generate(REQUEST, () => {}),
     error => error instanceof AiError && error.code === "busy"
   );
   await assert.rejects(
-    createGeminiProvider(fakeClient([completed("failed")])).generate(REQUEST, () => {}),
+    provider(fakeClient([completed("failed")])).generate(REQUEST, () => {}),
     error => error instanceof AiError && error.code === "failed"
   );
-  const partial = await createGeminiProvider(fakeClient([delta("Give clean water."), { event_type: "error", error: { code: "unavailable" } }])).generate(REQUEST, () => {});
+  const partial = await provider(fakeClient([delta("Give clean water."), { event_type: "error", error: { code: "unavailable" } }])).generate(REQUEST, () => {});
   assert.equal(partial.text, "Give clean water.");
 });
 
@@ -222,4 +228,87 @@ test("Google's own reason token reaches the logs, and nothing else from the repl
   // a "reason" that is not a plain token is ignored rather than logged
   const odd = geminiFailure({ name: "BadRequestError", status: 400, body: '{"reason":"the key AIzaSyD-not-a-real-key-000000000000000 is bad"}' });
   assert.doesNotMatch(odd.detail, /AIza|the key/);
+});
+
+// ---------- the free plan: a few requests a minute, a fixed number a day ----------
+
+const perMinute = { name: "RateLimitError", status: 429, body: JSON.stringify({ error: { code: 429, status: "RESOURCE_EXHAUSTED", details: [
+  { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [{ quotaMetric: "generativelanguage.googleapis.com/generate_content_free_tier_requests", quotaId: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier" }] },
+  { "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "5s" }
+] } }) };
+const perDay = { name: "RateLimitError", status: 429, body: JSON.stringify({ error: { code: 429, status: "RESOURCE_EXHAUSTED", details: [
+  { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [{ quotaMetric: "generativelanguage.googleapis.com/generate_content_free_tier_requests", quotaId: "GenerateRequestsPerDayPerProjectPerModel-FreeTier" }] },
+  { "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "41000s" }
+] } }) };
+
+// Fails with each given error in turn, then answers.
+function flakyClient(errors) {
+  const calls = [];
+  return {
+    calls,
+    interactions: {
+      async create(params) {
+        calls.push(params);
+        if (errors.length) throw errors.shift();
+        return (async function* () { yield delta("Keep them warm."); yield completed(); })();
+      }
+    }
+  };
+}
+
+test("turned away for a moment, Clucky waits as long as it was told and tries once more", async () => {
+  waits.length = 0;
+  const client = flakyClient([perMinute]);
+  const result = await provider(client).generate(REQUEST, () => {});
+  assert.equal(result.text, "Keep them warm.", "the farmer gets the answer, a little later");
+  assert.equal(client.calls.length, 2);
+  assert.deepEqual(waits, [5000]);
+});
+
+test("the wait is never long, because someone is watching the screen", async () => {
+  waits.length = 0;
+  const slow = { name: "RateLimitError", status: 429, body: JSON.stringify({ error: { details: [{ retryDelay: "55s" }] } }) };
+  await provider(flakyClient([slow])).generate(REQUEST, () => {});
+  assert.deepEqual(waits, [8000]);
+
+  waits.length = 0;
+  await provider(flakyClient([{ name: "InternalServerError", status: 503 }])).generate(REQUEST, () => {});
+  assert.deepEqual(waits, [3000], "no hint from the service: a short default");
+});
+
+test("it tries again once, not for ever", async () => {
+  waits.length = 0;
+  const client = flakyClient([perMinute, perMinute, perMinute]);
+  await assert.rejects(provider(client).generate(REQUEST, () => {}), error => error instanceof AiError && error.code === "busy");
+  assert.equal(client.calls.length, 2);
+  assert.equal(waits.length, 1);
+});
+
+test("a used-up daily allowance is recognised and not retried", async () => {
+  waits.length = 0;
+  const client = flakyClient([perDay]);
+  await assert.rejects(provider(client).generate(REQUEST, () => {}), error => error instanceof AiError && error.code === "quota");
+  assert.equal(client.calls.length, 1, "asking again would only be refused again");
+  assert.deepEqual(waits, []);
+
+  const failure = geminiFailure(perDay);
+  assert.equal(failure.code, "quota");
+  assert.match(failure.detail, /429 GenerateRequestsPerDayPerProjectPerModel-FreeTier/, "the log names the limit that was hit");
+  assert.equal(geminiFailure(perMinute).code, "busy");
+  assert.equal(geminiFailure({ name: "RateLimitError", status: 429 }).code, "busy", "an unexplained 429 is treated as momentary");
+});
+
+test("nothing is retried once part of the answer has been shown", async () => {
+  waits.length = 0;
+  const client = {
+    calls: 0,
+    interactions: {
+      async create() {
+        client.calls++;
+        return (async function* () { yield delta("Give clean "); throw { name: "RateLimitError", status: 429 }; })();
+      }
+    }
+  };
+  await assert.rejects(provider(client).generate(REQUEST, () => {}), error => error.code === "busy");
+  assert.equal(client.calls, 1, "a second attempt would write the answer twice");
 });

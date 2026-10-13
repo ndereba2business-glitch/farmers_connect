@@ -18,6 +18,13 @@ export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
 // Give up on a call that has produced nothing for this long.
 const TIMEOUT_MS = 60_000;
 
+// A free plan allows only a few requests a minute, shared by every farmer.
+// When a request is turned away for that reason it is tried once more
+// after a short wait, so the farmer sees a slightly slower answer instead
+// of an error. Never longer than this: someone is watching the screen.
+const RETRY_WAIT_MS = 3_000;
+const MAX_RETRY_WAIT_MS = 8_000;
+
 type TextPart = { type: "text"; text: string };
 export type GeminiStep = { type: "user_input" | "model_output"; content: TextPart[] };
 
@@ -47,7 +54,7 @@ function statusOf(error: unknown): number {
   return Number(e.status ?? e.statusCode) || 0;
 }
 
-// Turns whatever the SDK threw into one of our three failure codes.
+// Turns whatever the SDK threw into one of our failure codes.
 // Reads the status and a short reason only: never the message body, which
 // could echo part of the request.
 export function geminiFailure(error: unknown): AiError {
@@ -74,16 +81,30 @@ export function geminiFailure(error: unknown): AiError {
     reason = "model_not_found";
   }
 
+  // "Too many requests" means one of two things. A per-minute limit clears
+  // by itself in seconds. A per-day limit does not clear until the next
+  // day, and Google says which by naming the quota that was exceeded.
+  const quotaId = status === 429 ? (/"quotaId"\s*:\s*"([A-Za-z0-9-]{3,90})"/.exec(body)?.[1] || "") : "";
+  const dayQuota = status === 429 && /PerDay/i.test(quotaId || body);
+  const seconds = Number(/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(body)?.[1]);
+  const retryAfterMs = status === 429 && seconds > 0 ? Math.round(seconds * 1000) : undefined;
+
   let code: AiFailure = "failed";
   if (reason) code = "not_configured";
+  else if (dayQuota) code = "quota";
   else if (status === 429 || status >= 500) code = "busy";
   else if (/Connection|Timeout|Abort/i.test(name)) code = "busy";
 
-  const parts = [name, status || "", googleReason, reason ? `(${reason})` : ""].filter(Boolean);
-  return new AiError(code, parts.join(" "), reason);
+  const parts = [name, status || "", googleReason, quotaId, reason ? `(${reason})` : ""].filter(Boolean);
+  return new AiError(code, parts.join(" "), reason, retryAfterMs);
 }
 
-export function createGeminiProvider(client: GeminiClient, model: string = DEFAULT_GEMINI_MODEL): AiProvider {
+// `wait` is only passed by tests, so they do not really sleep.
+export function createGeminiProvider(
+  client: GeminiClient,
+  model: string = DEFAULT_GEMINI_MODEL,
+  wait: (ms: number) => Promise<void> = ms => new Promise(resolve => setTimeout(resolve, ms))
+): AiProvider {
   return {
     name: "gemini",
     model,
@@ -108,17 +129,34 @@ export function createGeminiProvider(client: GeminiClient, model: string = DEFAU
         }
       }, { timeout_ms: TIMEOUT_MS });
 
-      try {
-        let stream: AsyncIterable<StreamEvent>;
+      const start = async (): Promise<AsyncIterable<StreamEvent>> => {
         try {
-          stream = await open(true);
+          return await open(true);
         } catch (error) {
           // Not every model accepts a thinking level. If the request itself
           // was refused (and not because of the key), ask once more without
           // it, so a model named in GEMINI_MODEL does not fail every question.
           const refused = geminiFailure(error);
           if (statusOf(error) !== 400 || refused.code === "not_configured") throw refused;
-          stream = await open(false);
+          try {
+            return await open(false);
+          } catch (again) {
+            throw geminiFailure(again);
+          }
+        }
+      };
+
+      try {
+        let stream: AsyncIterable<StreamEvent>;
+        try {
+          stream = await start();
+        } catch (error) {
+          // Turned away for a moment, before anything was written: wait and
+          // try once more. A used-up daily allowance is not retried.
+          const failure = error instanceof AiError ? error : geminiFailure(error);
+          if (failure.code !== "busy") throw failure;
+          await wait(Math.min(failure.retryAfterMs ?? RETRY_WAIT_MS, MAX_RETRY_WAIT_MS));
+          stream = await start();
         }
 
         for await (const event of stream) {

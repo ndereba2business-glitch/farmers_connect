@@ -1,0 +1,79 @@
+/* The admin dashboard's Clucky usage tab (cu-). */
+
+.cu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cu-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--fc-muted);
+}
+
+/* the one sentence that answers "do we need to pay yet?" */
+.cu-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-md);
+  background: var(--fc-surface);
+  color: var(--fc-ink-2);
+}
+.cu-verdict p {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.cu-verdict svg { margin-top: 1px; }
+.cu-verdict--ok { background: var(--fc-success-soft); border-color: var(--fc-primary-line); color: #166534; }
+.cu-verdict--watch { background: var(--fc-warning-soft); border-color: #fde68a; color: #92400e; }
+.cu-verdict--act { background: var(--fc-danger-soft); border-color: #fecaca; color: #991b1b; }
+
+.cu-card { min-width: 0; }
+
+.cu-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.cu-table th,
+.cu-table td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid #f3f4f6;
+  white-space: nowrap;
+}
+.cu-table th:first-child,
+.cu-table td:first-child { text-align: left; padding-left: 0; }
+.cu-table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fc-muted);
+  border-bottom-color: var(--fc-line);
+}
+.cu-table tbody th {
+  font-weight: 600;
+  color: var(--fc-ink);
+}
+.cu-table tbody tr:last-child th,
+.cu-table tbody tr:last-child td { border-bottom: 0; }
+.cu-row--out td:nth-child(3) { color: var(--fc-warning); font-weight: 600; }
+
+.cu-note {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fc-muted);
+}

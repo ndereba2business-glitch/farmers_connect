@@ -228,6 +228,61 @@ begin
   exception when insufficient_privilege then passed := passed + 1;
   end;
   reset role;
+
+  -- usage figures for deciding about the paid tier: recorded by the
+  -- function, read only by an admin, and only as counts
+  delete from public.clucky_service_days;
+  perform public.clucky_record_answer(farmer, 900, 60);
+  perform public.clucky_record_answer(farmer, 1100, -5);
+  select input_tokens, output_tokens into n, i from public.clucky_usage where user_id = farmer;
+  if n = 2000 and i = 60 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL K13 answer cost not recorded (%s in, %s out); ', n, i); end if;
+  perform public.clucky_record_service_event('quota');
+  perform public.clucky_record_service_event('quota');
+  perform public.clucky_record_service_event('failure');
+  select quota_hits, failures into n, i from public.clucky_service_days;
+  select (last_quota_hit > now() - interval '1 minute') and questions_today >= 1 into b from public.clucky_day_state();
+  if n = 2 and i = 1 and coalesce(b, false) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K14 service refusals not recorded; '; end if;
+
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+  begin
+    select count(*) into n from public.clucky_service_days;
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL K15 member read Clucky service records; '; end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    perform public.clucky_record_answer(farmer, 1, 1);
+    failed := failed + 1; report := report || 'FAIL K16 member wrote Clucky usage figures; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    perform public.clucky_record_service_event('quota');
+    failed := failed + 1; report := report || 'FAIL K17 member could switch Clucky off for everyone; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  begin
+    perform * from public.clucky_usage_summary(7);
+    failed := failed + 1; report := report || 'FAIL K18 member read Clucky usage summary; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- an admin (app_metadata, not self-declared) reads the summary
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_a, 'email', email_a, 'phone', '', 'role', 'authenticated',
+    'app_metadata', json_build_object('role', 'admin'))::text, true);
+  select count(*) into i from public.clucky_usage_summary(7);
+  select s.questions >= 1 and s.people >= 1 and s.input_tokens >= 2000 and s.output_tokens >= 60 and s.quota_hits = 2 and s.failures = 1 into b
+    from public.clucky_usage_summary(7) s order by s.day desc limit 1;
+  if i = 7 and coalesce(b, false) then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL K19 admin summary wrong (%s days); ', i); end if;
+
+  -- calling yourself an admin in user_metadata changes nothing
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_b, 'email', email_b, 'phone', '', 'role', 'authenticated',
+    'user_metadata', json_build_object('role', 'admin'))::text, true);
+  begin
+    perform * from public.clucky_usage_summary(7);
+    failed := failed + 1; report := report || 'FAIL K20 self-declared admin read Clucky usage summary; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  reset role;
   perform set_config('request.jwt.claims', claims_f, true);
   set local role authenticated;
 
@@ -593,12 +648,12 @@ begin
 
   -- removing default access must not lock real users out: a signed-in
   -- farmer can query every table (the rules decide which rows come back).
-  -- Two exceptions, closed on purpose: clucky_usage belongs to the edge
-  -- function alone, and contact_events is write-only, so
+  -- Exceptions, closed on purpose: clucky_usage and clucky_service_days
+  -- belong to the edge function alone, and contact_events is write-only, so
   -- nobody can read who contacted whom (check F6).
   n := 0;
   for rec in select c.relname from pg_class c
-              where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and c.relname not in ('contact_events', 'clucky_usage') loop
+              where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and c.relname not in ('contact_events', 'clucky_usage', 'clucky_service_days') loop
     begin
       execute format('select count(*) from public.%I', rec.relname) into i;
     exception when insufficient_privilege then

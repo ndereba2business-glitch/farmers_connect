@@ -13,15 +13,18 @@
 //   {"t":"delta","text":"..."}   a piece of the answer
 //   {"t":"done","truncated":bool}
 //   {"t":"error","code":"..."}   declined | busy | failed | not_configured
+//                                | service_limit
 // A not_configured reply also carries "reason" (key_missing, key_rejected,
 // not_permitted or model_not_found) so the owner can tell which setting to
 // fix. The app shows the farmer the same sentence for all of them.
 // Problems found before the answer starts come back as ordinary JSON with
 // an HTTP error status and a `code`: not_signed_in, not_configured,
-// empty, too_long, daily_limit.
+// empty, too_long, daily_limit (this person's own allowance) or
+// service_limit (the allowance shared by everyone is used up for now).
 //
-// Secrets: GEMINI_API_KEY (required), GEMINI_MODEL, CLUCKY_DAILY_LIMIT,
-// CLUCKY_ALLOWED_ORIGINS (comma-separated; any origin when unset).
+// Secrets: GEMINI_API_KEY (required), GEMINI_MODEL, CLUCKY_DAILY_LIMIT
+// (per person), CLUCKY_GLOBAL_DAILY_LIMIT (everyone together; no cap when
+// unset), CLUCKY_ALLOWED_ORIGINS (comma-separated; any origin when unset).
 import { createClient } from "@supabase/supabase-js";
 import {
   HISTORY_MESSAGES, SYSTEM_PROMPT, buildFarmContext, checkQuestion, styleNote, toModelMessages,
@@ -33,7 +36,15 @@ import { AiError } from "./providers/types.ts";
 // Background work that must finish even if the farmer leaves the page.
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
-const DAILY_LIMIT = Math.max(1, Math.floor(Number(Deno.env.get("CLUCKY_DAILY_LIMIT")) || 30));
+// One person's questions per day. Modest by default, because on a free
+// plan every farmer draws on the same small allowance.
+const DAILY_LIMIT = Math.max(1, Math.floor(Number(Deno.env.get("CLUCKY_DAILY_LIMIT")) || 15));
+// Everyone's questions per day. Set it a little under the AI service's own
+// daily allowance so Clucky stops politely before the service refuses.
+const GLOBAL_DAILY_LIMIT = Math.max(0, Math.floor(Number(Deno.env.get("CLUCKY_GLOBAL_DAILY_LIMIT")) || 0));
+// After the service says its daily allowance is used up, stop asking it
+// for this long: every request in between would be refused anyway.
+const QUOTA_PAUSE_MS = 10 * 60 * 1000;
 // Room for a phone-sized answer plus the model's own brief reasoning.
 const MAX_OUTPUT_TOKENS = 2000;
 
@@ -99,6 +110,17 @@ Deno.serve(async (req) => {
   // Writes the conversation, the allowance and the notification; never
   // handed anything the caller chose except the question text itself.
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  // The allowance everyone shares. If these figures cannot be read, Clucky
+  // carries on: they exist to save pointless requests, not to gate access.
+  const { data: dayRows, error: dayError } = await admin.rpc("clucky_day_state");
+  if (dayError) console.error("clucky: day state unavailable —", dayError.code || "unknown");
+  const dayState = Array.isArray(dayRows) ? dayRows[0] : dayRows;
+  const lastQuotaHit = dayState?.last_quota_hit ? new Date(dayState.last_quota_hit).getTime() : 0;
+  if (lastQuotaHit && Date.now() - lastQuotaHit < QUOTA_PAUSE_MS) return json(429, { code: "service_limit" });
+  if (GLOBAL_DAILY_LIMIT && Number(dayState?.questions_today || 0) >= GLOBAL_DAILY_LIMIT) {
+    return json(429, { code: "service_limit" });
+  }
 
   // Counted before any money is spent, in one statement, so two requests
   // sent at once cannot both slip under the limit. Clearing the chat does
@@ -187,6 +209,14 @@ Deno.serve(async (req) => {
 
       await admin.from("clucky_messages").insert({ user_email: identity, role: "assistant", content: result.text });
 
+      // What the answer cost, for the admin's usage figures.
+      const { error: costError } = await admin.rpc("clucky_record_answer", {
+        p_user_id: user.id,
+        p_input_tokens: Math.round(result.usage?.inputTokens || 0),
+        p_output_tokens: Math.round(result.usage?.outputTokens || 0)
+      });
+      if (costError) console.error("clucky: usage not recorded —", costError.code || "unknown");
+
       // Only worth a notification if the farmer left before it finished.
       if (clientGone) {
         await admin.rpc("push_notification", {
@@ -203,12 +233,18 @@ Deno.serve(async (req) => {
       console.log(`clucky: answered model=${provider.model} in=${result.usage?.inputTokens ?? "?"} out=${result.usage?.outputTokens ?? "?"}`);
       send({ t: "done", truncated: result.truncated });
     } catch (error) {
-      const code = error instanceof AiError ? error.code : "failed";
+      const failure = error instanceof AiError ? error.code : "failed";
+      // The farmer does not need to know whose allowance ran out.
+      const code = failure === "quota" ? "service_limit" : failure;
       const reason = error instanceof AiError ? error.reason : undefined;
       const detail = error instanceof AiError ? error.detail : (error instanceof Error ? error.name : "unknown");
       console.error(`clucky: ${provider.name} call failed — ${code} (${detail}) model=${provider.model}`);
       await admin.from("clucky_messages").delete().eq("id", saved.id);
       await refund();
+      if (failure !== "not_configured") {
+        const { error: noteError } = await admin.rpc("clucky_record_service_event", { p_kind: failure === "quota" ? "quota" : "failure" });
+        if (noteError) console.error("clucky: service event not recorded —", noteError.code || "unknown");
+      }
       send(reason ? { t: "error", code, reason } : { t: "error", code });
     } finally {
       try { controller.close(); } catch { /* the client already went away */ }

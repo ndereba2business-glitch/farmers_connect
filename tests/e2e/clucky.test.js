@@ -1,8 +1,8 @@
 // End-to-end tests of the Clucky AI screen with the mocked backend, which
 // stands in for the "clucky" edge function and sends events in the same
-// shape. The real function needs an Anthropic API key and is exercised
-// by hand after deployment; what it tells the model is unit tested in
-// tests/unit/clucky.test.js.
+// shape. The real function is checked against the live project by
+// `npm run test:clucky-live`; what it tells the model, and how it talks
+// to the AI service, are unit tested in tests/unit/.
 //
 //   npm run test:e2e
 import { after, before, beforeEach, test } from "node:test";
@@ -109,6 +109,7 @@ for (const [mode, expected] of [
   ["not_configured", /isn't switched on yet/],
   ["daily_limit", /limit of 30 questions[\s\S]*Ask Vet/],
   ["declined", /couldn't answer that one/],
+  ["service_limit", /as many questions as it can for now[\s\S]*Ask Vet/],
   ["busy", /having trouble connecting right now. Please try again in a moment/],
   ["failed", /having trouble connecting right now. Please try again in a moment/]
 ]) {
@@ -188,6 +189,72 @@ for (const width of [320, 360, 768, 1280]) {
     assert.equal(r.overflow, false, `chat: horizontal scroll at ${width}px`);
     assert.deepEqual(r.small, [], `chat: touch targets under 44px at ${width}px`);
     assert.deepEqual(r.unnamed, [], `chat: controls without a name at ${width}px`);
+    await context.close();
+  });
+}
+
+// ---------- the admin's view of usage ----------
+
+const ADMIN = { email: "admin@clucky.test", role: "farmer", admin: true };
+const usageDay = (daysAgo, values = {}) => ({
+  day: new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10),
+  questions: 0, people: 0, input_tokens: 0, output_tokens: 0, quota_hits: 0, failures: 0, ...values
+});
+
+async function openUsage(viewport = { width: 360, height: 760 }, user = ADMIN) {
+  backend.addUser(ADMIN);
+  const session = await newUserPage(app.browser, viewport);
+  await backend.attach(session.context, { signedInAs: user.email });
+  await session.page.goto(`${app.url}/admin`, { waitUntil: "domcontentloaded" });
+  return session;
+}
+
+test("an admin sees how much Clucky is used and is told when the free plan stops being enough", { timeout: 60000 }, async () => {
+  backend.db.cluckyUsage = [
+    usageDay(0, { questions: 42, people: 9, input_tokens: 105000, output_tokens: 21000, quota_hits: 6 }),
+    usageDay(1, { questions: 55, people: 11, input_tokens: 137500, output_tokens: 27500, quota_hits: 12, failures: 1 }),
+    usageDay(2, { questions: 30, people: 7, input_tokens: 75000, output_tokens: 15000 }),
+    usageDay(3, { questions: 48, people: 10, input_tokens: 120000, output_tokens: 24000, quota_hits: 3 }),
+    ...[4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(n => usageDay(n))
+  ];
+  const { context, page, errors } = await openUsage();
+  await page.locator('button[aria-pressed]', { hasText: "clucky" }).click();
+
+  const usage = page.locator(".cu-root");
+  await usage.locator("text=The free plan ran out on 3 of the last 14 days").waitFor();
+  const text = await usage.innerText();
+  assert.match(text, /farmers were turned away 21 times/);
+  assert.match(text, /It is time to move to the paid plan/);
+  assert.match(text, /Questions today\s+42\s+9 people/);
+  assert.match(text, /Last 14 days\s+175/);
+  // 437,500 tokens in and 87,500 out at the published paid prices
+  assert.match(text, /Same use on the paid plan\s+\$0\.35/);
+  assert.match(text, /12 turned away/);
+  assert.equal(await usage.locator("tbody tr").count(), 14, "every day is listed, quiet ones too");
+  assert.doesNotMatch(text, /farmer@clucky\.test|My chicks/, "counts only: nobody's identity or questions");
+  assert.deepEqual(backend.db.rpcCalls.filter(c => c.name === "clucky_usage_summary").map(c => c.user), [ADMIN.email]);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("with nothing asked yet, the usage tab says so plainly", { timeout: 60000 }, async () => {
+  backend.db.cluckyUsage = Array.from({ length: 14 }, (_, n) => usageDay(n));
+  const { context, page } = await openUsage();
+  await page.locator('button[aria-pressed]', { hasText: "clucky" }).click();
+  await page.locator(".cu-root", { hasText: "Nobody has asked Clucky anything in the last 14 days" }).waitFor();
+  assert.match(await page.locator(".cu-root").innerText(), /Same use on the paid plan\s+\$0\.00\s+nothing to price yet/);
+  await context.close();
+});
+
+for (const width of [320, 360, 768, 1280]) {
+  test(`the usage tab fits the screen and meets the layout rules at ${width}px`, { timeout: 60000 }, async () => {
+    backend.db.cluckyUsage = Array.from({ length: 14 }, (_, n) => usageDay(n, { questions: 1200 + n, people: 80, input_tokens: 3_000_000, output_tokens: 600_000, quota_hits: n % 3 ? 0 : 140 }));
+    const { context, page } = await openUsage({ width, height: 800 });
+    await page.locator('button[aria-pressed]', { hasText: "clucky" }).click();
+    await page.locator(".cu-table").waitFor();
+    const result = await layoutAndA11y(page);
+    assert.equal(result.overflow, false, "no sideways scrolling of the page");
+    assert.deepEqual(result.unnamed, []);
     await context.close();
   });
 }
