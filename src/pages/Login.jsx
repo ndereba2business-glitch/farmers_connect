@@ -368,6 +368,10 @@ export default function Login() {
           </div>
         )}
 
+        <p className="fc-policy-links" style={{ justifyContent: "flex-end", margin: "-6px 0 8px" }}>
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
+
         {/* LOGIN BUTTON */}
         <button
           onClick={handleLogin}
