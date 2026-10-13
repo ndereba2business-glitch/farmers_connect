@@ -88,6 +88,9 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
     } else {
       if (!testName.trim()) { setError("Test name is required."); return; }
       if (!file) { setError("Select a file to upload."); return; }
+      // the same limits the storage bucket enforces, said before the upload starts
+      if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(file.type)) { setError("Use a PDF or a photo (JPG, PNG or WebP)."); return; }
+      if (file.size > 10 * 1024 * 1024) { setError("That file is over 10 MB. Choose a smaller one."); return; }
       title = testName.trim();
       details = { test_name: testName.trim(), notes: labNotes.trim() };
     }
@@ -256,6 +259,8 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
               <label style={labelStyle}>File</label>
               <input
                 type="file"
+                accept="application/pdf,image/jpeg,image/png,image/webp"
+                aria-label="Lab result file (PDF or photo, up to 10 MB)"
                 onChange={e => setFile(e.target.files?.[0] || null)}
                 style={{ ...inputStyle, marginBottom: "14px", padding: "8px" }}
               />

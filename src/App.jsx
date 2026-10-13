@@ -4,6 +4,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { Suspense, lazy, useEffect } from 'react';
 import { readSignInProblem } from "./lib/signInReturn";
+import { supabase } from "./lib/supabaseClient";
 import { POLICIES_PUBLISHED } from "./config/features";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
@@ -39,6 +40,8 @@ const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const DeleteAccountPage = lazy(() => import("./pages/legal/DeleteAccountPage"));
 const AccountDeleted = lazy(() => import("./pages/legal/AccountDeleted"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -110,6 +113,20 @@ function AppRoutes() {
   }, [loading]);
 
   // =========================
+  // BACK FROM A PASSWORD-RESET EMAIL
+  // The link signs the person in for one purpose. Wherever Supabase sent
+  // them (it falls back to its Site URL if the address is not on its
+  // list), take them to the page where a new password is chosen.
+  // =========================
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") navigate("/reset-password", { replace: true });
+    });
+    return () => listener.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // =========================
   // LOADING SCREEN
   // =========================
   if (loading) {
@@ -139,6 +156,10 @@ function AppRoutes() {
         {POLICIES_PUBLISHED && <Route path="/terms" element={<Terms />} />}
         <Route path="/delete-account" element={<DeleteAccountPage />} />
         <Route path="/account-deleted" element={<AccountDeleted />} />
+
+        {/* Recovering an account: ask for a link, then choose a new password. */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
 
         {/* Old standalone verification forms wrote to tables that never

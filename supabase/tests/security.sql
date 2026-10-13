@@ -643,6 +643,42 @@ begin
     failed := failed + 1; report := report || format('FAIL H16 could not simulate a sign-up: %s; ', sqlerrm);
   end;
 
+  -- a new account never inherits the profile of whoever had the address before
+  begin
+    insert into public.farmer_profiles (user_email, full_name, phone, county)
+      values ('sec-test-reused@example.test', 'sec-test previous person', '0700000000', 'Nakuru');
+    insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
+      values (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'sec-test-reused@example.test',
+              '{"full_name": "sec-test new person"}', '{}', now(), now());
+    select count(*) into n from public.farmer_profiles where user_email = 'sec-test-reused@example.test';
+    select count(*) into i from public.farmer_profiles
+     where user_email = 'sec-test-reused@example.test' and full_name = 'sec-test new person' and phone is null and coalesce(county, '') = '';
+    if n = 1 and i = 1 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H18 a new account inherited an old profile (%s rows, %s clean); ', n, i); end if;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL H18 could not simulate a sign-up over a leftover profile: %s; ', sqlerrm);
+  end;
+
+  -- files: a signed-in person lists their own folder and nobody else's
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+  insert into storage.objects (bucket_id, name, owner) values ('farm-gallery', farmer::text || '/sec-test-mine.jpg', farmer);
+  select count(*) into n from storage.objects where bucket_id = 'farm-gallery' and name = farmer::text || '/sec-test-mine.jpg';
+  select count(*) into i from storage.objects
+   where bucket_id in ('avatars', 'farm-gallery', 'marketplace-images', 'community-posts')
+     and (storage.foldername(name))[1] is distinct from farmer::text;
+  if n = 1 and i = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H19 file listing: own file seen %s, other people''s files listed %s; ', n, i); end if;
+  reset role;
+
+  -- and a visitor lists nothing at all
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  set local role anon;
+  begin
+    select count(*) into n from storage.objects where bucket_id in ('avatars', 'farm-gallery', 'marketplace-images', 'community-posts');
+    if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL H20 a visitor listed %s photo file(s); ', n); end if;
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+  reset role;
+
   perform set_config('request.jwt.claims', claims_f, true);
   set local role authenticated;
 

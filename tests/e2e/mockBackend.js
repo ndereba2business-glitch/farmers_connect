@@ -143,8 +143,13 @@ export function createMockBackend() {
       if (url.pathname.endsWith("/user")) {
         if (!current) return json(401, { message: "not signed in" });
         if (req.method() === "PUT") {
-          const { data } = JSON.parse(req.postData() || "{}");
+          const { data, password } = JSON.parse(req.postData() || "{}");
           if (data?.role) current.role = data.role;
+          // choosing a new password (the reset page)
+          if (password) {
+            if (password === current.password) return json(422, { code: "same_password", message: "New password should be different from the old password." });
+            current.password = password;
+          }
         }
         return json(200, authUser(current));
       }
