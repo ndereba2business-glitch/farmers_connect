@@ -1,5 +1,6 @@
 import { ShoppingBag, Package } from "lucide-react";
 import Reveal from "./Reveal";
+import LandingPhoto from "./LandingPhoto";
 
 // Categories are the real ones from Marketplace.jsx.
 const CATEGORIES = ["Chickens", "Eggs", "Feeds", "Equipment", "Medicine"];
@@ -8,15 +9,22 @@ export default function MarketplaceSection() {
   return (
     <section className="lp-market" id="marketplace">
       <div className="lp-wrap">
-        <Reveal className="lp-section-head">
-          <div className="lp-eyebrow">Marketplace</div>
-          <h2>Sell what you raise. Find what you need.</h2>
-          <p>
-            Browse listings by category, or put your own birds, eggs and
-            supplies in front of other farmers, instead of relying only on
-            whoever you already know.
-          </p>
-        </Reveal>
+        <div className="lp-community-top">
+          <Reveal className="lp-section-head">
+            <div className="lp-eyebrow">Marketplace</div>
+            <h2>Sell what you raise. Find what you need.</h2>
+            <p>
+              Browse listings by category, or put your own birds, eggs and
+              supplies in front of other farmers, instead of relying only on
+              whoever you already know. You call or WhatsApp the seller and
+              agree the price yourselves.
+            </p>
+          </Reveal>
+
+          <Reveal className="lp-community-photo lp-community-photo--square" delay={100}>
+            <LandingPhoto id="fresh-eggs" sizes="(min-width: 900px) 320px, 70vw" />
+          </Reveal>
+        </div>
 
         <ul className="lp-chips" aria-label="Marketplace categories">
           {CATEGORIES.map((c) => (
