@@ -8,11 +8,11 @@ import { Shield, Users, ShoppingBag, Egg, MessageSquare, Stethoscope, Store, Che
 } from "lucide-react";
 
 const VET_STATUS_META = {
-  unverified: { bg: "#f3f4f6", color: "#6b7280", label: "Unverified" },
-  pending: { bg: "#fef3c7", color: "#d97706", label: "Pending Review" },
-  verified: { bg: "#dcfce7", color: "#15803d", label: "Verified" },
-  rejected: { bg: "#fee2e2", color: "#ef4444", label: "Rejected" },
-  suspended: { bg: "#fee2e2", color: "#991b1b", label: "Suspended" },
+  unverified: { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)", label: "Unverified" },
+  pending: { bg: "var(--fc-bg-amber100)", color: "var(--fc-fg-amber600)", label: "Pending Review" },
+  verified: { bg: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)", label: "Verified" },
+  rejected: { bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red500)", label: "Rejected" },
+  suspended: { bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red800)", label: "Suspended" },
 };
 
 export default function AdminDashboard() {
@@ -117,16 +117,16 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { title: "Total Users", value: stats.users, icon: Users, color: "#edf9f1", iconColor: "#15803d" },
+    { title: "Total Users", value: stats.users, icon: Users, color: "var(--fc-bg-green51)", iconColor: "var(--fc-fg-green700)" },
     {
       title: `Farmers who contacted a supplier (30 days) · ${stats.contactSuppliers} supplier${stats.contactSuppliers === 1 ? "" : "s"} reached`,
-      value: stats.contactFarmers, icon: PhoneCall, color: "#eff6ff", iconColor: "#1d4ed8"
+      value: stats.contactFarmers, icon: PhoneCall, color: "var(--fc-bg-blue50)", iconColor: "var(--fc-fg-blue700)"
     },
-    { title: "Pending Vet Reviews", value: stats.pendingVets, icon: Stethoscope, color: "#fef3c7", iconColor: "#d97706" },
-    { title: "Pending Supplier Reviews", value: stats.pendingSuppliers, icon: Store, color: "#fef3c7", iconColor: "#d97706" },
-    { title: "Total Products", value: stats.products, icon: ShoppingBag, color: "#fff7e6", iconColor: "#f59e0b" },
-    { title: "Chick Batches", value: stats.batches, icon: Egg, color: "#fff0eb", iconColor: "#f97316" },
-    { title: "Community Messages", value: stats.posts, icon: MessageSquare, color: "#edf5ff", iconColor: "#3b82f6" },
+    { title: "Pending Vet Reviews", value: stats.pendingVets, icon: Stethoscope, color: "var(--fc-bg-amber100)", iconColor: "var(--fc-fg-amber600)" },
+    { title: "Pending Supplier Reviews", value: stats.pendingSuppliers, icon: Store, color: "var(--fc-bg-amber100)", iconColor: "var(--fc-fg-amber600)" },
+    { title: "Total Products", value: stats.products, icon: ShoppingBag, color: "var(--fc-bg-amber52)", iconColor: "var(--fc-fg-amber500)" },
+    { title: "Chick Batches", value: stats.batches, icon: Egg, color: "var(--fc-bg-red52)", iconColor: "var(--fc-fg-amber501)" },
+    { title: "Community Messages", value: stats.posts, icon: MessageSquare, color: "var(--fc-bg-blue51)", iconColor: "var(--fc-fg-blue500)" },
   ];
 
   const filteredVets = vetFilter === "all"
@@ -137,12 +137,12 @@ export default function AdminDashboard() {
     <div>
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-        <Shield size={28} color="#15803d" />
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+        <Shield size={28} color="var(--fc-fg-green700)" />
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
           Admin Dashboard
         </h1>
       </div>
-      <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "28px" }}>
+      <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px", marginBottom: "28px" }}>
         Platform overview and management
       </p>
 
@@ -156,8 +156,8 @@ export default function AdminDashboard() {
           const Icon = item.icon;
           return (
             <div key={item.title} style={{
-              background: "#fff", borderRadius: "16px", padding: "20px",
-              border: "1px solid #e5e7eb",
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "20px",
+              border: "1px solid var(--fc-line-gray200)",
               boxShadow: "var(--fc-shadow-card)",
               display: "flex", alignItems: "center", gap: "16px"
             }}>
@@ -169,10 +169,10 @@ export default function AdminDashboard() {
                 <Icon size={24} color={item.iconColor} />
               </div>
               <div>
-                <div style={{ fontSize: "28px", fontWeight: "700", color: "#111827" }}>
+                <div style={{ fontSize: "28px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                   {loading ? "—" : item.value}
                 </div>
-                <div style={{ fontSize: "13px", color: "#6b7280", fontWeight: "500" }}>
+                <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", fontWeight: "500" }}>
                   {item.title}
                 </div>
               </div>
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
       {/* TABS */}
       <div style={{
         display: "flex", gap: "4px",
-        background: "#f3f4f6", borderRadius: "12px",
+        background: "var(--fc-bg-gray100)", borderRadius: "12px",
         padding: "4px", marginBottom: "20px", width: "fit-content", flexWrap: "wrap"
       }}>
         {["vets", "suppliers", "community", "requests", "clucky", "users", "products", "batches"].map(tab => (
@@ -197,8 +197,8 @@ export default function AdminDashboard() {
               padding: "8px 20px", borderRadius: "8px",
               border: "none", cursor: "pointer",
               fontWeight: "600", fontSize: "13px",
-              background: activeTab === tab ? "#fff" : "transparent",
-              color: activeTab === tab ? "#111827" : "#9ca3af",
+              background: activeTab === tab ? "var(--fc-bg-gray0)" : "transparent",
+              color: activeTab === tab ? "var(--fc-fg-gray900)" : "var(--fc-fg-gray400)",
               boxShadow: activeTab === tab ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
               textTransform: "capitalize", transition: "all 0.2s",
               display: "flex", alignItems: "center", gap: "6px"
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
           >
             {tab === "vets" && stats.pendingVets > 0 && (
               <span style={{
-                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
+                background: "#dc2626", color: "var(--fc-fg-gray0)", fontSize: "10px", fontWeight: "700",
                 width: "16px", height: "16px", borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
@@ -215,7 +215,7 @@ export default function AdminDashboard() {
             )}
             {tab === "suppliers" && stats.pendingSuppliers > 0 && (
               <span style={{
-                background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
+                background: "#dc2626", color: "var(--fc-fg-gray0)", fontSize: "10px", fontWeight: "700",
                 width: "16px", height: "16px", borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
               <span
                 aria-label={`${openReports} reported`}
                 style={{
-                  background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "700",
+                  background: "#dc2626", color: "var(--fc-fg-gray0)", fontSize: "10px", fontWeight: "700",
                   minWidth: "16px", height: "16px", padding: "0 4px", borderRadius: "8px",
                   display: "flex", alignItems: "center", justifyContent: "center"
                 }}
@@ -256,9 +256,9 @@ export default function AdminDashboard() {
                 onClick={() => setVetFilter(f)}
                 style={{
                   padding: "6px 14px", borderRadius: "16px",
-                  border: `1.5px solid ${vetFilter === f ? "#111827" : "#e5e7eb"}`,
-                  background: vetFilter === f ? "#111827" : "#fff",
-                  color: vetFilter === f ? "#fff" : "#6b7280",
+                  border: `1.5px solid ${vetFilter === f ? "var(--fc-line-gray900)" : "var(--fc-line-gray200)"}`,
+                  background: vetFilter === f ? "var(--fc-bg-gray900)" : "var(--fc-bg-gray0)",
+                  color: vetFilter === f ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray500)",
                   fontWeight: "600", fontSize: "12px", cursor: "pointer",
                   textTransform: "capitalize"
                 }}
@@ -271,10 +271,10 @@ export default function AdminDashboard() {
           {filteredVets.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
             }}>
-              <Stethoscope size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+              <Stethoscope size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "12px" }} />
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                 No {vetFilter !== "all" ? vetFilter : ""} vet profiles.
               </p>
             </div>
@@ -285,8 +285,8 @@ export default function AdminDashboard() {
                 const busy = updatingVetId === vet.id;
                 return (
                   <div key={vet.id} style={{
-                    background: "#fff", borderRadius: "16px",
-                    border: "1px solid #e5e7eb", padding: "18px 20px",
+                    background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                    border: "1px solid var(--fc-line-gray200)", padding: "18px 20px",
                     boxShadow: "var(--fc-shadow-card)"
                   }}>
                     <div style={{
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                     }}>
                       <div style={{ flex: 1, minWidth: "220px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
-                          <span style={{ fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                          <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                             {vet.full_name}
                           </span>
                           <span style={{
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                             {meta.label}
                           </span>
                         </div>
-                        <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", display: "flex", flexDirection: "column", gap: "4px" }}>
                           {vet.license_number && <span><IdCard size={14} aria-hidden="true" /> License: {vet.license_number}</span>}
                           {vet.service_counties?.length > 0 && (
                             <span><MapPin size={14} aria-hidden="true" /> {vet.service_counties.join(", ")}</span>
@@ -314,10 +314,10 @@ export default function AdminDashboard() {
                             <span><Stethoscope size={14} aria-hidden="true" /> {vet.specializations.join(", ")}</span>
                           )}
                           {vet.accepts_emergency && (
-                            <span style={{ color: "#ef4444", fontWeight: "600" }}><Siren size={14} aria-hidden="true" /> Accepts emergencies</span>
+                            <span style={{ color: "var(--fc-fg-red500)", fontWeight: "600" }}><Siren size={14} aria-hidden="true" /> Accepts emergencies</span>
                           )}
                           {vet.bio && (
-                            <p style={{ margin: "6px 0 0", color: "#9ca3af", fontStyle: "italic" }}>
+                            <p style={{ margin: "6px 0 0", color: "var(--fc-fg-gray400)", fontStyle: "italic" }}>
                               "{vet.bio}"
                             </p>
                           )}
@@ -333,7 +333,7 @@ export default function AdminDashboard() {
                               onClick={() => updateVetStatus(vet.id, "verified")}
                               style={{
                                 display: "flex", alignItems: "center", gap: "6px",
-                                padding: "8px 14px", background: "#15803d", color: "#fff",
+                                padding: "8px 14px", background: "#15803d", color: "var(--fc-fg-gray0)",
                                 border: "none", borderRadius: "8px", fontWeight: "700",
                                 fontSize: "12px", cursor: busy ? "not-allowed" : "pointer"
                               }}
@@ -345,8 +345,8 @@ export default function AdminDashboard() {
                               onClick={() => updateVetStatus(vet.id, "rejected")}
                               style={{
                                 display: "flex", alignItems: "center", gap: "6px",
-                                padding: "8px 14px", background: "#fff", color: "#ef4444",
-                                border: "1px solid #fecaca", borderRadius: "8px", fontWeight: "700",
+                                padding: "8px 14px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red500)",
+                                border: "1px solid var(--fc-line-red200)", borderRadius: "8px", fontWeight: "700",
                                 fontSize: "12px", cursor: busy ? "not-allowed" : "pointer"
                               }}
                             >
@@ -360,8 +360,8 @@ export default function AdminDashboard() {
                             onClick={() => updateVetStatus(vet.id, "suspended")}
                             style={{
                               display: "flex", alignItems: "center", gap: "6px",
-                              padding: "8px 14px", background: "#fff", color: "#991b1b",
-                              border: "1px solid #fecaca", borderRadius: "8px", fontWeight: "700",
+                              padding: "8px 14px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red800)",
+                              border: "1px solid var(--fc-line-red200)", borderRadius: "8px", fontWeight: "700",
                               fontSize: "12px", cursor: busy ? "not-allowed" : "pointer"
                             }}
                           >
@@ -373,8 +373,8 @@ export default function AdminDashboard() {
                             disabled={busy}
                             onClick={() => updateVetStatus(vet.id, "pending")}
                             style={{
-                              padding: "8px 14px", background: "#f9fafb", color: "#374151",
-                              border: "1px solid #e5e7eb", borderRadius: "8px", fontWeight: "600",
+                              padding: "8px 14px", background: "var(--fc-bg-gray50)", color: "var(--fc-fg-gray700)",
+                              border: "1px solid var(--fc-line-gray200)", borderRadius: "8px", fontWeight: "600",
                               fontSize: "12px", cursor: busy ? "not-allowed" : "pointer"
                             }}
                           >
@@ -401,9 +401,9 @@ export default function AdminDashboard() {
                 onClick={() => setSupplierFilter(f)}
                 style={{
                   padding: "6px 14px", borderRadius: "16px",
-                  border: `1.5px solid ${supplierFilter === f ? "#111827" : "#e5e7eb"}`,
-                  background: supplierFilter === f ? "#111827" : "#fff",
-                  color: supplierFilter === f ? "#fff" : "#6b7280",
+                  border: `1.5px solid ${supplierFilter === f ? "var(--fc-line-gray900)" : "var(--fc-line-gray200)"}`,
+                  background: supplierFilter === f ? "var(--fc-bg-gray900)" : "var(--fc-bg-gray0)",
+                  color: supplierFilter === f ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray500)",
                   fontWeight: "600", fontSize: "12px", cursor: "pointer",
                   textTransform: "capitalize"
                 }}
@@ -422,10 +422,10 @@ export default function AdminDashboard() {
               return (
                 <div style={{
                   textAlign: "center", padding: "60px 20px",
-                  background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+                  background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
                 }}>
-                  <Store size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-                  <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+                  <Store size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "12px" }} />
+                  <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                     No {supplierFilter !== "all" ? supplierFilter : ""} supplier profiles.
                   </p>
                 </div>
@@ -437,17 +437,18 @@ export default function AdminDashboard() {
                 {shown.map(sup => {
                   const meta = VET_STATUS_META[sup.verification_status] || VET_STATUS_META.unverified;
                   const busy = updatingSupplierId === sup.id;
+                  // "solid" is the one filled button (approve); the rest are outlined in their own colour
                   const actionStyle = (color, border) => ({
                     display: "flex", alignItems: "center", gap: "6px", minHeight: "44px",
-                    padding: "0 16px", background: color === "#15803d" ? "#15803d" : "#fff",
-                    color: color === "#15803d" ? "#fff" : color, border: border || "none",
+                    padding: "0 16px", background: color === "solid" ? "var(--fc-primary)" : "var(--fc-surface)",
+                    color: color === "solid" ? "#fff" : color, border: border || "none",
                     borderRadius: "8px", fontWeight: "700", fontSize: "12px",
                     cursor: busy ? "not-allowed" : "pointer"
                   });
                   return (
                     <div key={sup.id} style={{
-                      background: "#fff", borderRadius: "16px",
-                      border: "1px solid #e5e7eb", padding: "18px 20px",
+                      background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                      border: "1px solid var(--fc-line-gray200)", padding: "18px 20px",
                       boxShadow: "var(--fc-shadow-card)"
                     }}>
                       <div style={{
@@ -456,7 +457,7 @@ export default function AdminDashboard() {
                       }}>
                         <div style={{ flex: 1, minWidth: "220px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
-                            <span style={{ fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                            <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                               {sup.business_name}
                             </span>
                             <span style={{
@@ -466,7 +467,7 @@ export default function AdminDashboard() {
                               {meta.label}
                             </span>
                           </div>
-                          <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", display: "flex", flexDirection: "column", gap: "4px" }}>
                             {(sup.product_categories || []).length > 0
                               ? <span><Package size={14} aria-hidden="true" /> {sup.product_categories.join(", ")}</span>
                               : sup.supplier_type && <span><Package size={14} aria-hidden="true" /> {sup.supplier_type}</span>}
@@ -475,7 +476,7 @@ export default function AdminDashboard() {
                             {sup.phone && <span><Phone size={14} aria-hidden="true" /> {sup.phone}</span>}
                             {sup.delivery_available && <span><Truck size={14} aria-hidden="true" /> Delivers</span>}
                             {sup.description && (
-                              <p style={{ margin: "6px 0 0", color: "#9ca3af", fontStyle: "italic" }}>
+                              <p style={{ margin: "6px 0 0", color: "var(--fc-fg-gray400)", fontStyle: "italic" }}>
                                 "{sup.description}"
                               </p>
                             )}
@@ -485,21 +486,21 @@ export default function AdminDashboard() {
                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                           {sup.verification_status === "pending" && (
                             <>
-                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "verified")} style={actionStyle("#15803d")}>
+                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "verified")} style={actionStyle("solid")}>
                                 <CheckCircle2 size={14} /> Approve
                               </button>
-                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "rejected")} style={actionStyle("#ef4444", "1px solid #fecaca")}>
+                              <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "rejected")} style={actionStyle("var(--fc-fg-red500)", "1px solid var(--fc-line-red200)")}>
                                 <XCircle size={14} /> Reject
                               </button>
                             </>
                           )}
                           {sup.verification_status === "verified" && (
-                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "suspended")} style={actionStyle("#991b1b", "1px solid #fecaca")}>
+                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "suspended")} style={actionStyle("var(--fc-fg-red800)", "1px solid var(--fc-line-red200)")}>
                               <Ban size={14} /> Suspend
                             </button>
                           )}
                           {(sup.verification_status === "rejected" || sup.verification_status === "suspended") && (
-                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "pending")} style={actionStyle("#374151", "1px solid #e5e7eb")}>
+                            <button disabled={busy} onClick={() => updateSupplierStatus(sup.id, "pending")} style={actionStyle("var(--fc-fg-gray700)", "1px solid var(--fc-line-gray200)")}>
                               Move to Pending
                             </button>
                           )}
@@ -517,18 +518,18 @@ export default function AdminDashboard() {
       {/* ═══════════ USERS TABLE ═══════════ */}
       {activeTab === "users" && (
         <div style={{
-          background: "#fff", borderRadius: "16px",
-          border: "1px solid #e5e7eb",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px",
+          border: "1px solid var(--fc-line-gray200)",
           boxShadow: "var(--fc-shadow-card)", overflow: "hidden"
         }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+              <tr style={{ borderBottom: "1px solid var(--fc-line-gray100)" }}>
                 {["Name", "Email", "Role", "Joined"].map(h => (
                   <th key={h} style={{
                     padding: "14px 20px", textAlign: "left",
                     fontSize: "12px", fontWeight: "600",
-                    color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em"
+                    color: "var(--fc-fg-gray400)", textTransform: "uppercase", letterSpacing: "0.05em"
                   }}>
                     {h}
                   </th>
@@ -538,34 +539,34 @@ export default function AdminDashboard() {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
+                  <td colSpan={4} style={{ textAlign: "center", padding: "40px", color: "var(--fc-fg-gray400)" }}>
                     No users yet.
                   </td>
                 </tr>
               ) : users.map((user, i) => (
                 <tr key={user.id} style={{
-                  borderBottom: i < users.length - 1 ? "1px solid #f9f9f9" : "none",
+                  borderBottom: i < users.length - 1 ? "1px solid var(--fc-line-gray51)" : "none",
                   transition: "background 0.15s"
                 }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--fc-bg-gray25)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  <td style={{ padding: "14px 20px", fontWeight: "600", fontSize: "14px", color: "#111827" }}>
+                  <td style={{ padding: "14px 20px", fontWeight: "600", fontSize: "14px", color: "var(--fc-fg-gray900)" }}>
                     {user.full_name || "—"}
                   </td>
-                  <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
+                  <td style={{ padding: "14px 20px", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                     {user.user_email}
                   </td>
                   <td style={{ padding: "14px 20px" }}>
                     <span style={{
-                      background: "#dcfce7", color: "#15803d",
+                      background: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)",
                       fontSize: "12px", fontWeight: "700",
                       padding: "3px 10px", borderRadius: "16px"
                     }}>
                       {user.role || "farmer"}
                     </span>
                   </td>
-                  <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
+                  <td style={{ padding: "14px 20px", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                     {user.created_at ? new Date(user.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                   </td>
                 </tr>
@@ -583,14 +584,14 @@ export default function AdminDashboard() {
 
       {/* ═══════════ BATCHES TABLE ═══════════ */}
       {activeTab === "batches" && (
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray200)", boxShadow: "var(--fc-shadow-card)" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+            <tr style={{ borderBottom: "1px solid var(--fc-line-gray100)" }}>
               {["Batch Name", "Type", "Quantity", "Farmer", "Status"].map(h => (
                 <th key={h} style={{
                   padding: "14px 20px", textAlign: "left",
                   fontSize: "12px", fontWeight: "600",
-                  color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em"
+                  color: "var(--fc-fg-gray400)", textTransform: "uppercase", letterSpacing: "0.05em"
                 }}>
                   {h}
                 </th>
@@ -600,33 +601,33 @@ export default function AdminDashboard() {
           <tbody>
             {batches.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
+                <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "var(--fc-fg-gray400)" }}>
                   No batches yet.
                 </td>
               </tr>
             ) : batches.map((batch, i) => (
               <tr key={batch.id} style={{
-                borderBottom: i < batches.length - 1 ? "1px solid #f9f9f9" : "none"
+                borderBottom: i < batches.length - 1 ? "1px solid var(--fc-line-gray51)" : "none"
               }}
-                onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--fc-bg-gray25)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <td style={{ padding: "14px 20px", fontWeight: "600", fontSize: "14px", color: "#111827" }}>
+                <td style={{ padding: "14px 20px", fontWeight: "600", fontSize: "14px", color: "var(--fc-fg-gray900)" }}>
                   {batch.batch_name}
                 </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                   {batch.batch_type}
                 </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                   {batch.quantity}
                 </td>
-                <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6b7280" }}>
+                <td style={{ padding: "14px 20px", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                   {batch.user_email}
                 </td>
                 <td style={{ padding: "14px 20px" }}>
                   <span style={{
-                    background: batch.status === "active" ? "#dcfce7" : "#f3f4f6",
-                    color: batch.status === "active" ? "#15803d" : "#9ca3af",
+                    background: batch.status === "active" ? "var(--fc-bg-green100)" : "var(--fc-bg-gray100)",
+                    color: batch.status === "active" ? "var(--fc-fg-green700)" : "var(--fc-fg-gray400)",
                     fontSize: "12px", fontWeight: "700",
                     padding: "3px 10px", borderRadius: "16px"
                   }}>

@@ -5,7 +5,18 @@
   without anyone having to guess. Use these variables in new CSS, and the
   same values when a style has to be written inline.
 
-  COLOUR
+  COLOUR, IN TWO THEMES
+    Every colour here has a light and a dark value; the dark ones are at
+    the end of the :root block below, under [data-theme="dark"]. Write
+    colours as these variables and a new screen works in both themes with
+    no extra effort. Two rules keep that true:
+      - Text and icons use --fc-ink, --fc-ink-2, --fc-muted, or --fc-link
+        for green text. --fc-primary is a FILL (a button, a chosen chip)
+        that carries white text in both themes; as text on a dark surface
+        it is too dim to read.
+      - --fc-danger is red TEXT; a solid red button is --fc-danger-solid.
+    The older screens' inline colours are in theme.css, as a palette.
+
     Brand green is for the mark and the navigation. Primary green is for
     the one main action on a screen. Maize is the tile of the logo and
     nothing else gets it by default: it is an accent, not a second brand
@@ -61,6 +72,8 @@
   --fc-primary-hover: #166534;
   --fc-primary-soft: #f0fdf4;
   --fc-primary-line: #bbf7d0;
+  /* green text and links; brighter in the dark theme so it stays readable */
+  --fc-link: #15803d;
 
   --fc-ink: #111827;
   --fc-ink-2: #374151;
@@ -68,6 +81,9 @@
   --fc-line: #e5e7eb;
   --fc-surface: #ffffff;
   --fc-bg: #f7f8f5;
+  --fc-surface-2: #f9fafb;
+  /* behind the community chat */
+  --fc-chat-bg: #efeae2;
 
   --fc-success: #15803d;
   --fc-success-soft: #f0fdf4;
@@ -75,6 +91,9 @@
   --fc-warning-soft: #fffbeb;
   --fc-danger: #b91c1c;
   --fc-danger-soft: #fef2f2;
+  --fc-danger-line: #fecaca;
+  /* the fill of a destructive button, white text in both themes */
+  --fc-danger-solid: #b91c1c;
   --fc-info: #1d4ed8;
   --fc-info-soft: #eff6ff;
 
@@ -104,10 +123,51 @@
   --fc-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ---------- the dark theme ----------
+   Surfaces step up in lightness as they come towards the reader: page,
+   card, raised. Text is off-white, not pure white, which glares on an
+   OLED screen at night. Every text colour here is at least 4.5:1 against
+   the surface it sits on (tests/e2e/theme.test.js measures it). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --fc-brand-ink: #f7f5ec;
+
+  --fc-primary: #15803d;
+  --fc-primary-hover: #16a34a;
+  --fc-primary-soft: #12261a;
+  --fc-primary-line: #1f5133;
+  --fc-link: #4ade80;
+
+  --fc-ink: #e8ede9;
+  --fc-ink-2: #c6d0c9;
+  --fc-muted: #9aa8a0;
+  --fc-line: #2f3b35;
+  --fc-surface: #161d19;
+  --fc-surface-2: #1b2420;
+  --fc-bg: #0f1512;
+  --fc-chat-bg: #0c110e;
+
+  --fc-success: #4ade80;
+  --fc-success-soft: #12261a;
+  --fc-warning: #fbbf24;
+  --fc-warning-soft: #2a2110;
+  --fc-danger: #f87171;
+  --fc-danger-soft: #2a1616;
+  --fc-danger-line: #5b2323;
+  --fc-danger-solid: #b91c1c;
+  --fc-info: #60a5fa;
+  --fc-info-soft: #13213a;
+
+  --fc-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --fc-shadow-raised: 0 12px 32px -8px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
 body {
   margin: 0;
   font-family: var(--fc-font);
   color: var(--fc-ink);
+  background: var(--fc-bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -163,9 +223,9 @@ option > svg.lucide:first-child {
 .fc-btn--primary { background: var(--fc-primary); color: #fff; }
 .fc-btn--primary:hover { background: var(--fc-primary-hover); }
 .fc-btn--secondary { background: var(--fc-surface); border-color: var(--fc-line); color: var(--fc-ink-2); }
-.fc-btn--secondary:hover { background: #f9fafb; }
-.fc-btn--danger { background: var(--fc-surface); border-color: #fecaca; color: var(--fc-danger); }
-.fc-btn--danger-solid { background: var(--fc-danger); color: #fff; }
+.fc-btn--secondary:hover { background: var(--fc-surface-2); }
+.fc-btn--danger { background: var(--fc-surface); border-color: var(--fc-danger-line); color: var(--fc-danger); }
+.fc-btn--danger-solid { background: var(--fc-danger-solid); color: #fff; }
 .fc-btn--danger-solid:hover { background: #991b1b; }
 .fc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -238,7 +298,7 @@ option > svg.lucide:first-child {
   font: inherit;
   cursor: pointer;
 }
-.fc-stat:hover { background: #fafafa; }
+.fc-stat:hover { background: var(--fc-surface-2); }
 /* a figure that is not a link */
 .fc-stat--static, .fc-stat--static:hover { cursor: default; background: var(--fc-surface); }
 .fc-stat-label {
@@ -294,13 +354,13 @@ option > svg.lucide:first-child {
   border-radius: var(--fc-radius-pill);
   font-size: 12px;
   font-weight: 600;
-  background: #f3f4f6;
+  background: var(--fc-bg-gray100);
   color: var(--fc-ink-2);
 }
-.fc-tag--success { background: var(--fc-success-soft); color: #166534; }
-.fc-tag--warning { background: var(--fc-warning-soft); color: #92400e; }
-.fc-tag--danger { background: var(--fc-danger-soft); color: #991b1b; }
-.fc-tag--info { background: var(--fc-info-soft); color: #1e40af; }
+.fc-tag--success { background: var(--fc-success-soft); color: var(--fc-fg-green800); }
+.fc-tag--warning { background: var(--fc-warning-soft); color: var(--fc-fg-amber800); }
+.fc-tag--danger { background: var(--fc-danger-soft); color: var(--fc-fg-red800); }
+.fc-tag--info { background: var(--fc-info-soft); color: var(--fc-fg-blue800); }
 
 /* Shortcuts to the things a person does most: plain buttons, one colour. */
 .fc-quick {
@@ -326,8 +386,8 @@ option > svg.lucide:first-child {
   cursor: pointer;
   overflow-wrap: anywhere;
 }
-.fc-quick-btn:hover { background: #f9fafb; border-color: #d1d5db; }
-.fc-quick-btn svg { color: var(--fc-primary); }
+.fc-quick-btn:hover { background: var(--fc-surface-2); border-color: var(--fc-line-gray300); }
+.fc-quick-btn svg { color: var(--fc-link); }
 @media (max-width: 359px) {
   .fc-quick { grid-template-columns: minmax(0, 1fr); }
 }
@@ -335,7 +395,51 @@ option > svg.lucide:first-child {
 /* Privacy and Terms, at the foot of every signed-in menu. */
 .fc-policy-links { display: flex; flex-wrap: wrap; gap: 0 16px; margin: 4px 0 0; padding: 0 4px; }
 .fc-policy-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600; color: var(--fc-muted); text-decoration: none; }
-.fc-policy-links a:hover { color: var(--fc-primary); text-decoration: underline; }
+.fc-policy-links a:hover { color: var(--fc-link); text-decoration: underline; }
+
+/* The sun/moon button in every top bar, and the three-way choice on the
+   profile page (ThemeToggle.jsx). */
+.fc-theme-toggle {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-md);
+  background: var(--fc-surface);
+  color: var(--fc-ink-2);
+  cursor: pointer;
+}
+.fc-theme-toggle:hover { background: var(--fc-surface-2); color: var(--fc-ink); }
+.fc-theme-toggle:focus-visible, .fc-theme-choice:focus-visible { outline: 2px solid var(--fc-link); outline-offset: 2px; }
+.fc-theme-setting { display: grid; gap: 10px; margin-bottom: 20px; }
+.fc-theme-setting h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
+.fc-theme-setting p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--fc-muted); }
+.fc-theme-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.fc-theme-choice {
+  flex: 1 1 110px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--fc-line);
+  border-radius: var(--fc-radius-md);
+  background: var(--fc-surface);
+  color: var(--fc-ink-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fc-theme-choice--on { background: var(--fc-primary); border-color: var(--fc-primary); color: #fff; }
+
+/* Colour changes with the theme should not animate on every element, and
+   people who ask for less motion get none. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
 
 .fc-section-title {
   margin: 0 0 16px;

@@ -1,0 +1,230 @@
+/*
+  FARMERS CONNECT — THEME PALETTE (generated once; edit by hand from now on)
+  ==========================================================================
+  Every colour the older screens wrote inline lives here as a variable with
+  two values. The LIGHT value is the colour that used to be written in the
+  file, so the light theme is unchanged. The DARK value was chosen from the
+  colour's family, how light it is, and what it is used for:
+
+    --fc-bg-<family><level>    a background or filled shape
+    --fc-fg-<family><level>    text or an icon
+    --fc-line-<family><level>  a border or divider
+
+  So "--fc-fg-gray900" is near-black text in the light theme and near-white
+  text in the dark one; "--fc-bg-green50" is a pale green wash that becomes
+  a deep green wash. A colour that is right in both themes (white text on a
+  green button, a solid red button) was left as it was.
+
+  NEW CODE should use the semantic variables in tokens.css (--fc-surface,
+  --fc-ink, --fc-line, --fc-primary ...), which are themed the same way.
+  Reach for a palette variable here only to match an existing screen.
+
+  Both themes meet WCAG AA (4.5:1) for text on the surfaces it is used on;
+  the check is tests/e2e/theme.test.js. Six LIGHT text colours were made
+  darker than the colour they replaced, because the original failed that
+  check on white and on the pale tints it sits on:
+    gray400  #9ca3af -> #667085     gray500  #6b7280 -> #5c6470
+    amber500 #f59e0b -> #b45309     amber501 #f97316 -> #c2410c
+    amber600 #d97706 -> #b45309     red500   #ef4444 -> #c81e1e
+  Backgrounds, borders and every other text colour are exactly as before.
+*/
+
+:root {
+  --fc-bg-blue51: #edf5ff;
+  --fc-bg-amber50: #fffbeb;
+  --fc-bg-amber51: #fff7ed;
+  --fc-bg-amber52: #fff7e6;
+  --fc-bg-amber54: #fff8c5;
+  --fc-bg-amber100: #fef3c7;
+  --fc-bg-blue49: #f0f7ff;
+  --fc-bg-blue50: #eff6ff;
+  --fc-bg-blue100: #dbeafe;
+  --fc-bg-gray0: #ffffff;
+  --fc-bg-gray25: #fafafa;
+  --fc-bg-gray50: #f9fafb;
+  --fc-bg-gray53: #f7f8f5;
+  --fc-bg-gray54: #f4f4f0;
+  --fc-bg-gray55: #f7f9f7;
+  --fc-bg-gray100: #f3f4f6;
+  --fc-bg-gray105: #f1f5f2;
+  --fc-bg-gray106: #eef2ef;
+  --fc-bg-gray107: #edf1ee;
+  --fc-bg-gray108: #f0f2f5;
+  --fc-bg-gray200: #e5e7eb;
+  --fc-bg-gray300: #d1d5db;
+  --fc-bg-gray400: #9ca3af;
+  --fc-bg-gray900: #111827;
+  --fc-bg-green50: #f0fdf4;
+  --fc-bg-green51: #edf9f1;
+  --fc-bg-green54: #ecfdf3;
+  --fc-bg-green100: #dcfce7;
+  --fc-bg-green250: #d9fdd3;
+  --fc-bg-green300: #86efac;
+  --fc-bg-green901: #1e3a2e;
+  --fc-bg-green950: #0f2318;
+  --fc-bg-red50: #fef2f2;
+  --fc-bg-red51: #fef9f9;
+  --fc-bg-red52: #fff0eb;
+  --fc-bg-red100: #fee2e2;
+  --fc-bg-red300: #fca5a5;
+  --fc-bg-violet50: #f5f3ff;
+  --fc-bg-violet51: #f3f0ff;
+  --fc-fg-amber500: #b45309;
+  --fc-fg-amber501: #c2410c;
+  --fc-fg-amber600: #b45309;
+  --fc-fg-amber601: #ea580c;
+  --fc-fg-amber700: #b45309;
+  --fc-fg-amber800: #92400e;
+  --fc-fg-amber900: #78350f;
+  --fc-fg-amber902: #5c4a00;
+  --fc-fg-blue500: #3b82f6;
+  --fc-fg-blue600: #2563eb;
+  --fc-fg-blue700: #1d4ed8;
+  --fc-fg-blue800: #1e40af;
+  --fc-fg-gray0: #ffffff;
+  --fc-fg-gray200: #e5e7eb;
+  --fc-fg-gray300: #d1d5db;
+  --fc-fg-gray400: #667085;
+  --fc-fg-gray500: #5c6470;
+  --fc-fg-gray550: #666666;
+  --fc-fg-gray600: #4b5563;
+  --fc-fg-gray601: #475569;
+  --fc-fg-gray700: #374151;
+  --fc-fg-gray801: #1e293b;
+  --fc-fg-gray900: #111827;
+  --fc-fg-green601: #059669;
+  --fc-fg-green700: #15803d;
+  --fc-fg-green800: #166534;
+  --fc-fg-red500: #c81e1e;
+  --fc-fg-red600: #dc2626;
+  --fc-fg-red700: #b91c1c;
+  --fc-fg-red800: #991b1b;
+  --fc-fg-red900: #7f1d1d;
+  --fc-fg-violet500: #8b5cf6;
+  --fc-fg-violet600: #7c3aed;
+  --fc-fg-violet601: #4f46e5;
+  --fc-line-amber200: #fde68a;
+  --fc-line-amber500: #f59e0b;
+  --fc-line-blue200: #bfdbfe;
+  --fc-line-gray0: #ffffff;
+  --fc-line-gray50: #f9fafb;
+  --fc-line-gray51: #f9f9f9;
+  --fc-line-gray100: #f3f4f6;
+  --fc-line-gray101: #f0f0f0;
+  --fc-line-gray200: #e5e7eb;
+  --fc-line-gray250: #dddddd;
+  --fc-line-gray300: #d1d5db;
+  --fc-line-gray400: #9ca3af;
+  --fc-line-gray900: #111827;
+  --fc-line-green100: #dcfce7;
+  --fc-line-green101: #d1fae5;
+  --fc-line-green200: #bbf7d0;
+  --fc-line-green202: #b7e4c7;
+  --fc-line-green700: #15803d;
+  --fc-line-red100: #fee2e2;
+  --fc-line-red200: #fecaca;
+  --fc-line-red300: #fca5a5;
+  --fc-line-red400: #f87171;
+  --fc-line-red500: #ef4444;
+  --fc-line-red700: #b91c1c;
+}
+
+:root[data-theme="dark"] {
+  --fc-bg-blue51: #13213a;
+  --fc-bg-amber50: #2a2110;
+  --fc-bg-amber51: #2a2110;
+  --fc-bg-amber52: #2a2110;
+  --fc-bg-amber54: #2a2110;
+  --fc-bg-amber100: #3a2c12;
+  --fc-bg-blue49: #13213a;
+  --fc-bg-blue50: #13213a;
+  --fc-bg-blue100: #172b4d;
+  --fc-bg-gray0: #161d19;
+  --fc-bg-gray25: #1b2420;
+  --fc-bg-gray50: #1b2420;
+  --fc-bg-gray53: #1b2420;
+  --fc-bg-gray54: #1b2420;
+  --fc-bg-gray55: #1b2420;
+  --fc-bg-gray100: #222c27;
+  --fc-bg-gray105: #222c27;
+  --fc-bg-gray106: #222c27;
+  --fc-bg-gray107: #222c27;
+  --fc-bg-gray108: #222c27;
+  --fc-bg-gray200: #2c3832;
+  --fc-bg-gray300: #2c3832;
+  --fc-bg-gray400: #4a5a51;
+  --fc-bg-gray900: #2a362f;
+  --fc-bg-green50: #12261a;
+  --fc-bg-green51: #12261a;
+  --fc-bg-green54: #12261a;
+  --fc-bg-green100: #173021;
+  --fc-bg-green250: #1b3d28;
+  --fc-bg-green300: #256238;
+  --fc-bg-green901: #1b3a29;
+  --fc-bg-green950: #16271e;
+  --fc-bg-red50: #2a1616;
+  --fc-bg-red51: #2a1616;
+  --fc-bg-red52: #2a1616;
+  --fc-bg-red100: #3a1b1b;
+  --fc-bg-red300: #7a2c2c;
+  --fc-bg-violet50: #1f1a36;
+  --fc-bg-violet51: #1f1a36;
+  --fc-fg-amber500: #fbbf24;
+  --fc-fg-amber501: #fbbf24;
+  --fc-fg-amber600: #fbbf24;
+  --fc-fg-amber601: #fbbf24;
+  --fc-fg-amber700: #fcd34d;
+  --fc-fg-amber800: #fcd34d;
+  --fc-fg-amber900: #fde68a;
+  --fc-fg-amber902: #fde68a;
+  --fc-fg-blue500: #60a5fa;
+  --fc-fg-blue600: #60a5fa;
+  --fc-fg-blue700: #93c5fd;
+  --fc-fg-blue800: #93c5fd;
+  --fc-fg-gray0: #ffffff;
+  --fc-fg-gray200: #55645b;
+  --fc-fg-gray300: #55645b;
+  --fc-fg-gray400: #8a978f;
+  --fc-fg-gray500: #9aa8a0;
+  --fc-fg-gray550: #9aa8a0;
+  --fc-fg-gray600: #c6d0c9;
+  --fc-fg-gray601: #c6d0c9;
+  --fc-fg-gray700: #c6d0c9;
+  --fc-fg-gray801: #e8ede9;
+  --fc-fg-gray900: #e8ede9;
+  --fc-fg-green601: #4ade80;
+  --fc-fg-green700: #4ade80;
+  --fc-fg-green800: #86efac;
+  --fc-fg-red500: #f87171;
+  --fc-fg-red600: #f87171;
+  --fc-fg-red700: #fca5a5;
+  --fc-fg-red800: #fca5a5;
+  --fc-fg-red900: #fecaca;
+  --fc-fg-violet500: #a78bfa;
+  --fc-fg-violet600: #a78bfa;
+  --fc-fg-violet601: #a78bfa;
+  --fc-line-amber200: #7a611c;
+  --fc-line-amber500: #fbbf24;
+  --fc-line-blue200: #274c85;
+  --fc-line-gray0: #161d19;
+  --fc-line-gray50: #26302b;
+  --fc-line-gray51: #26302b;
+  --fc-line-gray100: #26302b;
+  --fc-line-gray101: #26302b;
+  --fc-line-gray200: #2f3b35;
+  --fc-line-gray250: #2f3b35;
+  --fc-line-gray300: #2f3b35;
+  --fc-line-gray400: #4a5a51;
+  --fc-line-gray900: #9aa8a0;
+  --fc-line-green100: #1f4a2e;
+  --fc-line-green101: #1f4a2e;
+  --fc-line-green200: #1f5133;
+  --fc-line-green202: #1f5133;
+  --fc-line-green700: #22c55e;
+  --fc-line-red100: #5b2323;
+  --fc-line-red200: #7a2c2c;
+  --fc-line-red300: #7a2c2c;
+  --fc-line-red400: #f87171;
+  --fc-line-red500: #f87171;
+  --fc-line-red700: #f87171;
+}

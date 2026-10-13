@@ -192,7 +192,7 @@ export default function FeedCalculator() {
   return (
     <div className="fd-page">
       <div className="fd-head">
-        <Calculator size={26} color="#15803d" aria-hidden="true" />
+        <Calculator size={26} color="var(--fc-fg-green700)" aria-hidden="true" />
         <h1>Feed Calculator</h1>
       </div>
       <p className="fd-lead">Work out how much feed to give each day and how much to buy.</p>

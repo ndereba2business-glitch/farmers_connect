@@ -18,10 +18,10 @@ function DailyFinanceTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div style={{
-      background: "white", borderRadius: "12px", padding: "10px 14px",
-      border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
+      background: "var(--fc-surface)", borderRadius: "12px", padding: "10px 14px",
+      border: "1px solid var(--fc-line-gray200)", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
-      <p style={{ margin: 0, fontSize: "var(--fs-small, 12px)", fontWeight: "700", color: "#111827" }}>{label}</p>
+      <p style={{ margin: 0, fontSize: "var(--fs-small, 12px)", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ margin: "4px 0 0", fontSize: "var(--fs-small, 12px)", color: p.color, fontWeight: "600" }}>
           {p.name}: KES {Number(p.value).toLocaleString()}
@@ -36,12 +36,12 @@ function DailyDeathsTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div style={{
-      background: "white", borderRadius: "12px", padding: "10px 14px",
-      border: "1px solid #e5e7eb", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
+      background: "var(--fc-surface)", borderRadius: "12px", padding: "10px 14px",
+      border: "1px solid var(--fc-line-gray200)", boxShadow: "0 6px 20px rgba(15,23,42,0.12)"
     }}>
-      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "700", color: "#1e293b" }}>{label}</p>
+      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "700", color: "var(--fc-fg-gray801)" }}>{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ margin: "4px 0 0", fontSize: "var(--fs-small, 12px)", color: "#ef4444", fontWeight: "600" }}>
+        <p key={i} style={{ margin: "4px 0 0", fontSize: "var(--fs-small, 12px)", color: "var(--fc-fg-red500)", fontWeight: "600" }}>
           {p.name} : {p.value}
         </p>
       ))}
@@ -252,20 +252,20 @@ export default function Dashboard() {
           <div key={vaccine.id} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "12px 16px", borderRadius: "12px",
-            background: "#fef2f2", border: "1px solid #fecaca",
+            background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
             marginBottom: "10px", gap: "12px", flexWrap: "wrap"
           }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", flex: 1, minWidth: "220px" }}>
-              <AlertTriangle size={18} color="#b91c1c" aria-hidden="true" style={{ flexShrink: 0, marginTop: "2px" }} />
+              <AlertTriangle size={18} color="var(--fc-fg-red700)" aria-hidden="true" style={{ flexShrink: 0, marginTop: "2px" }} />
               <div>
-                <span style={{ fontSize: "var(--fs-body, 14px)", color: "#991b1b", fontWeight: "700" }}>
+                <span style={{ fontSize: "var(--fs-body, 14px)", color: "var(--fc-fg-red800)", fontWeight: "700" }}>
                   {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length} vaccination
                   {overdueVaccines.filter(v => !dismissedAlerts.includes(v.id)).length > 1 ? "s are" : " is"} overdue.{" "}
                 </span>
-                <span style={{ fontSize: "var(--fs-body, 14px)", color: "#7f1d1d" }}>
+                <span style={{ fontSize: "var(--fs-body, 14px)", color: "var(--fc-fg-red900)" }}>
                   Go to your farm to mark them done.
                 </span>
-                <div style={{ fontSize: "var(--fs-small, 12px)", color: "#991b1b", marginTop: "2px" }}>
+                <div style={{ fontSize: "var(--fs-small, 12px)", color: "var(--fc-fg-red800)", marginTop: "2px" }}>
                   <Syringe size={14} aria-hidden="true" /> {vaccine.vaccine_name}
                   {vaccine.farm_batches?.batch_name && ` — ${vaccine.farm_batches.batch_name}`}
                   {" "}· Due: {vaccine.scheduled_date}
@@ -277,9 +277,9 @@ export default function Dashboard() {
                 onClick={() => navigate("/my-farm")}
                 className="fc-tap"
                 style={{
-                  padding: "6px 14px", background: "#fff",
-                  border: "1px solid #fecaca", borderRadius: "8px",
-                  color: "#b91c1c", fontWeight: "600", fontSize: "13px", cursor: "pointer"
+                  padding: "6px 14px", background: "var(--fc-bg-gray0)",
+                  border: "1px solid var(--fc-line-red200)", borderRadius: "8px",
+                  color: "var(--fc-fg-red700)", fontWeight: "600", fontSize: "13px", cursor: "pointer"
                 }}
               >
                 View Farm
@@ -294,7 +294,7 @@ export default function Dashboard() {
                   display: "flex", alignItems: "center", justifyContent: "center"
                 }}
               >
-                <X size={16} color="#b91c1c" aria-hidden="true" />
+                <X size={16} color="var(--fc-fg-red700)" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -337,29 +337,29 @@ export default function Dashboard() {
                 layout="vertical"
                 margin={{ top: 4, right: 20, left: 10, bottom: 4 }}
               >
-                <CartesianGrid horizontal={false} stroke="#f0f0f0" />
+                <CartesianGrid horizontal={false} stroke="var(--fc-line-gray101)" />
                 <XAxis
                   type="number"
                   domain={[0, 100]}
                   ticks={[0, 25, 50, 75, 100]}
                   tickFormatter={v => `${v}%`}
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
+                  tick={{ fontSize: 11, fill: "var(--fc-fg-gray400)" }}
+                  axisLine={{ stroke: "var(--fc-line-gray200)" }}
                   tickLine={false}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fontSize: 12, fill: "#374151", fontWeight: 600 }}
-                  axisLine={{ stroke: "#e5e7eb" }}
+                  tick={{ fontSize: 12, fill: "var(--fc-fg-gray700)", fontWeight: 600 }}
+                  axisLine={{ stroke: "var(--fc-line-gray200)" }}
                   tickLine={false}
                   width={110}
                 />
                 <Tooltip
                   formatter={v => [`${v}%`, "Survival rate"]}
-                  contentStyle={{ borderRadius: "12px", border: "1px solid #e5e7eb", fontSize: "12px" }}
+                  contentStyle={{ borderRadius: "12px", border: "1px solid var(--fc-line-gray200)", fontSize: "12px" }}
                 />
-                <Bar dataKey="survival" fill="#15803d" radius={[0, 6, 6, 0]} barSize={22} />
+                <Bar dataKey="survival" fill="var(--fc-fg-green700)" radius={[0, 6, 6, 0]} barSize={22} />
               </RechartsBarChart>
             </ResponsiveContainer>
           </div>
@@ -368,7 +368,7 @@ export default function Dashboard() {
           {dailyMortalityData.length === 0 || loading ? (
             <div style={{
               height: "220px", display: "flex", alignItems: "center",
-              justifyContent: "center", color: "#9ca3af", fontSize: "var(--fs-small, 13px)"
+              justifyContent: "center", color: "var(--fc-fg-gray400)", fontSize: "var(--fs-small, 13px)"
             }}>
               {loading ? "Loading chart..." : "No mortality logged in the last 14 days."}
             </div>
@@ -376,29 +376,29 @@ export default function Dashboard() {
             <div style={{ width: "100%", height: "220px" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={dailyMortalityData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#f0f0f0" />
+                  <CartesianGrid vertical={false} stroke="var(--fc-line-gray101)" />
                   <XAxis
                     dataKey="label"
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={{ stroke: "#e5e7eb" }}
+                    tick={{ fontSize: 11, fill: "var(--fc-fg-gray400)" }}
+                    axisLine={{ stroke: "var(--fc-line-gray200)" }}
                     tickLine={false}
                   />
                   <YAxis
                     domain={[0, deathsYMax]}
                     ticks={deathsYTicks}
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tick={{ fontSize: 11, fill: "var(--fc-fg-gray400)" }}
                     axisLine={false}
                     tickLine={false}
                     width={30}
                   />
                   <Tooltip content={<DailyDeathsTooltip />} />
-                  <Bar dataKey="deaths" name="Deaths" fill="#fca5a5" radius={[3, 3, 0, 0]} barSize={14} />
+                  <Bar dataKey="deaths" name="Deaths" fill="var(--fc-bg-red300)" radius={[3, 3, 0, 0]} barSize={14} />
                   <Line
                     dataKey="deaths"
                     name="Trend"
-                    stroke="#b91c1c"
+                    stroke="var(--fc-fg-red700)"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "#b91c1c", strokeWidth: 0 }}
+                    dot={{ r: 3, fill: "var(--fc-fg-red700)", strokeWidth: 0 }}
                     activeDot={{ r: 5 }}
                   />
                 </ComposedChart>
@@ -435,7 +435,7 @@ export default function Dashboard() {
         {dailyFinanceData.length === 0 || loading ? (
           <div style={{
             height: "260px", display: "flex", alignItems: "center",
-            justifyContent: "center", color: "#9ca3af", fontSize: "var(--fs-small, 13px)"
+            justifyContent: "center", color: "var(--fc-fg-gray400)", fontSize: "var(--fs-small, 13px)"
           }}>
             {loading ? "Loading chart..." : "No activity in the last 14 days."}
           </div>
@@ -443,31 +443,31 @@ export default function Dashboard() {
           <div style={{ width: "100%", height: "260px" }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={dailyFinanceData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#f0f0f0" />
+                <CartesianGrid vertical={false} stroke="var(--fc-line-gray101)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
+                  tick={{ fontSize: 11, fill: "var(--fc-fg-gray400)" }}
+                  axisLine={{ stroke: "var(--fc-line-gray200)" }}
                   tickLine={false}
                 />
                 <YAxis
                   domain={[0, yAxisMax]}
                   ticks={yTicks}
                   tickFormatter={v => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)}
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  tick={{ fontSize: 11, fill: "var(--fc-fg-gray400)" }}
                   axisLine={false}
                   tickLine={false}
                   width={44}
                 />
                 <Tooltip content={<DailyFinanceTooltip />} />
-                <Bar dataKey="sales" name="Sales" fill="#15803d" radius={[3, 3, 0, 0]} barSize={14} />
-                <Bar dataKey="expenses" name="Expenses" fill="#9ca3af" radius={[3, 3, 0, 0]} barSize={14} />
+                <Bar dataKey="sales" name="Sales" fill="var(--fc-fg-green700)" radius={[3, 3, 0, 0]} barSize={14} />
+                <Bar dataKey="expenses" name="Expenses" fill="var(--fc-fg-gray400)" radius={[3, 3, 0, 0]} barSize={14} />
                 <Line
                   dataKey="profit"
                   name="Profit"
-                  stroke="#111827"
+                  stroke="var(--fc-fg-gray900)"
                   strokeWidth={2}
-                  dot={{ r: 3, fill: "#111827", strokeWidth: 0 }}
+                  dot={{ r: 3, fill: "var(--fc-fg-gray900)", strokeWidth: 0 }}
                   activeDot={{ r: 5 }}
                 />
               </ComposedChart>
@@ -478,15 +478,15 @@ export default function Dashboard() {
         <div style={{ display: "flex", gap: "20px", marginTop: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "12px", height: "12px", background: "#15803d", borderRadius: "2px" }} />
-            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Sales</span>
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "var(--fc-fg-gray500)", fontWeight: "500" }}>Sales</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <div style={{ width: "12px", height: "12px", background: "#9ca3af", borderRadius: "2px" }} />
-            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Expenses</span>
+            <div style={{ width: "12px", height: "12px", background: "var(--fc-bg-gray400)", borderRadius: "2px" }} />
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "var(--fc-fg-gray500)", fontWeight: "500" }}>Expenses</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <div style={{ width: "16px", height: "2px", background: "#111827" }} />
-            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "#6b7280", fontWeight: "500" }}>Profit</span>
+            <div style={{ width: "16px", height: "2px", background: "var(--fc-bg-gray900)" }} />
+            <span style={{ fontSize: "var(--fs-tiny, 12px)", color: "var(--fc-fg-gray500)", fontWeight: "500" }}>Profit</span>
           </div>
         </div>
       </div>
@@ -515,30 +515,30 @@ export default function Dashboard() {
               padding: "28px 8px", display: "flex", flexDirection: "column",
               justifyContent: "center", alignItems: "center", textAlign: "center"
             }}>
-              <CheckCircle2 size={24} color="#15803d" aria-hidden="true" />
-              <h3 style={{ marginTop: "10px", marginBottom: "4px", fontSize: "15px", fontWeight: "600", color: "#111827" }}>
+              <CheckCircle2 size={24} color="var(--fc-fg-green700)" aria-hidden="true" />
+              <h3 style={{ marginTop: "10px", marginBottom: "4px", fontSize: "15px", fontWeight: "600", color: "var(--fc-fg-gray900)" }}>
                 No tasks waiting
               </h3>
-              <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>Add one from the Tasks page when something needs doing.</p>
+              <p style={{ margin: 0, color: "var(--fc-fg-gray500)", fontSize: "14px" }}>Add one from the Tasks page when something needs doing.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column" }}>
               {recentTasks.map(task => (
                 <div key={task.id} style={{
                   display: "flex", alignItems: "center", gap: "14px",
-                  padding: "10px 0", borderTop: "1px solid #f3f4f6"
+                  padding: "10px 0", borderTop: "1px solid var(--fc-line-gray100)"
                 }}>
                   <div style={{
                     width: "8px", height: "8px", borderRadius: "50%",
                     background: task.priority === "high" ? "#ef4444"
-                      : task.priority === "medium" ? "#f59e0b" : "#9ca3af",
+                      : task.priority === "medium" ? "#f59e0b" : "var(--fc-bg-gray400)",
                     flexShrink: 0
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: "600", fontSize: "var(--fs-body, 14px)", color: "#111827" }}>
+                    <div style={{ fontWeight: "600", fontSize: "var(--fs-body, 14px)", color: "var(--fc-fg-gray900)" }}>
                       {task.title}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>
+                    <div style={{ fontSize: "12px", color: "var(--fc-fg-gray500)", marginTop: "2px" }}>
                       {task.due_date ? `Due ${task.due_date}` : "No due date"}
                     </div>
                   </div>
@@ -547,8 +547,8 @@ export default function Dashboard() {
                     className="fc-tap"
                     style={{
                       padding: "4px 12px", borderRadius: "8px",
-                      border: "1px solid #e5e7eb", background: "white",
-                      fontSize: "13px", cursor: "pointer", fontWeight: "600", color: "#374151"
+                      border: "1px solid var(--fc-line-gray200)", background: "var(--fc-surface)",
+                      fontSize: "13px", cursor: "pointer", fontWeight: "600", color: "var(--fc-fg-gray700)"
                     }}
                   >
                     View
@@ -588,7 +588,7 @@ export default function Dashboard() {
                   className="fc-tap"
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "13px", color: "#15803d", fontWeight: "600"
+                    fontSize: "13px", color: "var(--fc-fg-green700)", fontWeight: "600"
                   }}
                 >
                   View all
@@ -598,15 +598,15 @@ export default function Dashboard() {
                 {overdueVaccines.slice(0, 3).map(v => (
                   <div key={v.id} style={{
                     padding: "10px 12px", borderRadius: "12px",
-                    background: "#fef2f2", border: "1px solid #fecaca",
+                    background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
                     display: "flex", alignItems: "center", gap: "10px"
                   }}>
-                    <Syringe size={16} color="#b91c1c" aria-hidden="true" />
+                    <Syringe size={16} color="var(--fc-fg-red700)" aria-hidden="true" />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "600", color: "#991b1b" }}>
+                      <p style={{ margin: 0, fontSize: "var(--fs-small, 13px)", fontWeight: "600", color: "var(--fc-fg-red800)" }}>
                         {v.vaccine_name}
                       </p>
-                      <p style={{ margin: 0, fontSize: "12px", color: "#991b1b" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-red800)" }}>
                         {v.farm_batches?.batch_name} · {v.scheduled_date}
                       </p>
                     </div>
@@ -629,14 +629,14 @@ export default function Dashboard() {
                   className="fc-tap"
                   style={{
                     background: "none", border: "none", cursor: "pointer",
-                    fontSize: "13px", color: "#15803d", fontWeight: "600"
+                    fontSize: "13px", color: "var(--fc-fg-green700)", fontWeight: "600"
                   }}
                 >
                   View all
                 </button>
               </div>
-              <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#374151" }}>
-                <CheckCircle2 size={18} color="#15803d" aria-hidden="true" /> Nothing overdue. All vaccinations are up to date.
+              <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "var(--fc-fg-gray700)" }}>
+                <CheckCircle2 size={18} color="var(--fc-fg-green700)" aria-hidden="true" /> Nothing overdue. All vaccinations are up to date.
               </p>
             </div>
           )}

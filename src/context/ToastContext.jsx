@@ -4,9 +4,9 @@ import { CheckCircle2, XCircle, Info, X } from "lucide-react";
 const ToastContext = createContext(null);
 
 const VARIANTS = {
-  success: { bg: "#f0fdf4", border: "#bbf7d0", color: "#15803d", Icon: CheckCircle2 },
-  error: { bg: "#fef2f2", border: "#fecaca", color: "#dc2626", Icon: XCircle },
-  info: { bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8", Icon: Info },
+  success: { bg: "var(--fc-bg-green50)", border: "var(--fc-line-green200)", color: "var(--fc-fg-green700)", Icon: CheckCircle2 },
+  error: { bg: "var(--fc-bg-red50)", border: "var(--fc-line-red200)", color: "var(--fc-fg-red600)", Icon: XCircle },
+  info: { bg: "var(--fc-bg-blue50)", border: "var(--fc-line-blue200)", color: "var(--fc-fg-blue700)", Icon: Info },
 };
 
 const AUTO_DISMISS_MS = 4500;

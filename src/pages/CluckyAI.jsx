@@ -292,7 +292,7 @@ export default function CluckyAI() {
                 )}
               </div>
               {message.role === "assistant" && !message.pending && message.content && (
-                <button type="button" className="ac-link-btn" onClick={() => setReportingAnswer(message)}>
+                <button type="button" className="ac-link-btn ck-report" onClick={() => setReportingAnswer(message)}>
                   <Flag size={14} aria-hidden="true" /> Report this answer
                 </button>
               )}

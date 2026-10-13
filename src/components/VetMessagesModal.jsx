@@ -7,8 +7,8 @@ import { X, Send, ArrowLeft, MessageSquarePlus } from "lucide-react";
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 // VetDashboard.jsx's "Message Farmer" quick action. Reuses
@@ -132,14 +132,14 @@ export default function VetMessagesModal({ onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", width: "100%", maxWidth: "480px",
           height: "min(640px, 85vh)", display: "flex", flexDirection: "column", overflow: "hidden"
         }}
       >
         {/* HEADER */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "18px 20px", borderBottom: "1px solid #f0f0f0", flexShrink: 0
+          padding: "18px 20px", borderBottom: "1px solid var(--fc-line-gray101)", flexShrink: 0
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {(activeFarmer || startingNew) && (
@@ -160,7 +160,7 @@ export default function VetMessagesModal({ onClose }) {
               <button
                 onClick={() => setStartingNew(true)}
                 aria-label="New conversation"
-                style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#15803d" }}
+                style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "var(--fc-fg-green700)" }}
               >
                 <MessageSquarePlus size={20} />
               </button>
@@ -174,7 +174,7 @@ export default function VetMessagesModal({ onClose }) {
         {/* BODY */}
         {startingNew ? (
           <div style={{ padding: "20px", flex: 1, overflowY: "auto" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#6b7280", marginBottom: "8px" }}>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "var(--fc-fg-gray500)", marginBottom: "8px" }}>
               Start a conversation with
             </label>
             <FarmerPicker value={newFarmer} onChange={setNewFarmer} />
@@ -183,8 +183,8 @@ export default function VetMessagesModal({ onClose }) {
               disabled={!newFarmer}
               style={{
                 marginTop: "16px", width: "100%", padding: "12px",
-                background: newFarmer ? "#15803d" : "#e5e7eb",
-                color: "#fff", border: "none", borderRadius: "12px",
+                background: newFarmer ? "#15803d" : "var(--fc-bg-gray200)",
+                color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                 fontWeight: "700", fontSize: "14px", cursor: newFarmer ? "pointer" : "not-allowed"
               }}
             >
@@ -195,9 +195,9 @@ export default function VetMessagesModal({ onClose }) {
           <>
             <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               {loadingMessages ? (
-                <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+                <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
               ) : messages.length === 0 ? (
-                <p style={{ fontSize: "13px", color: "#9ca3af", textAlign: "center", marginTop: "20px" }}>
+                <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)", textAlign: "center", marginTop: "20px" }}>
                   No messages yet — say hello.
                 </p>
               ) : (
@@ -207,8 +207,8 @@ export default function VetMessagesModal({ onClose }) {
                     <div key={m.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start" }}>
                       <div style={{
                         maxWidth: "75%", padding: "9px 13px", borderRadius: "12px",
-                        background: isMine ? "#15803d" : "#f3f4f6",
-                        color: isMine ? "#fff" : "#111827", fontSize: "13px"
+                        background: isMine ? "#15803d" : "var(--fc-bg-gray100)",
+                        color: isMine ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray900)", fontSize: "13px"
                       }}>
                         {m.message}
                       </div>
@@ -220,7 +220,7 @@ export default function VetMessagesModal({ onClose }) {
             </div>
             <form onSubmit={sendMessage} style={{
               display: "flex", gap: "8px", padding: "14px 20px",
-              borderTop: "1px solid #f0f0f0", flexShrink: 0
+              borderTop: "1px solid var(--fc-line-gray101)", flexShrink: 0
             }}>
               <input
                 placeholder="Type a message..."
@@ -234,7 +234,7 @@ export default function VetMessagesModal({ onClose }) {
                 aria-label="Send message"
                 style={{
                   flexShrink: 0, width: "42px", height: "42px", borderRadius: "12px",
-                  border: "none", background: "#15803d", color: "#fff",
+                  border: "none", background: "#15803d", color: "var(--fc-fg-gray0)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: draft.trim() ? "pointer" : "not-allowed", opacity: draft.trim() ? 1 : 0.6
                 }}
@@ -246,17 +246,17 @@ export default function VetMessagesModal({ onClose }) {
         ) : (
           <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px" }}>
             {loadingConversations ? (
-              <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+              <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
             ) : conversations.length === 0 ? (
               <div style={{ textAlign: "center", padding: "40px 10px" }}>
-                <p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: "12px" }}>
+                <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)", marginBottom: "12px" }}>
                   No conversations yet.
                 </p>
                 <button
                   onClick={() => setStartingNew(true)}
                   style={{
-                    padding: "9px 18px", background: "#f0fdf4", color: "#15803d",
-                    border: "1px solid #bbf7d0", borderRadius: "12px",
+                    padding: "9px 18px", background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)",
+                    border: "1px solid var(--fc-line-green200)", borderRadius: "12px",
                     fontWeight: "700", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -271,16 +271,16 @@ export default function VetMessagesModal({ onClose }) {
                     onClick={() => openConversation(c.farmer_email)}
                     style={{
                       padding: "12px 10px", borderRadius: "12px", cursor: "pointer",
-                      borderBottom: "1px solid #f9fafb"
+                      borderBottom: "1px solid var(--fc-line-gray50)"
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--fc-bg-gray50)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <p style={{ margin: "0 0 3px", fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+                    <p style={{ margin: "0 0 3px", fontWeight: "700", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                       {c.farmer_email}
                     </p>
                     <p style={{
-                      margin: 0, fontSize: "12px", color: "#9ca3af",
+                      margin: 0, fontSize: "12px", color: "var(--fc-fg-gray400)",
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
                     }}>
                       {c.message}

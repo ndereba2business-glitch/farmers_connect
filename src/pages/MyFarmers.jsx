@@ -10,25 +10,25 @@ import {
 import VisitReportModal from "../components/VisitReportModal";
 
 const RECORD_TYPE_META = {
-  prescription: { icon: Pill, label: "Prescription", color: "#15803d" },
-  diagnosis: { icon: Stethoscope, label: "Diagnosis", color: "#3b82f6" },
-  vaccination: { icon: Syringe, label: "Vaccination", color: "#8b5cf6" },
-  lab_result: { icon: Beaker, label: "Lab Result", color: "#ef4444" },
+  prescription: { icon: Pill, label: "Prescription", color: "var(--fc-fg-green700)" },
+  diagnosis: { icon: Stethoscope, label: "Diagnosis", color: "var(--fc-fg-blue500)" },
+  vaccination: { icon: Syringe, label: "Vaccination", color: "var(--fc-fg-violet500)" },
+  lab_result: { icon: Beaker, label: "Lab Result", color: "var(--fc-fg-red500)" },
 };
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)"
 };
 
 const STATUS_COLORS = {
-  pending: { bg: "#fffbeb", color: "#d97706" },
-  claimed: { bg: "#eff6ff", color: "#3b82f6" },
-  accepted: { bg: "#eff6ff", color: "#3b82f6" },
-  completed: { bg: "#f0fdf4", color: "#15803d" },
-  cancelled: { bg: "#fef2f2", color: "#ef4444" },
-  record: { bg: "#f5f3ff", color: "#8b5cf6" } // farmer reachable only via standalone medical records, no appointment
+  pending: { bg: "var(--fc-bg-amber50)", color: "var(--fc-fg-amber600)" },
+  claimed: { bg: "var(--fc-bg-blue50)", color: "var(--fc-fg-blue500)" },
+  accepted: { bg: "var(--fc-bg-blue50)", color: "var(--fc-fg-blue500)" },
+  completed: { bg: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)" },
+  cancelled: { bg: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)" },
+  record: { bg: "var(--fc-bg-violet50)", color: "var(--fc-fg-violet500)" } // farmer reachable only via standalone medical records, no appointment
 };
 
 const STATUS_LABELS = {
@@ -236,12 +236,12 @@ export default function MyFarmers() {
       {/* HEADER */}
       <div className="fc-page-header" style={{ marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Users size={28} color="#15803d" />
+          <Users size={28} color="var(--fc-fg-green700)" />
           <div>
-            <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+            <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
               My Farmers
             </h1>
-            <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
+            <p style={{ margin: "4px 0 0", color: "var(--fc-fg-gray500)", fontSize: "14px" }}>
               {farmers.length} farmer{farmers.length !== 1 ? "s" : ""} you've worked with
             </p>
           </div>
@@ -252,7 +252,7 @@ export default function MyFarmers() {
       <div style={{ position: "relative", margin: "20px 0 24px" }}>
         <Search size={16} style={{
           position: "absolute", left: "14px", top: "50%",
-          transform: "translateY(-50%)", color: "#9ca3af"
+          transform: "translateY(-50%)", color: "var(--fc-fg-gray400)"
         }} />
         <input
           aria-label="Search farmers" placeholder="Search by name, email, or county..."
@@ -266,7 +266,7 @@ export default function MyFarmers() {
       {loading && (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ height: "84px", borderRadius: "16px", background: "#f3f4f6" }} />
+            <div key={i} style={{ height: "84px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
           ))}
         </div>
       )}
@@ -275,13 +275,13 @@ export default function MyFarmers() {
       {!loading && filtered.length === 0 && (
         <div style={{
           textAlign: "center", padding: "80px 20px",
-          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
         }}>
-          <Users size={56} color="#e5e7eb" style={{ marginBottom: "16px" }} />
-          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
+          <Users size={56} color="var(--fc-fg-gray200)" style={{ marginBottom: "16px" }} />
+          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)", margin: "0 0 8px" }}>
             {search ? "No farmers match your search" : "No farmers yet"}
           </h3>
-          <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+          <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
             {search ? "Try a different search term." : "Farmers whose appointments you accept will show up here."}
           </p>
         </div>
@@ -291,20 +291,20 @@ export default function MyFarmers() {
       {!loading && filtered.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {filtered.map(f => {
-            const statusStyle = STATUS_COLORS[f.lastStatus] || { bg: "#f3f4f6", color: "#6b7280" };
+            const statusStyle = STATUS_COLORS[f.lastStatus] || { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)" };
             return (
               <div key={f.email} style={{
-                background: "#fff", borderRadius: "16px",
-                border: "1px solid #e5e7eb", padding: "18px 20px",
+                background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                border: "1px solid var(--fc-line-gray200)", padding: "18px 20px",
                 boxShadow: "var(--fc-shadow-card)",
                 display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center"
               }}>
                 {/* AVATAR */}
                 <div style={{
                   width: "48px", height: "48px", borderRadius: "12px",
-                  background: "#dcfce7", display: "flex", alignItems: "center",
+                  background: "var(--fc-bg-green100)", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0, overflow: "hidden",
-                  fontWeight: "700", color: "#15803d", fontSize: "18px"
+                  fontWeight: "700", color: "var(--fc-fg-green700)", fontSize: "18px"
                 }}>
                   {f.avatarUrl
                     ? <img src={f.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -315,7 +315,7 @@ export default function MyFarmers() {
                 {/* INFO */}
                 <div style={{ flex: 1, minWidth: "220px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
-                    <p style={{ margin: 0, fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                    <p style={{ margin: 0, fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                       {f.fullName}
                     </p>
                     <span style={{
@@ -327,7 +327,7 @@ export default function MyFarmers() {
                     </span>
                     {f.urgency === "high" && (
                       <span style={{
-                        background: "#fef2f2", color: "#ef4444",
+                        background: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)",
                         fontSize: "11px", fontWeight: "700",
                         padding: "2px 9px", borderRadius: "16px"
                       }}>
@@ -335,7 +335,7 @@ export default function MyFarmers() {
                       </span>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#9ca3af", marginBottom: "6px" }}>
+                  <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "var(--fc-fg-gray400)", marginBottom: "6px" }}>
                     {f.county && (
                       <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <MapPin size={11} /> {f.county}
@@ -359,25 +359,25 @@ export default function MyFarmers() {
                     )}
                   </div>
                   <p style={{
-                    margin: 0, fontSize: "13px", color: "#374151",
+                    margin: 0, fontSize: "13px", color: "var(--fc-fg-gray700)",
                     display: "flex", alignItems: "flex-start", gap: "6px"
                   }}>
-                    <MessageSquare size={13} style={{ marginTop: "2px", flexShrink: 0, color: "#9ca3af" }} />
+                    <MessageSquare size={13} style={{ marginTop: "2px", flexShrink: 0, color: "var(--fc-fg-gray400)" }} />
                     {f.lastReason}
                   </p>
                 </div>
 
                 {/* DATE + ACTIONS */}
                 <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end", color: "#9ca3af", fontSize: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end", color: "var(--fc-fg-gray400)", fontSize: "12px" }}>
                     <Calendar size={12} /> {formatDate(f.lastDate)}
                   </div>
                   <button
                     onClick={() => openHistory(f)}
                     style={{
                       display: "flex", alignItems: "center", gap: "6px",
-                      padding: "6px 14px", background: "#fff", color: "#374151",
-                      border: "1px solid #e5e7eb", borderRadius: "8px",
+                      padding: "6px 14px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray700)",
+                      border: "1px solid var(--fc-line-gray200)", borderRadius: "8px",
                       fontWeight: "600", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                     }}
                   >
@@ -402,7 +402,7 @@ export default function MyFarmers() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "16px", padding: "28px",
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px",
               maxWidth: "520px", width: "100%", maxHeight: "90vh", overflowY: "auto"
             }}
           >
@@ -412,27 +412,27 @@ export default function MyFarmers() {
                 <X size={18} />
               </button>
             </div>
-            <p style={{ margin: "0 0 18px", fontSize: "13px", color: "#6b7280" }}>
+            <p style={{ margin: "0 0 18px", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>
               {historyTarget.fullName}
             </p>
 
             {loadingHistory ? (
-              <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+              <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
             ) : historyList.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#9ca3af" }}>No completed visits with this farmer yet.</p>
+              <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>No completed visits with this farmer yet.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {historyList.map(appt => (
                   <div key={appt.id} style={{
-                    border: "1px solid #e5e7eb", borderRadius: "12px", padding: "14px",
+                    border: "1px solid var(--fc-line-gray200)", borderRadius: "12px", padding: "14px",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     flexWrap: "wrap", gap: "10px"
                   }}>
                     <div>
-                      <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+                      <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                         {formatDate(appt.appointment_date)}
                       </p>
-                      <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                         KES {Number(appt.fee || 0).toLocaleString()}
                       </p>
                     </div>
@@ -440,8 +440,8 @@ export default function MyFarmers() {
                       onClick={() => openReport(appt)}
                       style={{
                         display: "flex", alignItems: "center", gap: "6px",
-                        padding: "7px 14px", background: "#f0fdf4", color: "#15803d",
-                        border: "1px solid #bbf7d0", borderRadius: "8px",
+                        padding: "7px 14px", background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)",
+                        border: "1px solid var(--fc-line-green200)", borderRadius: "8px",
                         fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                       }}
                     >
@@ -452,13 +452,13 @@ export default function MyFarmers() {
               </div>
             )}
 
-            <h3 style={{ margin: "22px 0 12px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+            <h3 style={{ margin: "22px 0 12px", fontSize: "14px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
               Medical Records
             </h3>
             {loadingMedicalRecords ? (
-              <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+              <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
             ) : medicalRecords.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#9ca3af" }}>No prescriptions, diagnoses, vaccinations, or lab results logged yet.</p>
+              <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>No prescriptions, diagnoses, vaccinations, or lab results logged yet.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {medicalRecords.map(record => {
@@ -466,7 +466,7 @@ export default function MyFarmers() {
                   const Icon = meta.icon;
                   return (
                     <div key={record.id} style={{
-                      border: "1px solid #e5e7eb", borderRadius: "12px", padding: "14px",
+                      border: "1px solid var(--fc-line-gray200)", borderRadius: "12px", padding: "14px",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                       flexWrap: "wrap", gap: "10px"
                     }}>
@@ -474,17 +474,17 @@ export default function MyFarmers() {
                         <Icon size={16} color={meta.color} style={{ marginTop: "2px", flexShrink: 0 }} />
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                            <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+                            <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                               {record.title}
                             </p>
                             <span style={{
                               fontSize: "10px", fontWeight: "700", padding: "2px 8px",
-                              borderRadius: "16px", background: "#f3f4f6", color: meta.color
+                              borderRadius: "16px", background: "var(--fc-bg-gray100)", color: meta.color
                             }}>
                               {meta.label}
                             </span>
                           </div>
-                          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+                          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                             {formatDate(record.created_at)}
                             {record.record_type === "vaccination" && record.next_due_date &&
                               ` · Next due ${formatDate(record.next_due_date)}`}
@@ -496,8 +496,8 @@ export default function MyFarmers() {
                           onClick={() => viewLabResult(record)}
                           style={{
                             display: "flex", alignItems: "center", gap: "6px",
-                            padding: "7px 14px", background: "#fef2f2", color: "#ef4444",
-                            border: "1px solid #fecaca", borderRadius: "8px",
+                            padding: "7px 14px", background: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)",
+                            border: "1px solid var(--fc-line-red200)", borderRadius: "8px",
                             fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
                         >

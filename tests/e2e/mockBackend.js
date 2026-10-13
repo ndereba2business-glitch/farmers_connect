@@ -307,8 +307,9 @@ export function createMockBackend() {
           if ("notifications_enabled" in changes) current.notificationsEnabled = changes.notifications_enabled;
           if ("terms_accepted_at" in changes) { current.termsAcceptedAt = changes.terms_accepted_at; current.termsVersion = changes.terms_version; }
           if ("clucky_consent_at" in changes) current.cluckyConsentAt = changes.clucky_consent_at;
+          if ("theme_preference" in changes) current.themePreference = changes.theme_preference;
         }
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled, terms_accepted_at: current.termsAcceptedAt, terms_version: current.termsVersion, clucky_consent_at: current.cluckyConsentAt }] : []);
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled, terms_accepted_at: current.termsAcceptedAt, terms_version: current.termsVersion, clucky_consent_at: current.cluckyConsentAt, theme_preference: current.themePreference ?? null }] : []);
       }
 
       if (table === "supplier_profiles") {

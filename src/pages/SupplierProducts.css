@@ -34,7 +34,7 @@
 .spl-media {
   position: relative;
   aspect-ratio: 16 / 10;
-  background: #eef2ef;
+  background: var(--fc-bg-gray106);
   display: grid;
   place-items: center;
   color: var(--ss-muted);
@@ -69,7 +69,7 @@
 
 .spl-skel {
   border-radius: 8px;
-  background: linear-gradient(90deg, #edf1ee 25%, #f7f9f7 50%, #edf1ee 75%);
+  background: linear-gradient(90deg, var(--fc-bg-gray107) 25%, var(--fc-bg-gray55) 50%, var(--fc-bg-gray107) 75%);
   background-size: 200% 100%;
   animation: spl-shimmer 1.3s ease-in-out infinite;
 }
@@ -105,10 +105,10 @@
   gap: 10px;
   border-radius: 12px;
   background: var(--ss-red-50);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--fc-line-red200);
   font-size: 0.84rem;
   line-height: 1.45;
-  color: #7f1d1d;
+  color: var(--fc-fg-red900);
 }
 .sf-tone-blue { color: var(--ss-blue); background: var(--ss-blue-50); }
 .spl-contacts { color: var(--ss-blue); font-weight: 700; }

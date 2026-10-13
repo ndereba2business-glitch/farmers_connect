@@ -5,9 +5,9 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
 const STATUS = {
-  pending: { label: "New request", bg: "#fef3c7", color: "#b45309" },
-  confirmed: { label: "Confirmed", bg: "#dcfce7", color: "#15803d" },
-  cancelled: { label: "Declined", bg: "#fee2e2", color: "#b91c1c" }
+  pending: { label: "New request", bg: "var(--fc-bg-amber100)", color: "var(--fc-fg-amber700)" },
+  confirmed: { label: "Confirmed", bg: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)" },
+  cancelled: { label: "Declined", bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red700)" }
 };
 
 const DELIVERY_STEPS = [
@@ -18,9 +18,9 @@ const DELIVERY_STEPS = [
 
 const actionBtn = (primary) => ({
   minHeight: "44px", padding: "0 16px", borderRadius: "12px",
-  border: primary ? "none" : "1.5px solid #d1d5db",
-  background: primary ? "#15803d" : "#fff",
-  color: primary ? "#fff" : "#374151",
+  border: primary ? "none" : "1.5px solid var(--fc-line-gray300)",
+  background: primary ? "#15803d" : "var(--fc-bg-gray0)",
+  color: primary ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray700)",
   fontWeight: "700", fontSize: "13px", cursor: "pointer"
 });
 
@@ -109,14 +109,14 @@ export default function SupplierOrders() {
   }
 
   if (loading) {
-    return <p style={{ color: "#9ca3af" }}>Loading your orders...</p>;
+    return <p style={{ color: "var(--fc-fg-gray400)" }}>Loading your orders...</p>;
   }
 
   if (profile === null) {
     return (
       <div style={{ maxWidth: "560px" }}>
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827" }}>Supplier Orders</h1>
-        <p style={{ color: "#6b7280", margin: "12px 0 20px" }}>
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>Supplier Orders</h1>
+        <p style={{ color: "var(--fc-fg-gray500)", margin: "12px 0 20px" }}>
           Set up your supplier profile first. Once an admin verifies it, your products can be
           ordered and requests appear here.
         </p>
@@ -129,17 +129,17 @@ export default function SupplierOrders() {
 
   return (
     <div style={{ maxWidth: "820px" }}>
-      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
         Supplier Orders
       </h1>
-      <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+      <p style={{ marginTop: "6px", color: "var(--fc-fg-gray500)", fontSize: "15px" }}>
         Order requests for {profile.business_name}. Call the buyer to arrange payment and delivery.
       </p>
 
       {profile.verification_status !== "verified" && (
         <div role="status" style={{
           margin: "16px 0", padding: "14px 16px", borderRadius: "12px",
-          background: "#fffbeb", color: "#92400e", fontSize: "14px"
+          background: "var(--fc-bg-amber50)", color: "var(--fc-fg-amber800)", fontSize: "14px"
         }}>
           Your supplier profile is <b>{profile.verification_status}</b>. Farmers can only order from
           verified suppliers, so no requests will arrive until an admin approves it.
@@ -149,7 +149,7 @@ export default function SupplierOrders() {
       {error && (
         <div role="alert" style={{
           margin: "16px 0", padding: "14px 16px", borderRadius: "12px",
-          background: "#fef2f2", color: "#b91c1c", fontSize: "14px",
+          background: "var(--fc-bg-red50)", color: "var(--fc-fg-red700)", fontSize: "14px",
           display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap"
         }}>
           <span>{error}</span>
@@ -158,7 +158,7 @@ export default function SupplierOrders() {
       )}
 
       {orders.length === 0 && !error && (
-        <p style={{ color: "#6b7280", marginTop: "24px" }}>No order requests yet.</p>
+        <p style={{ color: "var(--fc-fg-gray500)", marginTop: "24px" }}>No order requests yet.</p>
       )}
 
       <div style={{ display: "grid", gap: "14px", marginTop: "24px" }}>
@@ -167,14 +167,14 @@ export default function SupplierOrders() {
           const busy = busyId === o.id;
           return (
             <div key={o.id} style={{
-              background: "#fff", border: "1px solid #e5e7eb", borderRadius: "12px", padding: "18px"
+              background: "var(--fc-bg-gray0)", border: "1px solid var(--fc-line-gray200)", borderRadius: "12px", padding: "18px"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontWeight: "700", fontSize: "16px", color: "#111827" }}>
+                  <div style={{ fontWeight: "700", fontSize: "16px", color: "var(--fc-fg-gray900)" }}>
                     {o.quantity} × {o.product_name}
                   </div>
-                  <div style={{ fontSize: "13px", color: "#6b7280", marginTop: "2px" }}>
+                  <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", marginTop: "2px" }}>
                     KES {Number(o.total_price || 0).toLocaleString()} · you receive KES{" "}
                     {Number(o.supplier_earnings || 0).toLocaleString()}
                   </div>
@@ -188,18 +188,18 @@ export default function SupplierOrders() {
               </div>
 
               <div style={{
-                marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f3f4f6",
+                marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--fc-line-gray100)",
                 display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap"
               }}>
-                <span style={{ fontSize: "13px", color: "#6b7280" }}>
-                  <b style={{ color: "#111827" }}>{o.customer_name}</b> · {o.county}
+                <span style={{ fontSize: "13px", color: "var(--fc-fg-gray500)" }}>
+                  <b style={{ color: "var(--fc-fg-gray900)" }}>{o.customer_name}</b> · {o.county}
                 </span>
                 {o.customer_phone && (
                   <a href={telHref(o.customer_phone)} style={{
                     display: "inline-flex", alignItems: "center", gap: "8px",
                     minHeight: "44px", padding: "0 16px", borderRadius: "12px",
-                    background: "#f0fdf4", border: "1.5px solid #15803d",
-                    color: "#15803d", fontWeight: "700", fontSize: "13px", textDecoration: "none"
+                    background: "var(--fc-bg-green50)", border: "1.5px solid var(--fc-line-green700)",
+                    color: "var(--fc-fg-green700)", fontWeight: "700", fontSize: "13px", textDecoration: "none"
                   }}>
                     <Phone size={16} aria-hidden="true" /> Call {o.customer_phone}
                   </a>

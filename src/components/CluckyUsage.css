@@ -35,9 +35,9 @@
   line-height: 1.45;
 }
 .cu-verdict svg { margin-top: 1px; }
-.cu-verdict--ok { background: var(--fc-success-soft); border-color: var(--fc-primary-line); color: #166534; }
-.cu-verdict--watch { background: var(--fc-warning-soft); border-color: #fde68a; color: #92400e; }
-.cu-verdict--act { background: var(--fc-danger-soft); border-color: #fecaca; color: #991b1b; }
+.cu-verdict--ok { background: var(--fc-success-soft); border-color: var(--fc-primary-line); color: var(--fc-fg-green800); }
+.cu-verdict--watch { background: var(--fc-warning-soft); border-color: var(--fc-line-amber200); color: var(--fc-fg-amber800); }
+.cu-verdict--act { background: var(--fc-danger-soft); border-color: var(--fc-line-red200); color: var(--fc-fg-red800); }
 
 .cu-card { min-width: 0; }
 
@@ -51,7 +51,7 @@
 .cu-table td {
   padding: 10px 12px;
   text-align: right;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--fc-line-gray100);
   white-space: nowrap;
 }
 .cu-table th:first-child,
