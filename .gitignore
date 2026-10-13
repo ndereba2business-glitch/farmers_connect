@@ -32,3 +32,17 @@ supabase/.temp/
 
 # Local data backups taken before destructive migrations (may hold personal data)
 supabase/backups/
+
+# Throwaway browser scripts. This folder was once committed with real
+# passwords in it; nothing in it belongs in git. `npm run check:repo` fails
+# if any of it is tracked again.
+.tmp-test/
+
+# Android signing keys and the generated Android project (docs/play-store/android-release.md)
+*.keystore
+*.jks
+android/app/
+android/build/
+android/.gradle/
+android/*.aab
+android/*.apk

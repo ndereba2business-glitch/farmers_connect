@@ -16,6 +16,7 @@
     "test:account-live": "node --test tests/live/account.live.test.js",
     "test:security": "node scripts/test-security.mjs",
     "check:secrets": "vite build && node scripts/check-secrets.mjs",
+    "check:repo": "node scripts/check-repo-secrets.mjs",
     "check:auth-urls": "node scripts/check-auth-urls.mjs https://farmers-connect-azure.vercel.app"
   },
   "dependencies": {
