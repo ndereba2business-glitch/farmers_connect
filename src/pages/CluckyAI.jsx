@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bird, RotateCcw, Send } from "lucide-react";
+import { Bird, Flag, RotateCcw, Send } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -8,6 +8,10 @@ import { useFillHeight } from "../lib/useFillHeight";
 import {
   MAX_QUESTION_LENGTH, SUGGESTIONS, applyEvent, cluckyErrorMessage, createEventParser, startingAnswer
 } from "../lib/clucky";
+import ReportDialog from "../components/ReportDialog";
+import { ANSWER_REASONS, reportContent } from "../lib/safety";
+import { POLICIES_PUBLISHED } from "../config/features";
+import "../components/Account.css";
 import "./Clucky.css";
 
 // The answer comes from the "clucky" edge function, which holds the AI
@@ -16,7 +20,7 @@ const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clucky`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export default function CluckyAI() {
-  const { userEmail, profile } = useAuth();
+  const { userEmail, profile, acceptCluckyConsent } = useAuth();
   const toast = useToast();
   const firstName = (profile?.full_name || "").trim().split(/\s+/)[0];
 
@@ -28,6 +32,28 @@ export default function CluckyAI() {
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
+  const [reportingAnswer, setReportingAnswer] = useState(null);
+  const [agreeing, setAgreeing] = useState(false);
+  const [consentError, setConsentError] = useState("");
+
+  // Nothing is sent to the AI service until the person has agreed. The
+  // edge function refuses too, so this is not only a matter of hiding a box.
+  const needsConsent = Boolean(profile) && !profile.clucky_consent_at;
+
+  async function agree() {
+    if (agreeing) return;
+    setAgreeing(true);
+    setConsentError("");
+    const at = new Date().toISOString();
+    const { data, error: failure } = await supabase
+      .from("farmer_profiles").update({ clucky_consent_at: at }).eq("user_email", userEmail).select("id");
+    setAgreeing(false);
+    if (failure || !data?.length) {
+      setConsentError("That didn't save. Check your connection and try again.");
+      return;
+    }
+    acceptCluckyConsent(at);
+  }
 
   const pageRef = useRef(null);
   const listRef = useRef(null);
@@ -231,7 +257,7 @@ export default function CluckyAI() {
             </div>
           )}
 
-          {!loading && !loadError && messages.length === 0 && (
+          {!loading && !loadError && messages.length === 0 && !needsConsent && (
             <div className="ck-welcome">
               <span className="ck-welcome-icon" aria-hidden="true"><Bird size={28} /></span>
               <h2>{firstName ? `Hello ${firstName}, I'm Clucky` : "Hello, I'm Clucky"}</h2>
@@ -265,6 +291,11 @@ export default function CluckyAI() {
                   <span className="ck-note">The connection dropped, so this answer may be incomplete. Ask again to get the rest.</span>
                 )}
               </div>
+              {message.role === "assistant" && !message.pending && message.content && (
+                <button type="button" className="ac-link-btn" onClick={() => setReportingAnswer(message)}>
+                  <Flag size={14} aria-hidden="true" /> Report this answer
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -278,7 +309,45 @@ export default function CluckyAI() {
         </div>
       )}
 
-      <div className="ck-composer">
+      {needsConsent && (
+        <section className="ac-consent" aria-labelledby="ck-consent-title">
+          <h2 id="ck-consent-title">Before you ask Clucky</h2>
+          <p>Clucky's answers are written by Google's Gemini AI service. They are not written by a person or a vet, and they can be wrong.</p>
+          <p>To answer, Farmers Connect sends Google:</p>
+          <ul>
+            <li>the question you type, and the recent messages of this conversation</li>
+            <li>a short summary of your farm: your county, your active batches and any overdue vaccinations</li>
+          </ul>
+          <p>
+            Your name, email address and phone number are not sent. Do not type private details into a question. Google may keep
+            what it receives for a limited time, use it to improve its products, and have it read by trained reviewers
+            {POLICIES_PUBLISHED ? <>, as described in our <Link to="/privacy#ai">Privacy Policy</Link>.</> : "."}
+          </p>
+          {consentError && <p role="alert" className="fc-dialog-error">{consentError}</p>}
+          <button type="button" className="fc-btn fc-btn--primary" onClick={agree} disabled={agreeing}>
+            {agreeing ? "Saving..." : "I agree, let me ask Clucky"}
+          </button>
+          <p>If you would rather not, you can use everything else in the app, and <Link to="/bookings">ask a vet</Link> instead.</p>
+        </section>
+      )}
+
+      {reportingAnswer && (
+        <ReportDialog
+          title="Report this answer"
+          preview={reportingAnswer.content.slice(0, 200)}
+          reasons={ANSWER_REASONS}
+          onSubmit={reason => reportContent({
+            kind: "clucky_answer", targetId: reportingAnswer.id, reporter: userEmail, reason, summary: reportingAnswer.content
+          })}
+          onClose={() => setReportingAnswer(null)}
+          onSent={already => {
+            toast.success(already ? "You've already reported this answer." : "Thanks. An admin will review this answer.");
+            setReportingAnswer(null);
+          }}
+        />
+      )}
+
+      <div className="ck-composer" hidden={needsConsent}>
         <textarea
           ref={inputRef}
           className="ck-input"

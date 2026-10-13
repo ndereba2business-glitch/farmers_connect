@@ -71,6 +71,8 @@ export function cluckyErrorMessage(code, details = {}) {
       return "Please sign in again to use Clucky.";
     case "not_configured":
       return "Clucky isn't switched on yet. Please try again later.";
+    case "consent_required":
+      return "Before your first question, Clucky needs your agreement to send it to the AI service. Agree below to continue.";
     case "empty":
       return "Type your question first.";
     case "too_long":

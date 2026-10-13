@@ -1,6 +1,6 @@
 import BrandMark from "../BrandMark";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Inbox, Package, ShoppingBag, Store, UserCircle, Users,
   Menu, X, LogOut
@@ -10,6 +10,8 @@ import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import NotificationsBell from "../NotificationsBell";
 import OnboardingTour from "../OnboardingTour";
+import TermsGate from "../TermsGate";
+import { POLICIES_PUBLISHED } from "../../config/features";
 import { SupplierContext } from "./supplierContext";
 import { VERIFICATION_META, initialsOf } from "./supplierFormat";
 import "./SupplierShell.css";
@@ -188,6 +190,7 @@ export default function SupplierShell() {
     <SupplierContext.Provider value={contextValue}>
       <div className="ss-root">
         <OnboardingTour />
+        <TermsGate />
         {drawerOpen && <div className="ss-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />}
 
         <aside className={`ss-sidebar${drawerOpen ? " ss-sidebar--open" : ""}`} aria-label="Supplier navigation">
@@ -218,6 +221,12 @@ export default function SupplierShell() {
             <button className="ss-signout" onClick={handleLogout}>
               <LogOut size={18} aria-hidden="true" /> Sign out
             </button>
+            {POLICIES_PUBLISHED && (
+              <p className="fc-policy-links">
+                <Link to="/privacy">Privacy</Link>
+                <Link to="/terms">Terms and rules</Link>
+              </p>
+            )}
           </div>
         </aside>
 

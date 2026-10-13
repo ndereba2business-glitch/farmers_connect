@@ -10,7 +10,20 @@ export async function login(page, baseUrl, { email, password }) {
   await page.fill('input[type="password"]', password);
   await page.click('button:has-text("Log in")');
   await page.waitForURL(u => !u.pathname.startsWith("/login"), { timeout: TIMEOUT });
+  await acceptTermsIfShown(page);
   await skipTourIfShown(page);
+}
+
+// An account that has not accepted the current terms is stopped by a
+// dialog until it does (TermsGate.jsx). The acceptance is saved on the
+// account, so this only does something once per account and terms version.
+export async function acceptTermsIfShown(page) {
+  const gate = page.locator('[role="dialog"]', { hasText: "Terms and Community Rules" });
+  try {
+    await gate.locator('input[type="checkbox"]').check({ timeout: 2500 });
+    await gate.locator("button", { hasText: "Agree and continue" }).click();
+    await gate.waitFor({ state: "detached", timeout: TIMEOUT });
+  } catch { /* already accepted */ }
 }
 
 // A brand-new account is greeted by the onboarding tour, which covers the

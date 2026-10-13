@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Ban, Copy, CornerUpLeft, Flag, Image as ImageIcon, Info, Reply, Send, Trash2, Users, X, ZoomIn } from "lucide-react";
+import { Ban, Copy, CornerUpLeft, Flag, Image as ImageIcon, Info, Reply, Send, Trash2, UserX, Users, X, ZoomIn } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -9,6 +9,9 @@ import {
   BADGE_LABELS, GROUP_RULES, MESSAGE_MAX_LENGTH, QUICK_EMOJIS,
   applyMyReaction, buildTimeline, nameColour, removedText, sendErrorMessage, summariseReactions, timeLabel
 } from "../lib/community";
+import { MEMBER_REASONS, reportContent, useBlockedMembers } from "../lib/safety";
+import ReportDialog from "../components/ReportDialog";
+import ConfirmDialog from "../components/ConfirmDialog";
 import "./Community.css";
 
 const COLUMNS =
@@ -43,6 +46,11 @@ function Sheet({ title, onClose, children }) {
 
 export default function Community() {
   const { user, userEmail, profile, isAdmin } = useAuth();
+  const { blocked, block } = useBlockedMembers(userEmail);
+  const [reportingMember, setReportingMember] = useState(null);
+  const [blocking, setBlocking] = useState(null);
+  const [blockBusy, setBlockBusy] = useState(false);
+  const [blockError, setBlockError] = useState("");
   const toast = useToast();
   const displayName = profile?.full_name || "Farmer";
 
@@ -389,6 +397,20 @@ export default function Community() {
     closeSheet();
   }
 
+  async function confirmBlock() {
+    if (blockBusy || !blocking) return;
+    setBlockBusy(true);
+    setBlockError("");
+    const done = await block(blocking.user_email, blocking.user_name);
+    setBlockBusy(false);
+    if (!done) {
+      setBlockError("That didn't save. Check your connection and try again.");
+      return;
+    }
+    toast.success(`You won't see messages or listings from ${blocking.user_name}. You can unblock them in your Profile.`);
+    setBlocking(null);
+  }
+
   function startReport(message) {
     closeSheet();
     setReportReason(REPORT_REASONS[0]);
@@ -425,7 +447,8 @@ export default function Community() {
 
   // ---------- drawing ----------
 
-  const timeline = useMemo(() => buildTimeline(messages), [messages]);
+  // Messages from members this person has blocked are left out for them alone.
+  const timeline = useMemo(() => buildTimeline(messages.filter(m => !blocked.has(m.user_email))), [messages, blocked]);
   const tooLong = input.length > MESSAGE_MAX_LENGTH;
 
   function renderMessage({ message, showSender }) {
@@ -690,6 +713,16 @@ export default function Community() {
                   <Flag size={18} aria-hidden="true" /> Report to admins
                 </button>
               )}
+              {!activeIsMine && (
+                <>
+                  <button className="cm-action" onClick={() => { const member = active; closeSheet(); setReportingMember(member); }}>
+                    <Flag size={18} aria-hidden="true" /> Report {active.user_name}, not just this message
+                  </button>
+                  <button className="cm-action cm-action--danger" onClick={() => { const member = active; closeSheet(); setBlockError(""); setBlocking(member); }}>
+                    <UserX size={18} aria-hidden="true" /> Block {active.user_name}
+                  </button>
+                </>
+              )}
               {(activeIsMine || isAdmin) && (
                 <button className="cm-action cm-action--danger" onClick={() => setConfirmRemove(true)}>
                   <Trash2 size={18} aria-hidden="true" /> {activeIsMine ? "Delete for everyone" : "Remove message (admin)"}
@@ -739,6 +772,40 @@ export default function Community() {
           </button>
           <button className="cm-action cm-action--cancel" onClick={() => setReporting(null)}>Cancel</button>
         </Sheet>
+      )}
+
+      {/* ---------- report a member, block a member ---------- */}
+      {reportingMember && (
+        <ReportDialog
+          title={`Report ${reportingMember.user_name}`}
+          preview={`${reportingMember.user_name}: ${reportingMember.message || "Photo"}`}
+          reasons={MEMBER_REASONS}
+          onSubmit={reason => reportContent({
+            kind: "member", targetId: reportingMember.user_email, reporter: userEmail, reason,
+            summary: `${reportingMember.user_name}: ${reportingMember.message || "Photo"}`
+          })}
+          onClose={() => setReportingMember(null)}
+          onSent={already => {
+            toast.success(already ? "You've already reported this member. An admin will review it." : "Thanks. An admin will review this member.");
+            setReportingMember(null);
+          }}
+        />
+      )}
+      {blocking && (
+        <ConfirmDialog
+          title={`Block ${blocking.user_name}?`}
+          confirmLabel="Block"
+          busyLabel="Blocking..."
+          danger
+          icon={UserX}
+          busy={blockBusy}
+          error={blockError}
+          onCancel={() => setBlocking(null)}
+          onConfirm={confirmBlock}
+        >
+          <p>You will stop seeing their community messages and marketplace listings. They are not told.</p>
+          <p>You can unblock them at any time from your Profile.</p>
+        </ConfirmDialog>
       )}
 
       {/* ---------- rules ---------- */}

@@ -1,7 +1,9 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { readSignInProblem } from "./lib/signInReturn";
+import { POLICIES_PUBLISHED } from "./config/features";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
 // multi-megabyte bundle for the whole app.
@@ -32,6 +34,10 @@ const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
 const MyFarmers = lazy(() => import("./pages/MyFarmers"));
 const Appointments = lazy(() => import("./pages/Appointments"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const DeleteAccountPage = lazy(() => import("./pages/legal/DeleteAccountPage"));
+const AccountDeleted = lazy(() => import("./pages/legal/AccountDeleted"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -85,6 +91,22 @@ function LoadingScreen({ label }) {
 
 function AppRoutes() {
   const { user, role, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // =========================
+  // BACK FROM GOOGLE, REFUSED
+  // Supabase puts the reason in the address and signs nobody in. Say so
+  // on the login page, where the person can try again, and tidy the
+  // address. Waits for `loading` so Supabase has read the address first.
+  // =========================
+  useEffect(() => {
+    if (loading) return;
+    const problem = readSignInProblem(window.location.href);
+    if (!problem) return;
+    if (user) navigate(window.location.pathname, { replace: true });
+    else navigate("/login", { replace: true, state: { signInProblem: problem } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // =========================
   // LOADING SCREEN
@@ -108,6 +130,14 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/signup" element={<Signup />} />
+
+        {/* Policies. Open to everyone, signed in or not, and they read
+            nothing from the database: these are the addresses given to
+            the Play Store. */}
+        {POLICIES_PUBLISHED && <Route path="/privacy" element={<PrivacyPolicy />} />}
+        {POLICIES_PUBLISHED && <Route path="/terms" element={<Terms />} />}
+        <Route path="/delete-account" element={<DeleteAccountPage />} />
+        <Route path="/account-deleted" element={<AccountDeleted />} />
 
 
         {/* Old standalone verification forms wrote to tables that never

@@ -227,6 +227,17 @@ export function AuthProvider({ children }) {
     if (error) console.error("replayOnboarding: update failed —", error.message);
   }
 
+  // Called once the acceptance is saved (TermsGate), so the app opens
+  // without waiting to read the profile again.
+  function acceptTerms(acceptedAt, version) {
+    setProfile(prev => prev ? { ...prev, terms_accepted_at: acceptedAt, terms_version: version } : prev);
+  }
+
+  // Same, for agreeing to Clucky's AI processing (CluckyAI.jsx).
+  function acceptCluckyConsent(at) {
+    setProfile(prev => prev ? { ...prev, clucky_consent_at: at } : prev);
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -236,6 +247,8 @@ export function AuthProvider({ children }) {
       logout,
       completeOnboarding,
       replayOnboarding,
+      acceptTerms,
+      acceptCluckyConsent,
       userEmail: identityOf(user),
       isAdmin: role === "admin",
       isVet: role === "vet",
