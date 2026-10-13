@@ -713,6 +713,24 @@ begin
   select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'product-removed:' || list_g;
   if n = (case when b then 1 else 0 end) then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL L6 owner notice after an admin removal: %s; ', n); end if;
 
+  -- ============================ appearance (light / dark) ==============
+  -- a person sets their own theme, only to a value the app knows, and
+  -- nobody else's
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+  update public.farmer_profiles set theme_preference = 'dark' where id = farmer_profile;
+  get diagnostics n = row_count;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL T1 a member could not save their own theme; '; end if;
+  begin
+    update public.farmer_profiles set theme_preference = 'neon' where id = farmer_profile;
+    failed := failed + 1; report := report || 'FAIL T2 an unknown theme was saved; ';
+  exception when check_violation then passed := passed + 1;
+  end;
+  perform set_config('request.jwt.claims', claims_b, true);
+  update public.farmer_profiles set theme_preference = 'light' where id = farmer_profile;
+  get diagnostics n = row_count;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL T3 a member changed someone else''s theme; '; end if;
+
   -- ============================ reports, blocks and web requests =======
   perform set_config('request.jwt.claims', claims_b, true);
   set local role authenticated;

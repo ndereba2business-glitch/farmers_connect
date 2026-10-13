@@ -40,14 +40,14 @@ const UNITS = [
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+  background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "13px", fontWeight: "600",
-  color: "#374151", marginBottom: "6px"
+  color: "var(--fc-fg-gray700)", marginBottom: "6px"
 };
 
 export default function Marketplace() {
@@ -334,11 +334,11 @@ function handleContactSeller(product) {
             <div>
               <h1 style={{
                 margin: 0, fontSize: "clamp(28px, 8vw, 36px)", fontWeight: "700",
-                color: "#111827", letterSpacing: "-1px"
+                color: "var(--fc-fg-gray900)", letterSpacing: "-1px"
               }}>
                 Marketplace
               </h1>
-              <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+              <p style={{ marginTop: "6px", color: "var(--fc-fg-gray500)", fontSize: "15px" }}>
                 Browse poultry products from local farmers
               </p>
             </div>
@@ -349,8 +349,8 @@ function handleContactSeller(product) {
                   aria-label={`View order (${cart.length} items)`}
                   style={{
                     height: "44px", padding: "0 16px",
-                    border: "1.5px solid #15803d", borderRadius: "12px",
-                    background: "#f0fdf4", color: "#15803d",
+                    border: "1.5px solid var(--fc-line-green700)", borderRadius: "12px",
+                    background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)",
                     fontWeight: "700", cursor: "pointer", fontSize: "14px",
                     display: "flex", alignItems: "center", gap: "8px"
                   }}
@@ -382,7 +382,7 @@ function handleContactSeller(product) {
             <div style={{ flex: 1, minWidth: "200px", position: "relative" }}>
               <Search size={16} style={{
                 position: "absolute", left: "14px",
-                top: "50%", transform: "translateY(-50%)", color: "#9ca3af"
+                top: "50%", transform: "translateY(-50%)", color: "var(--fc-fg-gray400)"
               }} />
               <input
                 aria-label="Search products"
@@ -398,22 +398,22 @@ function handleContactSeller(product) {
                 onClick={() => setCategoryOpen(!categoryOpen)}
                 style={{
                   height: "44px", padding: "0 16px", borderRadius: "12px",
-                  border: "1.5px solid #e5e7eb", background: "#fff",
-                  cursor: "pointer", fontSize: "14px", color: "#374151",
+                  border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
+                  cursor: "pointer", fontSize: "14px", color: "var(--fc-fg-gray700)",
                   display: "flex", alignItems: "center", gap: "8px",
                   fontWeight: "500", minWidth: "180px",
                   justifyContent: "space-between"
                 }}
               >
                 {selectedCategoryLabel}
-                <ChevronDown size={16} color="#9ca3af" />
+                <ChevronDown size={16} color="var(--fc-fg-gray400)" />
               </button>
               {categoryOpen && (
                 <div style={{
                   position: "absolute", top: "50px", left: 0,
-                  background: "#fff", borderRadius: "12px",
+                  background: "var(--fc-bg-gray0)", borderRadius: "12px",
                   boxShadow: "0 10px 40px rgba(0,0,0,0.12)",
-                  border: "1px solid #f0f0f0", zIndex: 999,
+                  border: "1px solid var(--fc-line-gray101)", zIndex: 999,
                   minWidth: "200px", overflow: "hidden"
                 }}>
                   {CATEGORIES.map(cat => (
@@ -423,9 +423,9 @@ function handleContactSeller(product) {
                       style={{
                         padding: "11px 16px", cursor: "pointer",
                         fontSize: "14px",
-                        color: category === cat.value ? "#15803d" : "#374151",
+                        color: category === cat.value ? "var(--fc-fg-green700)" : "var(--fc-fg-gray700)",
                         fontWeight: category === cat.value ? "600" : "400",
-                        background: category === cat.value ? "#f0fdf4" : "#fff",
+                        background: category === cat.value ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
                         display: "flex", justifyContent: "space-between",
                         alignItems: "center"
                       }}
@@ -442,9 +442,9 @@ function handleContactSeller(product) {
               onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
               style={{
                 height: "44px", padding: "0 16px", borderRadius: "12px",
-                border: `1.5px solid ${showVerifiedOnly ? "#15803d" : "#e5e7eb"}`,
-                background: showVerifiedOnly ? "#f0fdf4" : "#fff",
-                color: showVerifiedOnly ? "#15803d" : "#6b7280",
+                border: `1.5px solid ${showVerifiedOnly ? "var(--fc-line-green700)" : "var(--fc-line-gray200)"}`,
+                background: showVerifiedOnly ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
+                color: showVerifiedOnly ? "var(--fc-fg-green700)" : "var(--fc-fg-gray500)",
                 cursor: "pointer", fontSize: "14px", fontWeight: "600"
               }}
             >
@@ -462,16 +462,16 @@ function handleContactSeller(product) {
               {[1,2,3,4,5,6].map(i => (
                 <div key={i} style={{
                   borderRadius: "16px", overflow: "hidden",
-                  border: "1px solid #f0f0f0", background: "#fff"
+                  border: "1px solid var(--fc-line-gray101)", background: "var(--fc-bg-gray0)"
                 }}>
-                  <div style={{ height: "200px", background: "#f3f4f6" }} />
+                  <div style={{ height: "200px", background: "var(--fc-bg-gray100)" }} />
                   <div style={{ padding: "16px" }}>
                     <div style={{
-                      height: "16px", background: "#f3f4f6",
+                      height: "16px", background: "var(--fc-bg-gray100)",
                       borderRadius: "6px", marginBottom: "10px", width: "75%"
                     }} />
                     <div style={{
-                      height: "20px", background: "#f3f4f6",
+                      height: "20px", background: "var(--fc-bg-gray100)",
                       borderRadius: "6px", width: "40%"
                     }} />
                   </div>
@@ -492,19 +492,19 @@ function handleContactSeller(product) {
           {!loading && !loadError && filtered.length === 0 && (
             <div style={{
               textAlign: "center", padding: "80px 20px",
-              background: "#fff", borderRadius: "16px",
-              border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px",
+              border: "1px solid var(--fc-line-gray101)"
             }}>
-              <ShoppingBag size={64} color="#e5e7eb"
+              <ShoppingBag size={64} color="var(--fc-fg-gray200)"
                 style={{ marginBottom: "16px" }} />
               <h3 style={{
                 fontSize: "18px", fontWeight: "700",
-                color: "#111827", margin: "0 0 8px"
+                color: "var(--fc-fg-gray900)", margin: "0 0 8px"
               }}>
                 No products found
               </h3>
               <p style={{
-                color: "#9ca3af", fontSize: "14px", marginBottom: "20px"
+                color: "var(--fc-fg-gray400)", fontSize: "14px", marginBottom: "20px"
               }}>
                 Try a different search or be the first to list!
               </p>
@@ -512,7 +512,7 @@ function handleContactSeller(product) {
                 onClick={startListing}
                 style={{
                   minHeight: "44px", padding: "12px 24px", background: "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px", cursor: "pointer"
                 }}
               >
@@ -573,29 +573,29 @@ function handleContactSeller(product) {
               onClick={() => setView("list")}
               style={{
                 width: "38px", height: "38px", borderRadius: "12px",
-                border: "1.5px solid #e5e7eb", background: "#fff",
+                border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
                 cursor: "pointer", display: "flex",
                 alignItems: "center", justifyContent: "center"
               }}
             >
-              <X size={18} color="#374151" />
+              <X size={18} color="var(--fc-fg-gray700)" />
             </button>
             <div>
               <h1 style={{
                 margin: 0, fontSize: "28px",
-                fontWeight: "700", color: "#111827"
+                fontWeight: "700", color: "var(--fc-fg-gray900)"
               }}>
                 List a Product
               </h1>
-              <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
+              <p style={{ margin: "4px 0 0", color: "var(--fc-fg-gray500)", fontSize: "14px" }}>
                 Share your poultry products with buyers
               </p>
             </div>
           </div>
 
           <div style={{
-            background: "#fff", borderRadius: "16px",
-            border: "1px solid #e5e7eb", padding: "28px",
+            background: "var(--fc-bg-gray0)", borderRadius: "16px",
+            border: "1px solid var(--fc-line-gray200)", padding: "28px",
             boxShadow: "var(--fc-shadow-card)"
           }}>
             <form onSubmit={handleAddProduct}>
@@ -689,7 +689,7 @@ function handleContactSeller(product) {
               <div style={{ marginBottom: "20px" }}>
                 <label style={labelStyle}>
                   WhatsApp Number
-                  <span style={{ color: "#15803d", fontSize: "11px", fontWeight: "500", marginLeft: "6px" }}>
+                  <span style={{ color: "var(--fc-fg-green700)", fontSize: "11px", fontWeight: "500", marginLeft: "6px" }}>
                     (Buyers will contact you here)
                   </span>
                 </label>
@@ -717,13 +717,13 @@ function handleContactSeller(product) {
                 <div
                   onClick={() => document.getElementById("product-image-upload").click()}
                   style={{
-                    border: "2px dashed #d1fae5", borderRadius: "12px",
+                    border: "2px dashed var(--fc-line-green101)", borderRadius: "12px",
                     padding: "24px", textAlign: "center", cursor: "pointer",
-                    background: form.imagePreview ? "#f0fdf4" : "#fafafa",
+                    background: form.imagePreview ? "var(--fc-bg-green50)" : "var(--fc-bg-gray25)",
                     transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "#15803d"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "#d1fae5"}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "var(--fc-line-green700)"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "var(--fc-line-green101)"}
                 >
                   {form.imagePreview ? (
                     <div style={{ position: "relative", display: "inline-block" }}>
@@ -744,7 +744,7 @@ function handleContactSeller(product) {
                         style={{
                           position: "absolute", top: "-8px", right: "-8px",
                           width: "24px", height: "24px", borderRadius: "50%",
-                          background: "#ef4444", color: "#fff", border: "none",
+                          background: "#dc2626", color: "var(--fc-fg-gray0)", border: "none",
                           cursor: "pointer", fontWeight: "700", fontSize: "14px",
                           display: "flex", alignItems: "center", justifyContent: "center"
                         }}
@@ -754,14 +754,14 @@ function handleContactSeller(product) {
                     </div>
                   ) : (
                     <div>
-                      <ImagePlus size={28} color="#9ca3af" aria-hidden="true" style={{ display: "block", margin: "0 auto 8px" }} />
+                      <ImagePlus size={28} color="var(--fc-fg-gray400)" aria-hidden="true" style={{ display: "block", margin: "0 auto 8px" }} />
                       <div style={{
-                        fontWeight: "600", color: "#374151", fontSize: "14px"
+                        fontWeight: "600", color: "var(--fc-fg-gray700)", fontSize: "14px"
                       }}>
                         Click to upload image
                       </div>
                       <div style={{
-                        color: "#9ca3af", fontSize: "12px", marginTop: "4px"
+                        color: "var(--fc-fg-gray400)", fontSize: "12px", marginTop: "4px"
                       }}>
                         PNG, JPG or WEBP — max 5MB
                       </div>
@@ -792,9 +792,9 @@ function handleContactSeller(product) {
                 style={{
                   width: "100%", padding: "14px",
                   background: submitting
-                    ? "#86efac"
+                    ? "var(--fc-bg-green300)"
                     : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: submitting ? "not-allowed" : "pointer",
                   boxShadow: "none"
@@ -818,21 +818,21 @@ function handleContactSeller(product) {
               onClick={() => setView("list")}
               style={{
                 width: "38px", height: "38px", borderRadius: "12px",
-                border: "1.5px solid #e5e7eb", background: "#fff",
+                border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
                 cursor: "pointer", display: "flex",
                 alignItems: "center", justifyContent: "center"
               }}
             >
-              <X size={18} color="#374151" />
+              <X size={18} color="var(--fc-fg-gray700)" />
             </button>
             <div>
               <h1 style={{
                 margin: 0, fontSize: "28px",
-                fontWeight: "700", color: "#111827"
+                fontWeight: "700", color: "var(--fc-fg-gray900)"
               }}>
                 Your Cart
               </h1>
-              <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
+              <p style={{ margin: "4px 0 0", color: "var(--fc-fg-gray500)", fontSize: "14px" }}>
                 {cart.length} item{cart.length !== 1 ? "s" : ""} in your cart
               </p>
             </div>
@@ -841,22 +841,22 @@ function handleContactSeller(product) {
           {cart.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "16px",
-              border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px",
+              border: "1px solid var(--fc-line-gray101)"
             }}>
-              <ShoppingCart size={48} color="#e5e7eb"
+              <ShoppingCart size={48} color="var(--fc-fg-gray200)"
                 style={{ marginBottom: "12px" }} />
-              <h3 style={{ margin: "0 0 8px", color: "#111827" }}>
+              <h3 style={{ margin: "0 0 8px", color: "var(--fc-fg-gray900)" }}>
                 Your cart is empty
               </h3>
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                 Add products from the marketplace
               </p>
               <button
                 onClick={() => setView("list")}
                 style={{
                   marginTop: "16px", padding: "10px 20px",
-                  background: "#15803d", color: "#fff",
+                  background: "#15803d", color: "var(--fc-fg-gray0)",
                   border: "none", borderRadius: "12px",
                   cursor: "pointer", fontWeight: "600"
                 }}
@@ -867,8 +867,8 @@ function handleContactSeller(product) {
           ) : (
             <div>
               <div style={{
-                background: "#fff", borderRadius: "16px",
-                border: "1px solid #e5e7eb",
+                background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                border: "1px solid var(--fc-line-gray200)",
                 overflow: "hidden", marginBottom: "20px"
               }}>
                 {cart.map((item, i) => (
@@ -876,11 +876,11 @@ function handleContactSeller(product) {
                     display: "flex", alignItems: "center",
                     gap: "14px", padding: "16px 20px",
                     borderBottom: i < cart.length - 1
-                      ? "1px solid #f3f4f6" : "none"
+                      ? "1px solid var(--fc-line-gray100)" : "none"
                   }}>
                     <div style={{
                       width: "50px", height: "50px", borderRadius: "12px",
-                      background: "#f3f4f6", overflow: "hidden", flexShrink: 0
+                      background: "var(--fc-bg-gray100)", overflow: "hidden", flexShrink: 0
                     }}>
                       {item.image_url ? (
                         <img
@@ -896,25 +896,25 @@ function handleContactSeller(product) {
                           display: "flex", alignItems: "center",
                           justifyContent: "center"
                         }}>
-                          <ShoppingBag size={20} color="#d1d5db" />
+                          <ShoppingBag size={20} color="var(--fc-fg-gray300)" />
                         </div>
                       )}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{
-                        fontWeight: "600", fontSize: "14px", color: "#111827"
+                        fontWeight: "600", fontSize: "14px", color: "var(--fc-fg-gray900)"
                       }}>
                         {item.product_name}
                       </div>
                       <div style={{
-                        fontSize: "13px", color: "#6b7280", marginTop: "2px"
+                        fontSize: "13px", color: "var(--fc-fg-gray500)", marginTop: "2px"
                       }}>
                         {item.county}
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{
-                        fontWeight: "700", color: "#15803d", fontSize: "15px"
+                        fontWeight: "700", color: "var(--fc-fg-green700)", fontSize: "15px"
                       }}>
                         KES {Number(item.price).toLocaleString()}
                       </div>
@@ -922,7 +922,7 @@ function handleContactSeller(product) {
                         onClick={() => removeFromCart(i)}
                         style={{
                           background: "none", border: "none",
-                          cursor: "pointer", color: "#ef4444",
+                          cursor: "pointer", color: "var(--fc-fg-red500)",
                           fontSize: "12px", marginTop: "4px"
                         }}
                       >
@@ -936,25 +936,25 @@ function handleContactSeller(product) {
               <div style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", padding: "16px 20px",
-                background: "#f0fdf4", borderRadius: "12px",
+                background: "var(--fc-bg-green50)", borderRadius: "12px",
                 marginBottom: "24px"
               }}>
                 <span style={{ fontWeight: "600", fontSize: "15px" }}>Total</span>
                 <span style={{
-                  fontWeight: "700", fontSize: "20px", color: "#15803d"
+                  fontWeight: "700", fontSize: "20px", color: "var(--fc-fg-green700)"
                 }}>
                   KES {total.toLocaleString()}
                 </span>
               </div>
 
               <div style={{
-                background: "#fff", borderRadius: "16px",
-                border: "1px solid #e5e7eb",
+                background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                border: "1px solid var(--fc-line-gray200)",
                 padding: "24px", marginBottom: "16px"
               }}>
                 <h3 style={{
                   margin: "0 0 18px", fontSize: "16px",
-                  fontWeight: "700", color: "#111827"
+                  fontWeight: "700", color: "var(--fc-fg-gray900)"
                 }}>
                   Delivery Details
                 </h3>
@@ -983,9 +983,9 @@ function handleContactSeller(product) {
                 style={{
                   width: "100%", padding: "14px",
                   background: paymentLoading
-                    ? "#86efac"
+                    ? "var(--fc-bg-green300)"
                     : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: paymentLoading ? "not-allowed" : "pointer",
                   boxShadow: "none"
@@ -1009,9 +1009,9 @@ function contactButton(primary) {
     display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
     borderRadius: "12px", fontWeight: "700", fontSize: "13px",
     textDecoration: "none", cursor: "pointer",
-    border: "1.5px solid #15803d",
-    background: primary ? "#15803d" : "#f0fdf4",
-    color: primary ? "#fff" : "#15803d"
+    border: "1.5px solid var(--fc-line-green700)",
+    background: primary ? "#15803d" : "var(--fc-bg-green50)",
+    color: primary ? "var(--fc-fg-gray0)" : "var(--fc-fg-green700)"
   };
 }
 
@@ -1097,8 +1097,8 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#fff", borderRadius: "16px",
-        border: `1px solid ${product.sold_out ? "#fecaca" : "#f0f0f0"}`,
+        background: "var(--fc-bg-gray0)", borderRadius: "16px",
+        border: `1px solid ${product.sold_out ? "var(--fc-line-red200)" : "var(--fc-line-gray101)"}`,
         overflow: "hidden",
         boxShadow: hovered
           ? "0 16px 40px rgba(0,0,0,0.1)"
@@ -1109,7 +1109,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       }}
     >
       {/* IMAGE */}
-      <div style={{ position: "relative", paddingTop: "75%", background: "#f9fafb" }}>
+      <div style={{ position: "relative", paddingTop: "75%", background: "var(--fc-bg-gray50)" }}>
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -1126,16 +1126,16 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
-            <ShoppingBag size={40} color="#e5e7eb" />
+            <ShoppingBag size={40} color="var(--fc-fg-gray200)" />
           </div>
         )}
 
         {/* CATEGORY BADGE */}
         <div style={{
           position: "absolute", top: "12px", left: "12px",
-          background: "rgba(255,255,255,0.92)", borderRadius: "16px",
+          background: "var(--fc-surface)", borderRadius: "16px",
           padding: "4px 10px", fontSize: "12px", fontWeight: "600",
-          color: "#374151",
+          color: "var(--fc-fg-gray700)",
         }}>
           {categoryLabel}
         </div>
@@ -1148,7 +1148,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
             <span style={{
-              background: "#fff", color: "#b91c1c", fontWeight: "700",
+              background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red700)", fontWeight: "700",
               fontSize: "13px", padding: "6px 14px", borderRadius: "999px"
             }}>
               Out of stock
@@ -1161,9 +1161,9 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           <div style={{
             position: "absolute", top: "12px", right: "12px",
             display: "flex", alignItems: "center", gap: "4px",
-            background: "rgba(255,255,255,0.92)", borderRadius: "16px",
+            background: "var(--fc-surface)", borderRadius: "16px",
             padding: "4px 10px", fontSize: "12px",
-            fontWeight: "600", color: "#166534"
+            fontWeight: "600", color: "var(--fc-fg-green800)"
           }}>
             <Check size={14} aria-hidden="true" /> Verified
           </div>
@@ -1184,15 +1184,15 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       <div style={{ padding: "16px" }}>
         <h3 style={{
           margin: "0 0 8px", fontSize: "15px", fontWeight: "700",
-          color: "#111827", whiteSpace: "nowrap",
+          color: "var(--fc-fg-gray900)", whiteSpace: "nowrap",
           overflow: "hidden", textOverflow: "ellipsis"
         }}>
           {product.product_name}
         </h3>
 
-        <div style={{ marginBottom: "6px", fontSize: "18px", fontWeight: "700", color: "#111827", lineHeight: 1.25, overflowWrap: "anywhere" }}>
+        <div style={{ marginBottom: "6px", fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)", lineHeight: 1.25, overflowWrap: "anywhere" }}>
           {priceText(product)}
-          <span style={{ fontSize: "12px", fontWeight: "400", color: "#9ca3af" }}>
+          <span style={{ fontSize: "12px", fontWeight: "400", color: "var(--fc-fg-gray400)" }}>
             {unitSuffix(product.unit)}
           </span>
         </div>
@@ -1202,14 +1202,14 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
             <span style={{
               fontSize: "12px", fontWeight: "700", padding: "3px 10px", borderRadius: "16px",
               ...(product.availability === "on_order"
-                ? { background: "#eff6ff", color: "#1d4ed8" }
-                : { background: "#f0fdf4", color: "#15803d" })
+                ? { background: "var(--fc-bg-blue50)", color: "var(--fc-fg-blue700)" }
+                : { background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)" })
             }}>
               {(AVAILABILITY[product.availability] || AVAILABILITY.in_stock).label}
               {product.availability !== "on_order" && product.stock > 0 ? ` · ${product.stock}` : ""}
             </span>
             {minOrderText(product) && (
-              <span style={{ fontSize: "12px", color: "#6b7280" }}>{minOrderText(product)}</span>
+              <span style={{ fontSize: "12px", color: "var(--fc-fg-gray500)" }}>{minOrderText(product)}</span>
             )}
           </div>
         )}
@@ -1217,7 +1217,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         {product.county && (
           <div style={{
             display: "flex", alignItems: "flex-start", gap: "4px",
-            fontSize: "12px", color: "#6b7280", marginBottom: "4px"
+            fontSize: "12px", color: "var(--fc-fg-gray500)", marginBottom: "4px"
           }}>
             <MapPin size={12} style={{ flex: "none", marginTop: "2px" }} aria-hidden="true" />
             {[product.location_details, product.county].filter(Boolean).join(", ")}
@@ -1227,7 +1227,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
         {freshness(product).label && (
           <div style={{
             fontSize: "12px", marginBottom: "4px",
-            color: freshness(product).stale ? "#b45309" : "#9ca3af",
+            color: freshness(product).stale ? "var(--fc-fg-amber700)" : "var(--fc-fg-gray400)",
             fontWeight: freshness(product).stale ? 700 : 400
           }}>
             {freshness(product).label}
@@ -1235,12 +1235,12 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           </div>
         )}
 
-        <p style={{ fontSize: "12px", color: "#9ca3af", margin: "0 0 14px" }}>
+        <p style={{ fontSize: "12px", color: "var(--fc-fg-gray400)", margin: "0 0 14px" }}>
           by {product.supplier_name || "Farmer"}
         </p>
 
 {product.supplier?.verification_status === "verified" && (
-  <p style={{ display: "flex", alignItems: "center", gap: "6px", margin: "-8px 0 12px", fontSize: "12px", fontWeight: "700", color: "#15803d" }}>
+  <p style={{ display: "flex", alignItems: "center", gap: "6px", margin: "-8px 0 12px", fontSize: "12px", fontWeight: "700", color: "var(--fc-fg-green700)" }}>
     <BadgeCheck size={14} aria-hidden="true" /> Verified supplier
   </p>
 )}
@@ -1253,7 +1253,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
       width: "100%", padding: "12px", marginBottom: "8px",
       minHeight: "44px",
       background: "#15803d",
-      color: "#fff", border: "none", borderRadius: "12px",
+      color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
       fontWeight: "700", fontSize: "13px", cursor: "pointer"
     }}
   >
@@ -1266,7 +1266,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
 {!isSeller && (product.sold_out ? (
   <div style={{
     minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center",
-    background: "#f3f4f6", color: "#6b7280", border: "1.5px solid #e5e7eb",
+    background: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)", border: "1.5px solid var(--fc-line-gray200)",
     borderRadius: "12px", fontWeight: "700", fontSize: "13px"
   }}>
     Out of stock
@@ -1305,29 +1305,24 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
           <div>
             <button
               onClick={() => setShowSellerPanel(!showSellerPanel)}
-              style={{
-                width: "100%", padding: "10px",
-                background: showSellerPanel ? "#1e3a2e" : "#0f2318",
-                color: "#15803d", border: "1.5px solid #15803d",
-                borderRadius: "12px", fontWeight: "700",
-                fontSize: "12px", cursor: "pointer",
-                letterSpacing: "0.05em", transition: "all 0.2s"
-              }}
+              aria-expanded={showSellerPanel}
+              className="fc-btn fc-btn--secondary"
+              style={{ width: "100%" }}
             >
-              {showSellerPanel ? "▲ SELLER CONTROLS" : "▼ SELLER CONTROLS"}
+              <ChevronDown size={16} aria-hidden="true" style={{ transform: showSellerPanel ? "rotate(180deg)" : "none" }} /> Seller controls
             </button>
 
             {showSellerPanel && (
               <div style={{
-                marginTop: "12px", background: "#f9fafb",
-                border: "1px solid #e5e7eb",
+                marginTop: "12px", background: "var(--fc-bg-gray50)",
+                border: "1px solid var(--fc-line-gray200)",
                 borderRadius: "12px", padding: "14px"
               }}>
                 {/* UPDATE STOCK */}
                 <div style={{ marginBottom: "12px" }}>
                   <label style={{
                     fontSize: "11px", fontWeight: "600",
-                    color: "#6b7280", textTransform: "uppercase",
+                    color: "var(--fc-fg-gray500)", textTransform: "uppercase",
                     letterSpacing: "0.05em", display: "block",
                     marginBottom: "6px"
                   }}>
@@ -1341,7 +1336,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                       style={{
                         flex: 1, padding: "8px 10px",
                         borderRadius: "8px",
-                        border: "1.5px solid #e5e7eb",
+                        border: "1.5px solid var(--fc-line-gray200)",
                         fontSize: "14px", outline: "none"
                       }}
                     />
@@ -1349,10 +1344,10 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                       onClick={handleUpdateStock}
                       disabled={updating}
                       style={{
-                        padding: "8px 14px", background: "#fff",
-                        border: "1.5px solid #e5e7eb",
+                        padding: "8px 14px", background: "var(--fc-bg-gray0)",
+                        border: "1.5px solid var(--fc-line-gray200)",
                         borderRadius: "8px", cursor: "pointer",
-                        fontWeight: "600", fontSize: "13px", color: "#374151"
+                        fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray700)"
                       }}
                     >
                       <Pencil size={14} aria-hidden="true" /> Save
@@ -1361,7 +1356,7 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                 </div>
 
                 <div style={{
-                  height: "1px", background: "#e5e7eb", marginBottom: "12px"
+                  height: "1px", background: "var(--fc-bg-gray200)", marginBottom: "12px"
                 }} />
 
                 <div style={{ display: "flex", gap: "8px" }}>
@@ -1369,10 +1364,10 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                     onClick={handleSoldOut}
                     disabled={updating || product.sold_out}
                     style={{
-                      flex: 1, padding: "8px", background: "#fff",
-                      border: "1.5px solid #f59e0b", borderRadius: "8px",
+                      flex: 1, padding: "8px", background: "var(--fc-bg-gray0)",
+                      border: "1.5px solid var(--fc-line-amber500)", borderRadius: "8px",
                       cursor: "pointer", fontWeight: "600",
-                      fontSize: "12px", color: "#d97706",
+                      fontSize: "12px", color: "var(--fc-fg-amber600)",
                       display: "flex", alignItems: "center",
                       justifyContent: "center", gap: "6px"
                     }}
@@ -1383,10 +1378,10 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
                     onClick={() => { setRemoveError(""); setConfirmingRemove(true); }}
                     disabled={updating}
                     style={{
-                      flex: 1, padding: "8px", background: "#fff",
-                      border: "1.5px solid #ef4444", borderRadius: "8px",
+                      flex: 1, padding: "8px", background: "var(--fc-bg-gray0)",
+                      border: "1.5px solid var(--fc-line-red500)", borderRadius: "8px",
                       cursor: "pointer", fontWeight: "600",
-                      fontSize: "12px", color: "#ef4444",
+                      fontSize: "12px", color: "var(--fc-fg-red500)",
                       display: "flex", alignItems: "center",
                       justifyContent: "center", gap: "6px"
                     }}

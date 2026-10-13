@@ -247,14 +247,14 @@ export default function Signup() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f7f8f5",
+        background: "var(--fc-bg-gray53)",
         padding: "20px"
       }}
     >
 
       <div
         style={{
-          background: "#fff",
+          background: "var(--fc-bg-gray0)",
           width: "100%",
           maxWidth: "440px",
           borderRadius: "16px",
@@ -275,7 +275,7 @@ export default function Signup() {
             fontSize: "24px",
             fontWeight: "700",
             letterSpacing: "-0.02em",
-            color: "#111827"
+            color: "var(--fc-fg-gray900)"
           }}
         >
           Create your account
@@ -283,7 +283,7 @@ export default function Signup() {
 
         <p
           style={{
-            color: "#6b7280",
+            color: "var(--fc-fg-gray500)",
             fontSize: "14px",
             marginBottom: "28px"
           }}
@@ -295,7 +295,7 @@ export default function Signup() {
         <div
           style={{
             display: "flex",
-            background: "#f3f4f6",
+            background: "var(--fc-bg-gray100)",
             borderRadius: "12px",
             padding: "4px",
             marginBottom: "20px"
@@ -324,7 +324,7 @@ export default function Signup() {
               color:
                 method === "email"
                   ? "white"
-                  : "#666"
+                  : "var(--fc-fg-gray550)"
             }}
           >
             Email
@@ -352,7 +352,7 @@ export default function Signup() {
               color:
                 method === "phone"
                   ? "white"
-                  : "#666"
+                  : "var(--fc-fg-gray550)"
             }}
           >
             Phone
@@ -499,13 +499,17 @@ export default function Signup() {
 
                     border:
                       role === r
-                        ? "2px solid #15803d"
-                        : "2px solid #ddd",
+                        ? "2px solid var(--fc-line-green700)"
+                        : "2px solid var(--fc-line-gray250)",
 
                     background:
                       role === r
-                        ? "#dcfce7"
-                        : "white",
+                        ? "var(--fc-bg-green100)"
+                        : "var(--fc-surface)",
+
+                    // a button's own default text colour follows the system, not the page
+                    color:
+                      "var(--fc-ink)",
 
                     cursor:
                       "pointer",
@@ -531,9 +535,9 @@ export default function Signup() {
             <div
               style={{
                 background:
-                  "#fef2f2",
+                  "var(--fc-bg-red50)",
                 color:
-                  "#dc2626",
+                  "var(--fc-fg-red600)",
                 padding:
                   "12px",
                 borderRadius: "12px",
@@ -553,9 +557,9 @@ export default function Signup() {
             <div
               style={{
                 background:
-                  "#f0fdf4",
+                  "var(--fc-bg-green50)",
                 color:
-                  "#15803d",
+                  "var(--fc-fg-green700)",
                 padding:
                   "12px",
                 borderRadius: "12px",
@@ -617,7 +621,7 @@ export default function Signup() {
           style={{
             marginTop: "20px",
             textAlign: "center",
-            color: "#666",
+            color: "var(--fc-fg-gray550)",
             fontSize: "14px"
           }}
         >
@@ -628,7 +632,7 @@ export default function Signup() {
             to="/login"
 
             style={{
-              color: "#15803d",
+              color: "var(--fc-fg-green700)",
               fontWeight: "700",
               marginLeft: "5px",
               textDecoration:
@@ -650,7 +654,7 @@ const inputStyle = {
   width: "100%",
   padding: "13px 14px",
   borderRadius: "12px",
-  border: "1.5px solid #ddd",
+  border: "1.5px solid var(--fc-line-gray250)",
   marginBottom: "14px",
   fontSize: "14px",
   outline: "none",

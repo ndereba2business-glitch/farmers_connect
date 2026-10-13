@@ -4,9 +4,9 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
 const STATUS = {
-  pending: { label: "Waiting for supplier", bg: "#fef3c7", color: "#b45309" },
-  confirmed: { label: "Confirmed", bg: "#dcfce7", color: "#15803d" },
-  cancelled: { label: "Declined", bg: "#fee2e2", color: "#b91c1c" }
+  pending: { label: "Waiting for supplier", bg: "var(--fc-bg-amber100)", color: "var(--fc-fg-amber700)" },
+  confirmed: { label: "Confirmed", bg: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)" },
+  cancelled: { label: "Declined", bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red700)" }
 };
 
 const DELIVERY = {
@@ -85,17 +85,17 @@ export default function Orders() {
 
   return (
     <div style={{ maxWidth: "760px" }}>
-      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+      <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
         My Orders
       </h1>
-      <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+      <p style={{ marginTop: "6px", color: "var(--fc-fg-gray500)", fontSize: "15px" }}>
         Requests you've sent to suppliers. Suppliers contact you to arrange payment and delivery.
       </p>
 
       {error && (
         <div role="alert" style={{
           margin: "20px 0", padding: "14px 16px", borderRadius: "12px",
-          background: "#fef2f2", color: "#b91c1c", fontSize: "14px",
+          background: "var(--fc-bg-red50)", color: "var(--fc-fg-red700)", fontSize: "14px",
           display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap"
         }}>
           <span>{error}</span>
@@ -103,7 +103,7 @@ export default function Orders() {
             onClick={() => { setError(""); setLoading(true); refresh(); }}
             style={{
               minHeight: "44px", padding: "0 18px", borderRadius: "12px",
-              border: "1.5px solid #b91c1c", background: "#fff", color: "#b91c1c",
+              border: "1.5px solid var(--fc-line-red700)", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red700)",
               fontWeight: "700", cursor: "pointer"
             }}
           >
@@ -112,10 +112,10 @@ export default function Orders() {
         </div>
       )}
 
-      {loading && !error && <p style={{ color: "#9ca3af", marginTop: "24px" }}>Loading your orders...</p>}
+      {loading && !error && <p style={{ color: "var(--fc-fg-gray400)", marginTop: "24px" }}>Loading your orders...</p>}
 
       {!loading && !error && orders.length === 0 && (
-        <p style={{ color: "#6b7280", marginTop: "24px" }}>
+        <p style={{ color: "var(--fc-fg-gray500)", marginTop: "24px" }}>
           You haven't ordered anything yet. Add products from the Marketplace to send a request.
         </p>
       )}
@@ -127,13 +127,13 @@ export default function Orders() {
           const phone = supplier?.phone || supplier?.whatsapp_number;
           return (
             <div key={o.id} style={{
-              background: "#fff", border: "1px solid #e5e7eb",
+              background: "var(--fc-bg-gray0)", border: "1px solid var(--fc-line-gray200)",
               borderRadius: "12px", padding: "18px"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontWeight: "700", fontSize: "16px", color: "#111827" }}>{o.product_name}</div>
-                  <div style={{ fontSize: "13px", color: "#6b7280", marginTop: "2px" }}>
+                  <div style={{ fontWeight: "700", fontSize: "16px", color: "var(--fc-fg-gray900)" }}>{o.product_name}</div>
+                  <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", marginTop: "2px" }}>
                     {o.quantity} × · KES {Number(o.total_price || 0).toLocaleString()}
                   </div>
                 </div>
@@ -145,24 +145,24 @@ export default function Orders() {
                 </span>
               </div>
 
-              <div style={{ marginTop: "10px", fontSize: "13px", color: "#374151" }}>
+              <div style={{ marginTop: "10px", fontSize: "13px", color: "var(--fc-fg-gray700)" }}>
                 Delivery: <b>{DELIVERY[o.delivery_status] || o.delivery_status}</b>
               </div>
 
               {supplier && (
                 <div style={{
-                  marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f3f4f6",
+                  marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--fc-line-gray100)",
                   display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap"
                 }}>
-                  <span style={{ fontSize: "13px", color: "#6b7280" }}>
-                    Supplier: <b style={{ color: "#111827" }}>{supplier.business_name}</b>
+                  <span style={{ fontSize: "13px", color: "var(--fc-fg-gray500)" }}>
+                    Supplier: <b style={{ color: "var(--fc-fg-gray900)" }}>{supplier.business_name}</b>
                   </span>
                   {phone && (
                     <a href={telHref(phone)} style={{
                       display: "inline-flex", alignItems: "center", gap: "8px",
                       minHeight: "44px", padding: "0 16px", borderRadius: "12px",
-                      background: "#f0fdf4", border: "1.5px solid #15803d",
-                      color: "#15803d", fontWeight: "700", fontSize: "13px", textDecoration: "none"
+                      background: "var(--fc-bg-green50)", border: "1.5px solid var(--fc-line-green700)",
+                      color: "var(--fc-fg-green700)", fontWeight: "700", fontSize: "13px", textDecoration: "none"
                     }}>
                       <Phone size={16} aria-hidden="true" /> Call {phone}
                     </a>

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import NotificationsBell from "./NotificationsBell";
 import OnboardingTour from "./OnboardingTour";
 import TermsGate from "./TermsGate";
+import ThemeToggle from "./ThemeToggle";
 import { lazy, Suspense, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Egg, Stethoscope,
@@ -192,6 +193,7 @@ export default function Layout() {
           <div className="fc-topbar-spacer" />
 
           <div className="fc-topbar-right">
+            <ThemeToggle />
             <NotificationsBell userEmail={userEmail} />
           </div>
         </header>

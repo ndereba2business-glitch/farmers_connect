@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Suspense, lazy, useEffect } from 'react';
 import { readSignInProblem } from "./lib/signInReturn";
 import { POLICIES_PUBLISHED } from "./config/features";
@@ -52,7 +53,7 @@ function LoadingScreen({ label }) {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        background: "#f0fdf4",
+        background: "var(--fc-bg-green50)",
         gap: "12px"
       }}
     >
@@ -60,8 +61,8 @@ function LoadingScreen({ label }) {
         style={{
           width: "40px",
           height: "40px",
-          border: "4px solid #dcfce7",
-          borderTop: "4px solid #15803d",
+          border: "4px solid var(--fc-line-green100)",
+          borderTop: "4px solid var(--fc-line-green700)",
           borderRadius: "50%",
           animation: "spin 1s linear infinite"
         }}
@@ -69,7 +70,7 @@ function LoadingScreen({ label }) {
 
       <p
         style={{
-          color: "#666",
+          color: "var(--fc-fg-gray550)",
           fontSize: "14px"
         }}
       >
@@ -385,9 +386,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

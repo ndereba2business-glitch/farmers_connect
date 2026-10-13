@@ -12,19 +12,19 @@ export default function ProtectedRoute({ children, allowedRoles }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#f0fdf4",
+        background: "var(--fc-bg-green50)",
         flexDirection: "column",
         gap: "12px"
       }}>
         <div style={{
           width: "40px",
           height: "40px",
-          border: "4px solid #dcfce7",
-          borderTop: "4px solid #15803d",
+          border: "4px solid var(--fc-line-green100)",
+          borderTop: "4px solid var(--fc-line-green700)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite"
         }} />
-        <p style={{ color: "#6b7280", fontSize: "14px" }}>Loading...</p>
+        <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px" }}>Loading...</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );

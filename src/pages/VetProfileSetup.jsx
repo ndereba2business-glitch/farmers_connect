@@ -17,23 +17,23 @@ const SPECIALIZATION_OPTIONS = [
 ];
 
 const STATUS_META = {
-  unverified: { bg: "#f3f4f6", color: "#6b7280", icon: Clock, label: "Not submitted yet — fill out your profile below" },
-  missing: { bg: "#f3f4f6", color: "#6b7280", icon: Clock, label: "Not submitted yet — fill out your profile below" },
-  pending: { bg: "#fef3c7", color: "#d97706", icon: Clock, label: "Pending review — an admin will review your profile soon" },
-  verified: { bg: "#dcfce7", color: "#15803d", icon: CheckCircle2, label: "Verified — farmers can find and book you" },
-  rejected: { bg: "#fee2e2", color: "#ef4444", icon: XCircle, label: "Rejected — update your details and resubmit" },
-  suspended: { bg: "#fee2e2", color: "#991b1b", icon: Ban, label: "Suspended — contact support to appeal" },
+  unverified: { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)", icon: Clock, label: "Not submitted yet — fill out your profile below" },
+  missing: { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)", icon: Clock, label: "Not submitted yet — fill out your profile below" },
+  pending: { bg: "var(--fc-bg-amber100)", color: "var(--fc-fg-amber600)", icon: Clock, label: "Pending review — an admin will review your profile soon" },
+  verified: { bg: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)", icon: CheckCircle2, label: "Verified — farmers can find and book you" },
+  rejected: { bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red500)", icon: XCircle, label: "Rejected — update your details and resubmit" },
+  suspended: { bg: "var(--fc-bg-red100)", color: "var(--fc-fg-red800)", icon: Ban, label: "Suspended — contact support to appeal" },
 };
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "13px", fontWeight: "600",
-  color: "#374151", marginBottom: "6px"
+  color: "var(--fc-fg-gray700)", marginBottom: "6px"
 };
 
 const EMPTY_FORM = {
@@ -209,19 +209,19 @@ export default function VetProfileSetup() {
   const StatusIcon = statusMeta.icon;
 
   if (loading) {
-    return <p style={{ color: "#9ca3af", fontSize: "14px" }}>Loading your profile...</p>;
+    return <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>Loading your profile...</p>;
   }
 
   return (
     <div style={{ maxWidth: "680px" }}>
       {/* HEADER */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-        <Stethoscope size={28} color="#15803d" />
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+        <Stethoscope size={28} color="var(--fc-fg-green700)" />
+        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
           My Vet Profile
         </h1>
       </div>
-      <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "20px" }}>
+      <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px", marginBottom: "20px" }}>
         This information is shown to farmers when they choose a vet to book.
       </p>
 
@@ -238,7 +238,7 @@ export default function VetProfileSetup() {
       </div>
 
       <form onSubmit={handleSave} style={{
-        background: "#fff", borderRadius: "16px", border: "1px solid #e5e7eb",
+        background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray200)",
         padding: "28px", boxShadow: "var(--fc-shadow-card)"
       }}>
         {/* FULL NAME */}
@@ -273,7 +273,7 @@ export default function VetProfileSetup() {
             onChange={e => setForm({ ...form, license_number: e.target.value })}
             style={inputStyle}
           />
-          <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+          <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
             Helps admins verify you faster. Document upload is coming in a future update.
           </p>
         </div>
@@ -302,9 +302,9 @@ export default function VetProfileSetup() {
                   onClick={() => toggleArrayValue("service_counties", county)}
                   style={{
                     padding: "6px 14px", borderRadius: "16px",
-                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
-                    background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#15803d" : "#374151",
+                    border: `1.5px solid ${active ? "var(--fc-line-green700)" : "var(--fc-line-gray200)"}`,
+                    background: active ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
+                    color: active ? "var(--fc-fg-green700)" : "var(--fc-fg-gray700)",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -328,9 +328,9 @@ export default function VetProfileSetup() {
                   onClick={() => toggleArrayValue("specializations", spec)}
                   style={{
                     padding: "6px 14px", borderRadius: "16px",
-                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
-                    background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#15803d" : "#374151",
+                    border: `1.5px solid ${active ? "var(--fc-line-green700)" : "var(--fc-line-gray200)"}`,
+                    background: active ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
+                    color: active ? "var(--fc-fg-green700)" : "var(--fc-fg-gray700)",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -354,9 +354,9 @@ export default function VetProfileSetup() {
                   onClick={() => toggleArrayValue("working_days", day.value)}
                   style={{
                     padding: "6px 14px", borderRadius: "16px",
-                    border: `1.5px solid ${active ? "#15803d" : "#e5e7eb"}`,
-                    background: active ? "#f0fdf4" : "#fff",
-                    color: active ? "#15803d" : "#374151",
+                    border: `1.5px solid ${active ? "var(--fc-line-green700)" : "var(--fc-line-gray200)"}`,
+                    background: active ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
+                    color: active ? "var(--fc-fg-green700)" : "var(--fc-fg-gray700)",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer"
                   }}
                 >
@@ -392,7 +392,7 @@ export default function VetProfileSetup() {
         {/* BLOCKED DATES (Phase 4.2) */}
         <div style={{ marginBottom: "22px" }}>
           <label style={labelStyle}>Blocked Dates</label>
-          <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#9ca3af" }}>
+          <p style={{ margin: "0 0 10px", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
             Days you're fully unavailable — leave, travel, etc.
           </p>
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
@@ -407,7 +407,7 @@ export default function VetProfileSetup() {
               onClick={addBlockedDate}
               style={{
                 flexShrink: 0, padding: "0 16px", border: "none", borderRadius: "12px",
-                background: "#111827", color: "#fff", fontWeight: "700",
+                background: "var(--fc-bg-gray900)", color: "var(--fc-fg-gray0)", fontWeight: "700",
                 cursor: "pointer", display: "flex", alignItems: "center", gap: "6px"
               }}
             >
@@ -415,7 +415,7 @@ export default function VetProfileSetup() {
             </button>
           </div>
           {blockedDateError && (
-            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#dc2626" }}>{blockedDateError}</p>
+            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "var(--fc-fg-red600)" }}>{blockedDateError}</p>
           )}
           {blockedDates.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -423,7 +423,7 @@ export default function VetProfileSetup() {
                 <span key={bd.id} style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "6px 10px", borderRadius: "16px",
-                  background: "#f3f4f6", color: "#374151", fontSize: "13px", fontWeight: "600"
+                  background: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray700)", fontSize: "13px", fontWeight: "600"
                 }}>
                   <CalendarOff size={13} />
                   {bd.blocked_date}
@@ -433,7 +433,7 @@ export default function VetProfileSetup() {
                     aria-label={`Unblock ${bd.blocked_date}`}
                     style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}
                   >
-                    <Trash2 size={13} color="#9ca3af" />
+                    <Trash2 size={13} color="var(--fc-fg-gray400)" />
                   </button>
                 </span>
               ))}
@@ -445,24 +445,24 @@ export default function VetProfileSetup() {
         <label style={{
           display: "flex", alignItems: "center", gap: "10px",
           padding: "14px 16px", borderRadius: "12px",
-          background: "#fef2f2", border: "1px solid #fecaca",
+          background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
           marginBottom: "24px", cursor: "pointer"
         }}>
           <input
             type="checkbox"
             checked={form.accepts_emergency}
             onChange={e => setForm({ ...form, accepts_emergency: e.target.checked })}
-            style={{ width: "18px", height: "18px", accentColor: "#ef4444" }}
+            style={{ width: "18px", height: "18px", accentColor: "var(--fc-fg-red500)" }}
           />
-          <span style={{ fontSize: "13px", fontWeight: "600", color: "#991b1b" }}>
+          <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--fc-fg-red800)" }}>
             I'm available for emergency requests
           </span>
         </label>
 
         {error && (
           <div style={{
-            background: "#fef2f2", border: "1px solid #fecaca",
-            color: "#dc2626", padding: "10px 14px",
+            background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+            color: "var(--fc-fg-red600)", padding: "10px 14px",
             borderRadius: "8px", fontSize: "13px", marginBottom: "16px"
           }}>
             <AlertTriangle size={14} aria-hidden="true" /> {error}
@@ -474,8 +474,8 @@ export default function VetProfileSetup() {
           disabled={saving}
           style={{
             width: "100%", padding: "14px",
-            background: saving ? "#86efac" : "#15803d",
-            color: "#fff", border: "none", borderRadius: "12px",
+            background: saving ? "var(--fc-bg-green300)" : "#15803d",
+            color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
             fontWeight: "700", fontSize: "15px",
             cursor: saving ? "not-allowed" : "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"

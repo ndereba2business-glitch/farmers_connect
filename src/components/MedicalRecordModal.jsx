@@ -8,13 +8,13 @@ import { X, AlertTriangle
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "5px"
+  color: "var(--fc-fg-gray500)", marginBottom: "5px"
 };
 
 const RECORD_META = {
@@ -141,7 +141,7 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "16px", padding: "28px",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >
@@ -259,7 +259,7 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
                 onChange={e => setFile(e.target.files?.[0] || null)}
                 style={{ ...inputStyle, marginBottom: "14px", padding: "8px" }}
               />
-              <p style={{ margin: "-8px 0 14px", fontSize: "12px", color: "#9ca3af" }}>
+              <p style={{ margin: "-8px 0 14px", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                 Only you and this farmer can view this file.
               </p>
             </>
@@ -267,8 +267,8 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
 
           {error && (
             <div style={{
-              background: "#fef2f2", border: "1px solid #fecaca",
-              color: "#dc2626", padding: "10px 14px",
+              background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+              color: "var(--fc-fg-red600)", padding: "10px 14px",
               borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
             }}>
               <AlertTriangle size={14} aria-hidden="true" /> {error}
@@ -280,8 +280,8 @@ export default function MedicalRecordModal({ recordType, onClose, onSaved }) {
             disabled={saving}
             style={{
               width: "100%", padding: "13px",
-              background: saving ? "#86efac" : "#15803d",
-              color: "#fff", border: "none", borderRadius: "12px",
+              background: saving ? "var(--fc-bg-green300)" : "#15803d",
+              color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
               fontWeight: "700", fontSize: "14px", cursor: saving ? "not-allowed" : "pointer"
             }}
           >

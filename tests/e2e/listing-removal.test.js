@@ -67,8 +67,8 @@ const deletes = () => backend.db.writes.filter(w => w.method === "DELETE" && w.t
 async function sellerControls(page, name) {
   const heading = page.locator("h3", { hasText: name });
   await heading.waitFor();
-  const card = heading.locator("xpath=ancestor::div[.//button[contains(., 'SELLER CONTROLS')]][1]");
-  await card.locator("button", { hasText: "SELLER CONTROLS" }).click();
+  const card = heading.locator("xpath=ancestor::div[.//button[contains(., 'Seller controls')]][1]");
+  await card.locator("button", { hasText: "Seller controls" }).click();
   return card;
 }
 
@@ -124,7 +124,7 @@ test("a removal that fails says so, keeps the listing on the page, and can be tr
 test("someone else's listing has no seller controls, only ways to contact the seller", { timeout: 60000 }, async () => {
   const { context, page } = await open(BUYER, "/marketplace");
   await page.locator("h3", { hasText: LISTING }).waitFor();
-  assert.equal(await page.locator("button", { hasText: "SELLER CONTROLS" }).count(), 0);
+  assert.equal(await page.locator("button", { hasText: "Seller controls" }).count(), 0);
   assert.equal(await page.locator("button", { hasText: "Remove" }).count(), 0);
   assert.ok(await page.locator(`[aria-label="WhatsApp the seller of ${LISTING}"]`).count(), "the buyer can contact the seller");
   await context.close();

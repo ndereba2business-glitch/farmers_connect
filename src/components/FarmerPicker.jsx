@@ -4,8 +4,8 @@ import { Search, X } from "lucide-react";
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff", color: "#111827"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 // Extracted from the debounced farmer search originally built inline for
@@ -49,13 +49,13 @@ export default function FarmerPicker({ value, onChange }) {
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "10px 14px", borderRadius: "12px",
-        border: "1.5px solid #15803d", background: "#f0fdf4"
+        border: "1.5px solid var(--fc-line-green700)", background: "var(--fc-bg-green50)"
       }}>
         <div>
-          <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "#111827" }}>
+          <p style={{ margin: 0, fontWeight: "700", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
             {value.full_name || "Farmer"}
           </p>
-          <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+          <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray500)" }}>
             {value.user_email}{value.county ? ` · ${value.county}` : ""}
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function FarmerPicker({ value, onChange }) {
           aria-label="Clear selected farmer"
           style={{ background: "none", border: "none", cursor: "pointer" }}
         >
-          <X size={16} color="#6b7280" />
+          <X size={16} color="var(--fc-fg-gray500)" />
         </button>
       </div>
     );
@@ -75,7 +75,7 @@ export default function FarmerPicker({ value, onChange }) {
     <div style={{ position: "relative" }}>
       <Search size={15} style={{
         position: "absolute", left: "13px", top: "50%",
-        transform: "translateY(-50%)", color: "#9ca3af"
+        transform: "translateY(-50%)", color: "var(--fc-fg-gray400)"
       }} />
       <input
         placeholder="Search farmer by name or email..."
@@ -85,15 +85,15 @@ export default function FarmerPicker({ value, onChange }) {
       />
       {query.trim() && (
         <div style={{
-          marginTop: "6px", border: "1px solid #e5e7eb", borderRadius: "12px",
-          maxHeight: "180px", overflowY: "auto", background: "#fff"
+          marginTop: "6px", border: "1px solid var(--fc-line-gray200)", borderRadius: "12px",
+          maxHeight: "180px", overflowY: "auto", background: "var(--fc-bg-gray0)"
         }}>
           {searching ? (
-            <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "#9ca3af" }}>
+            <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "var(--fc-fg-gray400)" }}>
               Searching...
             </p>
           ) : results.length === 0 ? (
-            <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "#9ca3af" }}>
+            <p style={{ margin: 0, padding: "10px 14px", fontSize: "13px", color: "var(--fc-fg-gray400)" }}>
               No farmers found.
             </p>
           ) : (
@@ -102,15 +102,15 @@ export default function FarmerPicker({ value, onChange }) {
                 key={f.user_email}
                 onClick={() => { onChange(f); setResults([]); }}
                 style={{
-                  padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f3f4f6"
+                  padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--fc-line-gray100)"
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
-                onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--fc-bg-gray50)"}
+                onMouseLeave={e => e.currentTarget.style.background = "var(--fc-bg-gray0)"}
               >
-                <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "#111827" }}>
+                <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                   {f.full_name || "Farmer"}
                 </p>
-                <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                   {f.user_email}{f.county ? ` · ${f.county}` : ""}
                 </p>
               </div>

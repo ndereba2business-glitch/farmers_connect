@@ -7,7 +7,7 @@
   margin: calc(-1 * var(--fill-bleed));
   min-height: 360px;
   overflow: hidden;
-  background: #f7f8f5;
+  background: var(--fc-bg-gray53);
 }
 
 .ck-head {
@@ -16,8 +16,8 @@
   align-items: center;
   gap: 10px;
   padding: 8px 8px 8px 12px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--fc-bg-gray0);
+  border-bottom: 1px solid var(--fc-line-gray200);
 }
 .ck-head-icon {
   width: 40px;
@@ -25,7 +25,7 @@
   flex: none;
   border-radius: 12px;
   background: var(--fc-primary-soft);
-  color: var(--fc-primary);
+  color: var(--fc-link);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,20 +35,20 @@
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--fc-fg-gray900);
 }
 .ck-head-sub {
   margin: 0;
   font-size: 12.5px;
-  color: #6b7280;
+  color: var(--fc-fg-gray500);
 }
 .ck-head-btn {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--fc-line-gray200);
   border-radius: 12px;
-  background: #fff;
-  color: #374151;
+  background: var(--fc-bg-gray0);
+  color: var(--fc-fg-gray700);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -83,7 +83,7 @@
   margin: 0 auto;
   border-radius: 16px;
   background: var(--fc-primary-soft);
-  color: var(--fc-primary);
+  color: var(--fc-link);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,14 +92,14 @@
   margin: 8px 0 6px;
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: var(--fc-fg-gray900);
 }
 .ck-welcome p {
   margin: 0 auto 16px;
   max-width: 420px;
   font-size: 14px;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--fc-fg-gray600);
 }
 .ck-suggestions {
   display: flex;
@@ -111,16 +111,16 @@
 .ck-suggestion {
   min-height: 44px;
   padding: 10px 14px;
-  border: 1px solid #d1fae5;
+  border: 1px solid var(--fc-line-green101);
   border-radius: 12px;
-  background: #fff;
-  color: #166534;
+  background: var(--fc-bg-gray0);
+  color: var(--fc-fg-green800);
   font: inherit;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
 }
-.ck-suggestion:hover { background: #f0fdf4; }
+.ck-suggestion:hover { background: var(--fc-bg-green50); }
 
 .ck-row { display: flex; }
 .ck-row--me { justify-content: flex-end; }
@@ -128,26 +128,26 @@
 .ck-bubble {
   max-width: min(86%, 620px);
   padding: 10px 13px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--fc-line-gray200);
   border-radius: 14px 14px 14px 4px;
-  background: #fff;
-  color: #111827;
+  background: var(--fc-bg-gray0);
+  color: var(--fc-fg-gray900);
   font-size: 15px;
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .ck-row--me .ck-bubble {
-  border-color: #15803d;
+  border-color: var(--fc-line-green700);
   border-radius: 14px 14px 4px 14px;
   background: #15803d;
-  color: #fff;
+  color: var(--fc-fg-gray0);
 }
 .ck-note {
   display: block;
   margin-top: 8px;
   font-size: 12.5px;
-  color: #92400e;
+  color: var(--fc-fg-amber800);
 }
 
 /* shown until the first words of the answer arrive */
@@ -155,7 +155,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #6b7280;
+  color: var(--fc-fg-gray500);
   font-size: 14px;
 }
 .ck-dots { display: inline-flex; gap: 4px; }
@@ -163,7 +163,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #9ca3af;
+  background: var(--fc-bg-gray400);
   animation: ck-bounce 1.2s infinite ease-in-out;
 }
 .ck-dots i:nth-child(2) { animation-delay: 0.15s; }
@@ -180,7 +180,7 @@
   margin: auto;
   padding: 24px 16px;
   text-align: center;
-  color: #4b5563;
+  color: var(--fc-fg-gray600);
   font-size: 14px;
 }
 .ck-status button {
@@ -191,7 +191,7 @@
   border: none;
   border-radius: 12px;
   background: #15803d;
-  color: #fff;
+  color: var(--fc-fg-gray0);
   font-weight: 700;
   cursor: pointer;
 }
@@ -199,9 +199,9 @@
 .ck-error {
   flex: none;
   padding: 10px 14px;
-  background: #fef2f2;
-  border-top: 1px solid #fecaca;
-  color: #b91c1c;
+  background: var(--fc-bg-red50);
+  border-top: 1px solid var(--fc-line-red200);
+  color: var(--fc-fg-red700);
   font-size: 13.5px;
   line-height: 1.45;
 }
@@ -213,9 +213,9 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px 12px;
-  background: #fffbeb;
-  border-bottom: 1px solid #fde68a;
-  color: #92400e;
+  background: var(--fc-bg-amber50);
+  border-bottom: 1px solid var(--fc-line-amber200);
+  color: var(--fc-fg-amber800);
   font-size: 13.5px;
 }
 .ck-confirm span { flex: 1; min-width: 160px; }
@@ -226,8 +226,8 @@
   align-items: flex-end;
   gap: 6px;
   padding: 8px;
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--fc-bg-gray0);
+  border-top: 1px solid var(--fc-line-gray200);
 }
 .ck-input {
   flex: 1;
@@ -235,17 +235,17 @@
   min-height: 44px;
   max-height: 130px;
   padding: 11px 14px;
-  border: 1.5px solid #d1d5db;
+  border: 1.5px solid var(--fc-line-gray300);
   border-radius: 16px;
-  background: #fff;
-  color: #111827;
+  background: var(--fc-bg-gray0);
+  color: var(--fc-fg-gray900);
   font: inherit;
   font-size: 16px; /* 16px stops phones zooming in on focus */
   line-height: 1.3;
   resize: none;
   box-sizing: border-box;
 }
-.ck-input:focus { outline: 2px solid #15803d; outline-offset: 0; }
+.ck-input:focus { outline: 2px solid var(--fc-line-green700); outline-offset: 0; }
 .ck-send {
   width: 44px;
   height: 44px;
@@ -253,20 +253,20 @@
   border: none;
   border-radius: 50%;
   background: #15803d;
-  color: #fff;
+  color: var(--fc-fg-gray0);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.ck-send:disabled { background: #9ca3af; cursor: not-allowed; }
+.ck-send:disabled { background: var(--fc-bg-gray400); cursor: not-allowed; }
 
 .ck-foot {
   flex: none;
   margin: 0;
   padding: 0 12px;
-  background: #fff;
-  color: #6b7280;
+  background: var(--fc-bg-gray0);
+  color: var(--fc-fg-gray500);
   font-size: 12px;
   text-align: center;
 }
@@ -278,7 +278,7 @@
   align-items: center;
   min-height: 44px;
   padding: 0 4px;
-  color: #166534;
+  color: var(--fc-fg-green800);
   font-weight: 700;
 }
 
@@ -287,7 +287,7 @@
     --fill-bleed: 0px;
     max-width: 860px;
     margin: 0 auto;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--fc-line-gray200);
     border-radius: 16px;
   }
   .ck-list { padding: 18px; }
@@ -295,3 +295,7 @@
 
 /* hidden until the person has agreed to AI processing */
 .ck-composer[hidden] { display: none; }
+
+/* "Report this answer" sits under the answer, not beside it */
+.ck-row { flex-wrap: wrap; }
+.ck-report { flex-basis: 100%; justify-content: flex-start; }

@@ -157,7 +157,7 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f7f8f5",
+        background: "var(--fc-bg-gray53)",
         padding: "20px"
       }}
     >
@@ -166,7 +166,7 @@ export default function Login() {
         style={{
           width: "100%",
           maxWidth: "400px",
-          background: "white",
+          background: "var(--fc-surface)",
           padding: "30px",
           borderRadius: "16px",
           boxShadow:
@@ -185,7 +185,7 @@ export default function Login() {
             <BrandMark size={56} />
           </div>
 
-          <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: "700", letterSpacing: "-0.02em", color: "#111827" }}>
+          <h1 style={{ margin: "0 0 4px", fontSize: "24px", fontWeight: "700", letterSpacing: "-0.02em", color: "var(--fc-fg-gray900)" }}>
             Farmers Connect
           </h1>
 
@@ -193,7 +193,7 @@ export default function Login() {
             style={{
               margin: 0,
               fontSize: "14px",
-              color: "#6b7280"
+              color: "var(--fc-fg-gray500)"
             }}
           >
             Log in to continue
@@ -205,7 +205,7 @@ export default function Login() {
         <div
           style={{
             display: "flex",
-            background: "#f3f4f6",
+            background: "var(--fc-bg-gray100)",
             borderRadius: "12px",
             padding: "4px",
             marginBottom: "20px"
@@ -235,7 +235,7 @@ export default function Login() {
               color:
                 method === "email"
                   ? "white"
-                  : "#666"
+                  : "var(--fc-fg-gray550)"
             }}
           >
             Email
@@ -264,7 +264,7 @@ export default function Login() {
               color:
                 method === "phone"
                   ? "white"
-                  : "#666"
+                  : "var(--fc-fg-gray550)"
             }}
           >
             Phone
@@ -292,7 +292,7 @@ export default function Login() {
               width: "100%",
               padding: "14px",
               borderRadius: "12px",
-              border: "1px solid #ddd",
+              border: "1px solid var(--fc-line-gray250)",
               marginBottom: "15px",
               fontSize: "15px",
               boxSizing: "border-box"
@@ -318,7 +318,7 @@ export default function Login() {
               width: "100%",
               padding: "14px",
               borderRadius: "12px",
-              border: "1px solid #ddd",
+              border: "1px solid var(--fc-line-gray250)",
               marginBottom: "15px",
               fontSize: "15px",
               boxSizing: "border-box"
@@ -344,7 +344,7 @@ export default function Login() {
             width: "100%",
             padding: "14px",
             borderRadius: "12px",
-            border: "1px solid #ddd",
+            border: "1px solid var(--fc-line-gray250)",
             marginBottom: "20px",
             fontSize: "15px",
             boxSizing: "border-box"
@@ -356,8 +356,8 @@ export default function Login() {
           <div
             role="alert"
             style={{
-              background: "#fef2f2",
-              color: "#dc2626",
+              background: "var(--fc-bg-red50)",
+              color: "var(--fc-fg-red600)",
               padding: "12px",
               borderRadius: "12px",
               marginBottom: "14px",
@@ -398,7 +398,7 @@ export default function Login() {
           style={{
             marginTop: "20px",
             textAlign: "center",
-            color: "#666"
+            color: "var(--fc-fg-gray550)"
           }}
         >
 
@@ -410,7 +410,7 @@ export default function Login() {
             }
 
             style={{
-              color: "#15803d",
+              color: "var(--fc-fg-green700)",
               marginLeft: "6px",
               cursor: "pointer",
               fontWeight: "700"

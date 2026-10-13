@@ -37,9 +37,9 @@ const SPECIALIZATIONS = [
 ];
 
 const URGENCY_OPTIONS = [
-  { value: "low", label: "Low — routine check", bg: "#f0fdf4", color: "#15803d" },
-  { value: "medium", label: "Medium — needs attention soon", bg: "#fffbeb", color: "#d97706" },
-  { value: "high", label: "High — urgent", bg: "#fff7ed", color: "#ea580c" },
+  { value: "low", label: "Low — routine check", bg: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)" },
+  { value: "medium", label: "Medium — needs attention soon", bg: "var(--fc-bg-amber50)", color: "var(--fc-fg-amber600)" },
+  { value: "high", label: "High — urgent", bg: "var(--fc-bg-amber51)", color: "var(--fc-fg-amber601)" },
 ];
 
 const EMPTY_BOOKING_FORM = {
@@ -55,13 +55,13 @@ const EMPTY_BOOKING_FORM = {
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "6px"
+  color: "var(--fc-fg-gray500)", marginBottom: "6px"
 };
 
 export default function Bookings() {
@@ -301,11 +301,11 @@ export default function Bookings() {
 
   function statusMeta(status) {
     switch (status) {
-      case "accepted": return { bg: "#dcfce7", color: "#15803d", label: "Confirmed" };
-      case "completed": return { bg: "#f0fdf4", color: "#15803d", label: "Completed" };
-      case "cancelled": return { bg: "#f3f4f6", color: "#9ca3af", label: "Cancelled" };
-      case "rejected": return { bg: "#fef2f2", color: "#ef4444", label: "Declined" };
-      default: return { bg: "#fef3c7", color: "#d97706", label: "Pending" };
+      case "accepted": return { bg: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)", label: "Confirmed" };
+      case "completed": return { bg: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)", label: "Completed" };
+      case "cancelled": return { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray400)", label: "Cancelled" };
+      case "rejected": return { bg: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)", label: "Declined" };
+      default: return { bg: "var(--fc-bg-amber100)", color: "var(--fc-fg-amber600)", label: "Pending" };
     }
   }
 
@@ -318,7 +318,7 @@ export default function Bookings() {
             <h1 className="fc-page-title">
               Ask Vet
             </h1>
-            <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
+            <p style={{ margin: "4px 0 0", color: "var(--fc-fg-gray500)", fontSize: "14px" }}>
               Connect with verified poultry vets across Kenya
             </p>
           </div>
@@ -327,7 +327,7 @@ export default function Bookings() {
           onClick={() => setShowEmergency(true)}
           style={{
             height: "44px", padding: "0 20px", border: "none",
-            borderRadius: "12px", background: "#ef4444",
+            borderRadius: "12px", background: "#dc2626",
             color: "white", fontWeight: "700", cursor: "pointer",
             fontSize: "14px", display: "flex", alignItems: "center",
             gap: "8px", boxShadow: "none"
@@ -342,7 +342,7 @@ export default function Bookings() {
           scrolls sideways. */}
       <div style={{
         display: "flex", flexWrap: "wrap", gap: "2px",
-        background: "#f3f4f6",
+        background: "var(--fc-bg-gray100)",
         borderRadius: "12px", padding: "4px",
         marginBottom: "24px"
       }}>
@@ -357,8 +357,8 @@ export default function Bookings() {
               whiteSpace: "nowrap",
               borderRadius: "12px", border: "none",
               cursor: "pointer", fontWeight: "600", fontSize: "13px",
-              background: activeTab === tab.key ? "#fff" : "transparent",
-              color: activeTab === tab.key ? "#111827" : "#9ca3af",
+              background: activeTab === tab.key ? "var(--fc-bg-gray0)" : "transparent",
+              color: activeTab === tab.key ? "var(--fc-fg-gray900)" : "var(--fc-fg-gray400)",
               boxShadow: activeTab === tab.key ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
               display: "flex", alignItems: "center",
               justifyContent: "center", gap: "6px",
@@ -377,7 +377,7 @@ export default function Bookings() {
           <div style={{ position: "relative", marginBottom: "12px" }}>
             <Search size={16} style={{
               position: "absolute", left: "14px",
-              top: "50%", transform: "translateY(-50%)", color: "#9ca3af"
+              top: "50%", transform: "translateY(-50%)", color: "var(--fc-fg-gray400)"
             }} />
             <input
               aria-label="Search vets by name" placeholder="Search vets by name..."
@@ -411,13 +411,13 @@ export default function Bookings() {
           {vets.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
             }}>
-              <Stethoscope size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
+              <Stethoscope size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "12px" }} />
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--fc-fg-gray900)", margin: "0 0 8px" }}>
                 No verified vets yet
               </h3>
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                 Try adjusting your filters or check back later.
               </p>
             </div>
@@ -425,32 +425,32 @@ export default function Bookings() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {vets.map(vet => (
                 <div key={vet.id} style={{
-                  background: "#fff", borderRadius: "16px",
-                  border: "1px solid #e5e7eb", padding: "16px 20px",
+                  background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                  border: "1px solid var(--fc-line-gray200)", padding: "16px 20px",
                   display: "flex", alignItems: "center", gap: "16px"
                 }}>
                   <div style={{
                     width: "52px", height: "52px", borderRadius: "12px",
-                    background: "#dcfce7", display: "flex",
+                    background: "var(--fc-bg-green100)", display: "flex",
                     alignItems: "center", justifyContent: "center",
                     fontSize: "22px", flexShrink: 0
                   }}>
                     {vet.avatar_url ? (
                       <img src={vet.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "12px" }} />
-                    ) : <Stethoscope size={24} color="#15803d" aria-hidden="true" />}
+                    ) : <Stethoscope size={24} color="var(--fc-fg-green700)" aria-hidden="true" />}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ margin: "0 0 4px", fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                    <p style={{ margin: "0 0 4px", fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                       {vet.full_name}
                     </p>
                     {vet.county && (
-                      <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray400)", display: "flex", alignItems: "center", gap: "4px" }}>
                         <MapPin size={11} /> {vet.county}
                       </p>
                     )}
                   </div>
                   <span style={{
-                    background: "#dcfce7", color: "#15803d",
+                    background: "var(--fc-bg-green100)", color: "var(--fc-fg-green700)",
                     fontSize: "11px", fontWeight: "700",
                     padding: "3px 10px", borderRadius: "16px"
                   }}>
@@ -467,11 +467,11 @@ export default function Bookings() {
       {activeTab === "ask" && (
         <div>
           <div style={{
-            background: "#fff", borderRadius: "16px",
-            border: "1px solid #e5e7eb", padding: "24px",
+            background: "var(--fc-bg-gray0)", borderRadius: "16px",
+            border: "1px solid var(--fc-line-gray200)", padding: "24px",
             boxShadow: "var(--fc-shadow-card)", marginBottom: "20px"
           }}>
-            <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700", color: "#111827" }}>
+            <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
               Ask a Vet Question
             </h2>
 
@@ -484,9 +484,9 @@ export default function Bookings() {
                   onClick={() => setSelectedCategory(cat.label)}
                   style={{
                     padding: "6px 14px", borderRadius: "16px",
-                    border: `1.5px solid ${selectedCategory === cat.label ? "#15803d" : "#e5e7eb"}`,
-                    background: selectedCategory === cat.label ? "#f0fdf4" : "#fff",
-                    color: selectedCategory === cat.label ? "#15803d" : "#374151",
+                    border: `1.5px solid ${selectedCategory === cat.label ? "var(--fc-line-green700)" : "var(--fc-line-gray200)"}`,
+                    background: selectedCategory === cat.label ? "var(--fc-bg-green50)" : "var(--fc-bg-gray0)",
+                    color: selectedCategory === cat.label ? "var(--fc-fg-green700)" : "var(--fc-fg-gray700)",
                     fontWeight: "600", fontSize: "13px", cursor: "pointer",
                     transition: "all 0.2s"
                   }}
@@ -513,9 +513,9 @@ export default function Bookings() {
                 type="button"
                 style={{
                   flex: 1, padding: "12px",
-                  background: "#f9fafb", border: "1px solid #e5e7eb",
+                  background: "var(--fc-bg-gray50)", border: "1px solid var(--fc-line-gray200)",
                   borderRadius: "12px", cursor: "pointer",
-                  fontWeight: "600", fontSize: "13px", color: "#374151",
+                  fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray700)",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
                 }}
               >
@@ -527,9 +527,9 @@ export default function Bookings() {
                 style={{
                   flex: 2, padding: "12px",
                   background: !questionText.trim()
-                    ? "#86efac"
+                    ? "var(--fc-bg-green300)"
                     : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px",
                   cursor: !questionText.trim() ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
@@ -542,15 +542,15 @@ export default function Bookings() {
           </div>
 
           {/* MY QUESTIONS */}
-          <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#111827", marginBottom: "12px" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--fc-fg-gray900)", marginBottom: "12px" }}>
             My Questions
           </h3>
           {questions.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "40px 20px",
-              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
             }}>
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                 No questions yet. Ask your first question above.
               </p>
             </div>
@@ -558,44 +558,44 @@ export default function Bookings() {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {questions.map(q => (
                 <div key={q.id} style={{
-                  background: "#fff", borderRadius: "12px",
-                  border: "1px solid #e5e7eb", padding: "16px 18px"
+                  background: "var(--fc-bg-gray0)", borderRadius: "12px",
+                  border: "1px solid var(--fc-line-gray200)", padding: "16px 18px"
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                       <span style={{
-                        background: q.is_emergency ? "#fef2f2" : "#f0fdf4",
-                        color: q.is_emergency ? "#ef4444" : "#15803d",
+                        background: q.is_emergency ? "var(--fc-bg-red50)" : "var(--fc-bg-green50)",
+                        color: q.is_emergency ? "var(--fc-fg-red500)" : "var(--fc-fg-green700)",
                         fontSize: "12px", fontWeight: "600",
                         padding: "3px 10px", borderRadius: "16px"
                       }}>
                         {q.is_emergency ? "Emergency" : q.category}
                       </span>
                       <span style={{
-                        background: q.status === "answered" ? "#dcfce7" : "#f3f4f6",
-                        color: q.status === "answered" ? "#15803d" : "#9ca3af",
+                        background: q.status === "answered" ? "var(--fc-bg-green100)" : "var(--fc-bg-gray100)",
+                        color: q.status === "answered" ? "var(--fc-fg-green700)" : "var(--fc-fg-gray400)",
                         fontSize: "11px", fontWeight: "600",
                         padding: "3px 10px", borderRadius: "16px"
                       }}>
                         {q.status === "answered" ? "✓ Answered" : "Pending"}
                       </span>
                     </div>
-                    <span style={{ fontSize: "12px", color: "#9ca3af" }}>
+                    <span style={{ fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                       {new Date(q.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p style={{ margin: "0 0 8px", fontSize: "14px", color: "#374151" }}>
+                  <p style={{ margin: "0 0 8px", fontSize: "14px", color: "var(--fc-fg-gray700)" }}>
                     {q.question}
                   </p>
                   {q.answer && (
                     <div style={{
-                      background: "#f0fdf4", borderRadius: "12px",
-                      padding: "10px 14px", borderLeft: "3px solid #15803d"
+                      background: "var(--fc-bg-green50)", borderRadius: "12px",
+                      padding: "10px 14px", borderLeft: "3px solid var(--fc-line-green700)"
                     }}>
-                      <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: "700", color: "#15803d" }}>
+                      <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: "700", color: "var(--fc-fg-green700)" }}>
                         VET RESPONSE
                       </p>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}>{q.answer}</p>
+                      <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-gray700)" }}>{q.answer}</p>
                     </div>
                   )}
                 </div>
@@ -611,10 +611,10 @@ export default function Bookings() {
           {/* HEADER ROW */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#111827" }}>
+              <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 My Visit Requests
               </h3>
-              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#9ca3af" }}>
+              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--fc-fg-gray400)" }}>
                 Request a scheduled farm visit from a vet
               </p>
             </div>
@@ -637,17 +637,17 @@ export default function Bookings() {
             <div style={{
               display: "flex", alignItems: "center", gap: "10px",
               padding: "12px 16px", borderRadius: "12px",
-              background: "#fef2f2", border: "1px solid #fecaca",
-              color: "#991b1b", fontSize: "13px", marginBottom: "16px"
+              background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+              color: "var(--fc-fg-red800)", fontSize: "13px", marginBottom: "16px"
             }}>
               <AlertTriangle size={16} style={{ flexShrink: 0 }} />
               <span>{bookingsLoadError}</span>
               <button
                 onClick={loadMyBookings}
                 style={{
-                  marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+                  marginLeft: "auto", background: "none", border: "1px solid var(--fc-line-red300)",
                   borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
-                  color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+                  color: "var(--fc-fg-red800)", fontWeight: "600", fontSize: "12px", flexShrink: 0
                 }}
               >
                 Retry
@@ -659,19 +659,19 @@ export default function Bookings() {
           {loadingBookings ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {[1, 2, 3].map(i => (
-                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
               ))}
             </div>
           ) : myBookings.length === 0 ? (
             <div style={{
               textAlign: "center", padding: "60px 20px",
-              background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
             }}>
-              <Calendar size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
+              <Calendar size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "12px" }} />
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "var(--fc-fg-gray900)", margin: "0 0 8px" }}>
                 No visit requests yet
               </h3>
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
                 Book a visit above and a vet will confirm it.
               </p>
             </div>
@@ -683,13 +683,13 @@ export default function Bookings() {
                 const canCancel = ["pending", "accepted"].includes(b.status);
                 return (
                   <div key={b.id} style={{
-                    background: "#fff", borderRadius: "16px",
-                    border: "1px solid #e5e7eb", padding: "16px 18px"
+                    background: "var(--fc-bg-gray0)", borderRadius: "16px",
+                    border: "1px solid var(--fc-line-gray200)", padding: "16px 18px"
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
-                          <span style={{ fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                          <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                             {b.farm_name}
                           </span>
                           <span style={{
@@ -708,13 +708,13 @@ export default function Bookings() {
                           {!b.requested_vet_id && b.status === "pending" && (
                             <span style={{
                               fontSize: "11px", fontWeight: "600", padding: "2px 8px",
-                              borderRadius: "16px", background: "#eff6ff", color: "#3b82f6"
+                              borderRadius: "16px", background: "var(--fc-bg-blue50)", color: "var(--fc-fg-blue500)"
                             }}>
                               Open to any vet
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: "12px", color: "#9ca3af", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                        <div style={{ fontSize: "12px", color: "var(--fc-fg-gray400)", display: "flex", gap: "12px", flexWrap: "wrap" }}>
                           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                             <Calendar size={11} /> {b.appointment_date}
                           </span>
@@ -727,12 +727,12 @@ export default function Bookings() {
                           {b.bird_count && <span><Bird size={14} aria-hidden="true" /> {b.bird_count} birds</span>}
                         </div>
                         {b.reason && (
-                          <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#6b7280" }}>{b.reason}</p>
+                          <p style={{ margin: "8px 0 0", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>{b.reason}</p>
                         )}
                         {b.status === "rejected" && b.rejection_reason && (
                           <p style={{
-                            margin: "8px 0 0", fontSize: "13px", color: "#991b1b",
-                            background: "#fef2f2", padding: "8px 12px", borderRadius: "8px"
+                            margin: "8px 0 0", fontSize: "13px", color: "var(--fc-fg-red800)",
+                            background: "var(--fc-bg-red50)", padding: "8px 12px", borderRadius: "8px"
                           }}>
                             <strong>Vet's reason:</strong> {b.rejection_reason}
                           </p>
@@ -742,8 +742,8 @@ export default function Bookings() {
                         <button
                           onClick={() => cancelMyBooking(b.id)}
                           style={{
-                            padding: "7px 14px", background: "#fff", color: "#ef4444",
-                            border: "1px solid #fecaca", borderRadius: "8px",
+                            padding: "7px 14px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red500)",
+                            border: "1px solid var(--fc-line-red200)", borderRadius: "8px",
                             fontWeight: "600", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
                         >
@@ -755,8 +755,8 @@ export default function Bookings() {
                           onClick={() => openReport(b)}
                           style={{
                             display: "flex", alignItems: "center", gap: "6px",
-                            padding: "7px 14px", background: "#f0fdf4", color: "#15803d",
-                            border: "1px solid #bbf7d0", borderRadius: "8px",
+                            padding: "7px 14px", background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)",
+                            border: "1px solid var(--fc-line-green200)", borderRadius: "8px",
                             fontWeight: "700", fontSize: "12px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
                         >
@@ -797,13 +797,13 @@ export default function Bookings() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "16px",
+              background: "var(--fc-bg-gray0)", borderRadius: "16px",
               padding: "28px", maxWidth: "480px", width: "100%",
               maxHeight: "90vh", overflowY: "auto"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 Book a Visit
               </h2>
               <button
@@ -811,7 +811,7 @@ export default function Bookings() {
                 aria-label="Close"
                 style={{ background: "none", border: "none", cursor: "pointer" }}
               >
-                <X size={20} color="#9ca3af" />
+                <X size={20} color="var(--fc-fg-gray400)" />
               </button>
             </div>
 
@@ -833,7 +833,7 @@ export default function Bookings() {
                   ))}
                 </select>
                 {verifiedVets.length === 0 && (
-                  <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+                  <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                     No verified vets listed yet — your request will be open to any available vet.
                   </p>
                 )}
@@ -924,8 +924,8 @@ export default function Bookings() {
 
               {bookingError && (
                 <div style={{
-                  background: "#fef2f2", border: "1px solid #fecaca",
-                  color: "#dc2626", padding: "10px 14px",
+                  background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                  color: "var(--fc-fg-red600)", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
                   <AlertTriangle size={14} aria-hidden="true" /> {bookingError}
@@ -938,9 +938,9 @@ export default function Bookings() {
                 style={{
                   width: "100%", padding: "14px",
                   background: bookingSaving
-                    ? "#86efac"
+                    ? "var(--fc-bg-green300)"
                     : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: bookingSaving ? "not-allowed" : "pointer"
                 }}
@@ -965,14 +965,14 @@ export default function Bookings() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "16px",
+              background: "var(--fc-bg-gray0)", borderRadius: "16px",
               padding: "28px", maxWidth: "480px", width: "100%"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <AlertTriangle size={22} color="#ef4444" />
-                <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#ef4444" }}>
+                <AlertTriangle size={22} color="var(--fc-fg-red500)" />
+                <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-red500)" }}>
                   Emergency Poultry Support
                 </h2>
               </div>
@@ -981,10 +981,10 @@ export default function Bookings() {
                 aria-label="Close"
                 style={{ background: "none", border: "none", cursor: "pointer" }}
               >
-                <X size={20} color="#9ca3af" />
+                <X size={20} color="var(--fc-fg-gray400)" />
               </button>
             </div>
-            <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "16px" }}>
+            <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px", marginBottom: "16px" }}>
               Describe the emergency — a verified vet will respond urgently.
             </p>
             <textarea
@@ -994,17 +994,17 @@ export default function Bookings() {
               style={{
                 ...inputStyle,
                 minHeight: "120px", resize: "vertical",
-                border: "2px solid #ef4444", marginBottom: "16px"
+                border: "2px solid var(--fc-line-red500)", marginBottom: "16px"
               }}
             />
             <div style={{ marginBottom: "16px" }}>
-              <p style={{ margin: "0 0 8px", fontSize: "13px", color: "#6b7280" }}>
+              <p style={{ margin: "0 0 8px", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>
                 Upload photos/videos (optional)
               </p>
               <div style={{
-                border: "1px solid #e5e7eb", borderRadius: "12px",
+                border: "1px solid var(--fc-line-gray200)", borderRadius: "12px",
                 padding: "14px", display: "flex", alignItems: "center",
-                gap: "8px", cursor: "pointer", color: "#9ca3af", fontSize: "14px"
+                gap: "8px", cursor: "pointer", color: "var(--fc-fg-gray400)", fontSize: "14px"
               }}>
                 <Upload size={16} /> Tap to attach photos
               </div>
@@ -1014,7 +1014,7 @@ export default function Bookings() {
               disabled={emergencySubmitting}
               style={{
                 width: "100%", padding: "14px",
-                background: emergencySubmitting ? "#fca5a5" : "#ef4444", color: "#fff",
+                background: emergencySubmitting ? "var(--fc-bg-red300)" : "#dc2626", color: "var(--fc-fg-gray0)",
                 border: "none", borderRadius: "12px",
                 fontWeight: "700", fontSize: "15px", cursor: emergencySubmitting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center",
