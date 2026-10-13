@@ -17,6 +17,8 @@ declare
   sup_a uuid; email_a text; sup_b uuid; email_b text; farmer uuid; email_f text; farmer_profile uuid;
   sp_a uuid; sp_b uuid; prod_a uuid; hidden_a uuid; msg_f uuid; msg_a uuid;
   msg_n uuid; reply_n uuid; appt_n uuid; batch_n uuid; list_f uuid; list_g uuid;
+  gone uuid; email_gone text := 'sec-test-leaving@example.test'; claims_gone text; gone_msg uuid; gone_reply uuid;
+  gone_batch uuid; gone_sp uuid; gone_prod uuid; gone_rec uuid; res jsonb; admin_id uuid;
   claims_a text; claims_b text; claims_f text;
   n int; i int; v text; b boolean; rec record;
   passed int := 0; failed int := 0; report text := '';
@@ -656,10 +658,221 @@ begin
   select count(*) into n from public.notifications where user_email = email_f and dedupe_key = 'product-removed:' || list_g;
   if n = (case when b then 1 else 0 end) then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL L6 owner notice after an admin removal: %s; ', n); end if;
 
+  -- ============================ reports, blocks and web requests =======
+  perform set_config('request.jwt.claims', claims_b, true);
+  set local role authenticated;
+
+  insert into public.content_reports (kind, target_id, target_summary, reason) values ('listing', prod_a::text, 'sec-test product', 'sec-test misleading price');
+  select count(*) into n from public.content_reports where reporter = email_b and kind = 'listing' and status = 'open';
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL R1 a member could not report a listing; '; end if;
+
+  begin
+    insert into public.content_reports (kind, target_id, reason) values ('listing', prod_a::text, 'again');
+    failed := failed + 1; report := report || 'FAIL R2 the same listing was reported twice by one member; ';
+  exception when unique_violation then passed := passed + 1;
+  end;
+
+  begin
+    insert into public.content_reports (kind, target_id, reporter, reason) values ('listing', hidden_a::text, email_a, 'as someone else');
+    failed := failed + 1; report := report || 'FAIL R3 report filed in another member name; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    insert into public.content_reports (kind, target_id, reason, status) values ('member', email_a, 'pre-resolved', 'dismissed');
+    failed := failed + 1; report := report || 'FAIL R4 a report was created already resolved; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  update public.content_reports set status = 'dismissed' where reporter = email_b;
+  get diagnostics n = row_count;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL R5 a member resolved a report; '; end if;
+
+  insert into public.user_blocks (blocked) values (email_a);
+  select count(*) into n from public.user_blocks where blocker = email_b and blocked = email_a;
+  if n = 1 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL B1 a member could not block another; '; end if;
+
+  begin
+    insert into public.user_blocks (blocker, blocked) values (email_a, email_f);
+    failed := failed + 1; report := report || 'FAIL B2 a block was created in another member name; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    insert into public.user_blocks (blocked) values (email_b);
+    failed := failed + 1; report := report || 'FAIL B3 a member blocked themselves; ';
+  exception when check_violation then passed := passed + 1;
+  end;
+
+  begin
+    insert into public.account_requests (kind, identity) values ('delete_account', email_a);
+    failed := failed + 1; report := report || 'FAIL Q1 a signed-in member wrote a deletion request directly; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  begin
+    perform public.delete_account_data(sup_a);
+    failed := failed + 1; report := report || 'FAIL D1 a member ran the account deletion function; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
+
+  -- the reported member, and anyone else, sees neither the report nor the block
+  perform set_config('request.jwt.claims', claims_a, true);
+  select (select count(*) from public.content_reports) + (select count(*) from public.user_blocks) + (select count(*) from public.account_deletions) into n;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL R6 another member read %s report/block/deletion rows; ', n); end if;
+
+  reset role;
+  insert into public.account_requests (kind, identity, message) values ('delete_account', 'sec-test-request@example.test', 'sec-test please delete');
+  perform set_config('request.jwt.claims', claims_a, true);
+  set local role authenticated;
+  select count(*) into n from public.account_requests;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL Q2 a member read deletion requests; '; end if;
+
+  -- an admin sees and resolves both
+  perform set_config('request.jwt.claims', json_build_object('sub', sup_b, 'email', email_b, 'phone', '', 'role', 'authenticated',
+    'app_metadata', json_build_object('role', 'admin'))::text, true);
+  update public.content_reports set status = 'actioned', resolved_at = now(), resolved_by = email_b where kind = 'listing' and target_id = prod_a::text;
+  get diagnostics n = row_count;
+  update public.account_requests set status = 'done', resolved_at = now() where identity = 'sec-test-request@example.test';
+  get diagnostics i = row_count;
+  if n = 1 and i = 1 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL R7 admin resolved %s report(s) and %s request(s); ', n, i); end if;
+
+  -- ============================ deleting an account ====================
+  -- A throwaway account with something in every corner of the app, so
+  -- "delete my account" can be shown to remove all of it and nothing of
+  -- anyone else's. Like everything here, it is rolled back.
+  reset role;
+  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
+    values (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email_gone,
+            '{"full_name": "sec-test leaving"}', '{}', now(), now())
+    returning id into gone;
+  claims_gone := json_build_object('sub', gone, 'email', email_gone, 'phone', '', 'role', 'authenticated')::text;
+
+  begin
+    update public.farmer_profiles set avatar_url = 'https://x.test/storage/v1/object/public/avatars/old-avatar.jpg', terms_accepted_at = now()
+     where user_email = email_gone;
+    insert into public.farm_batches (user_email, batch_name, batch_type, quantity, hatch_date, status)
+      values (email_gone, 'sec-test leaving batch', 'broiler', 100, current_date - 10, 'active') returning id into gone_batch;
+    insert into public.vaccination_tasks (batch_id, user_email, vaccine_name, day_number, scheduled_date) values (gone_batch, email_gone, 'sec-test NCD', 7, current_date);
+    insert into public.mortality_logs (batch_id, user_email, date, count) values (gone_batch, email_gone, current_date, 2);
+    insert into public.batch_expenses (batch_id, user_id, category, amount, expense_date) values (gone_batch, gone, 'feed', 500, current_date);
+    insert into public.farm_gallery (user_email, image_url, batch_id) values (email_gone, 'https://x.test/storage/v1/object/public/farm-gallery/' || gone || '/leaving.jpg', gone_batch);
+    insert into public.farm_tasks (user_email, title) values (email_gone, 'sec-test leaving task');
+    insert into public.farm_finances (user_email, expense_type, amount) values (email_gone, 'feed', 100);
+    insert into public.feed_calculations (user_email, batch_name, chicken_type, num_birds) values (email_gone, 'sec-test', 'broiler', 100);
+    insert into public.clucky_messages (user_email, role, content) values (email_gone, 'user', 'sec-test leaving question');
+    insert into public.notifications (user_email, type, title, message) values (email_gone, 'general', 'sec-test', 'sec-test leaving');
+    insert into public.notification_preferences (user_email) values (email_gone) on conflict (user_email) do nothing;
+    insert into public.supplier_profiles (user_id, business_name, verification_status) values (gone, 'sec-test leaving supplier', 'verified') returning id into gone_sp;
+    insert into public.products (product_name, category, price, unit, user_email, supplier_id)
+      values ('sec-test leaving product', 'feeds', 900, 'per_bag', email_gone, gone_sp) returning id into gone_prod;
+    insert into public.vet_questions (user_email, farmer_id, category, question) values (email_gone, gone, 'Disease Symptoms', 'sec-test leaving question');
+    -- a record this account wrote as a vet for the farmer: it must stay with the farmer
+    insert into public.vet_medical_records (vet_id, vet_email, farmer_id, farmer_email, record_type, title)
+      values (gone, email_gone, farmer, email_f, 'prescription', 'sec-test kept for the farmer') returning id into gone_rec;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL D0 could not seed the leaving account: %s; ', sqlerrm);
+  end;
+
+  -- what the leaving account did in the community, and what others did around it
+  perform set_config('request.jwt.claims', claims_gone, true);
+  set local role authenticated;
+  insert into public.community_chat (user_email, message) values (email_gone, 'sec-test leaving hello') returning id into gone_msg;
+  insert into public.user_blocks (blocked) values (email_a);
+  insert into public.content_reports (kind, target_id, reason) values ('listing', prod_a::text, 'sec-test leaving report');
+  -- the farmer's reply is written directly, as nobody: earlier checks left the farmer paused in the group
+  reset role;
+  perform set_config('request.jwt.claims', '{}', true);
+  insert into public.community_chat (user_email, user_name, message, reply_to_id, reply_to_user, reply_to_message)
+    values (email_f, 'sec-test farmer', 'sec-test reply to the leaver', gone_msg, 'sec-test leaving', 'sec-test leaving hello')
+    returning id into gone_reply;
+  perform set_config('request.jwt.claims', claims_f, true);
+  set local role authenticated;
+  insert into public.contact_events (product_id, channel) values (gone_prod, 'call');
+  insert into public.user_blocks (blocked) values (email_gone);
+
+  reset role;
+  select count(*) into i from public.farm_batches where user_email = email_f;
+
+  begin
+    res := public.delete_account_data(gone);
+    passed := passed + 1;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL D2 account deletion raised %s %s; ', sqlstate, sqlerrm);
+  end;
+
+  select (select count(*) from public.farmer_profiles where user_email = email_gone)
+       + (select count(*) from public.farm_batches where user_email = email_gone)
+       + (select count(*) from public.vaccination_tasks where user_email = email_gone)
+       + (select count(*) from public.mortality_logs where user_email = email_gone)
+       + (select count(*) from public.batch_expenses where user_id = gone)
+       + (select count(*) from public.farm_gallery where user_email = email_gone)
+       + (select count(*) from public.farm_tasks where user_email = email_gone)
+       + (select count(*) from public.farm_finances where user_email = email_gone)
+       + (select count(*) from public.feed_calculations where user_email = email_gone)
+       + (select count(*) from public.clucky_messages where user_email = email_gone)
+       + (select count(*) from public.notifications where user_email = email_gone)
+       + (select count(*) from public.notification_preferences where user_email = email_gone)
+       + (select count(*) from public.supplier_profiles where user_id = gone)
+       + (select count(*) from public.products where user_email = email_gone)
+       + (select count(*) from public.vet_questions where user_email = email_gone)
+       + (select count(*) from public.community_chat where user_email = email_gone)
+       + (select count(*) from public.user_blocks where blocker = email_gone or blocked = email_gone)
+       + (select count(*) from public.content_reports where reporter = email_gone)
+       + (select count(*) from public.contact_events where product_id = gone_prod)
+    into n;
+  if n = 0 then passed := passed + 1; else failed := failed + 1; report := report || format('FAIL D3 %s row(s) of the deleted account were left behind; ', n); end if;
+
+  select (reply_to_user = 'Former member' and reply_to_message is null and message = 'sec-test reply to the leaver') into b
+    from public.community_chat where id = gone_reply;
+  if coalesce(b, false) then passed := passed + 1;
+  else
+    select format('%s / %s / %s', reply_to_user, reply_to_message, reply_to_id) into v from public.community_chat where id = gone_reply;
+    failed := failed + 1; report := report || format('FAIL D4 another member''s reply was lost, or still quotes the deleted account (%s); ', coalesce(v, 'row missing'));
+  end if;
+
+  select (vet_id is null and vet_email is null and farmer_email = email_f) into b from public.vet_medical_records where id = gone_rec;
+  if coalesce(b, false) then passed := passed + 1; else failed := failed + 1; report := report || 'FAIL D5 the farmer''s record from a departed vet was removed, or still names the vet; '; end if;
+
+  select count(*) into n from public.farm_batches where user_email = email_f;
+  select count(*) into i from public.farm_batches where user_email = email_f and i is not distinct from n;
+  if n = i and exists (select 1 from public.farmer_profiles where user_email = email_f)
+     and exists (select 1 from public.products where id = prod_a) then passed := passed + 1;
+  else failed := failed + 1; report := report || 'FAIL D6 deleting one account touched another account''s data; '; end if;
+
+  if (res -> 'files') ? ('https://x.test/storage/v1/object/public/farm-gallery/' || gone || '/leaving.jpg')
+     and (res -> 'files') ? 'https://x.test/storage/v1/object/public/avatars/old-avatar.jpg'
+     and (res -> 'counts' ->> 'batches') = '1' then passed := passed + 1;
+  else failed := failed + 1; report := report || format('FAIL D7 files or counts not reported for cleanup: %s; ', left(coalesce(res::text, 'null'), 200)); end if;
+
+  -- nothing left that stops the login itself from being deleted
+  begin
+    delete from auth.users where id = gone;
+    passed := passed + 1;
+  exception when others then
+    failed := failed + 1; report := report || format('FAIL D8 the login could not be deleted afterwards: %s; ', sqlerrm);
+  end;
+
+  -- an admin account is never deleted this way
+  select id into admin_id from auth.users where raw_app_meta_data ->> 'role' = 'admin' limit 1;
+  if admin_id is not null then
+    begin
+      perform public.delete_account_data(admin_id);
+      failed := failed + 1; report := report || 'FAIL D9 an admin account was deleted; ';
+    exception when insufficient_privilege then passed := passed + 1;
+    end;
+  end if;
+
   -- ============================ anonymous (not signed in) =============
   reset role;
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
   set local role anon;
+
+  begin
+    insert into public.account_requests (kind, identity) values ('delete_account', 'visitor@example.test');
+    failed := failed + 1; report := report || 'FAIL A6 a visitor wrote to the database directly; ';
+  exception when insufficient_privilege then passed := passed + 1;
+  end;
 
   begin
     delete from public.products where id = prod_a;

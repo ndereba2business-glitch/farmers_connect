@@ -88,6 +88,14 @@ Deno.serve(async (req) => {
   if (!checked.ok) return json(400, { code: checked.code });
   const question = checked.question;
 
+  // Nothing goes to the AI service until this person has agreed to that,
+  // on the Clucky page. Checked here, not only in the app, and before the
+  // daily allowance is touched.
+  const { data: consent, error: consentError } = await asUser
+    .from("farmer_profiles").select("clucky_consent_at").eq("user_email", identity).maybeSingle();
+  if (consentError) return json(500, { code: "failed" });
+  if (!consent?.clucky_consent_at) return json(403, { code: "consent_required" });
+
   // Writes the conversation, the allowance and the notification; never
   // handed anything the caller chose except the question text itself.
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);

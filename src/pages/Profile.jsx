@@ -1,11 +1,13 @@
 import NotificationSettings from "../components/NotificationSettings";
+import DeleteAccountSection from "../components/DeleteAccountSection";
+import BlockedMembers from "../components/BlockedMembers";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { IMAGE_ACCEPT, removeImageByUrl, uploadImage, validateImage } from "../lib/imageUpload";
 import {
-  Edit2, Save, LogOut, Camera, Trash2,
+  Edit2, Save, LogOut, Camera,
   MapPin, Phone, ShoppingBag, Star, Loader2, PlayCircle
 } from "lucide-react";
 
@@ -41,7 +43,6 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [replayingTour, setReplayingTour] = useState(false);
   const [activeTab, setActiveTab] = useState("listings");
   const [myListings, setMyListings] = useState([]);
@@ -209,18 +210,6 @@ export default function Profile() {
     setReplayingTour(true);
     await replayOnboarding();
     setReplayingTour(false);
-  }
-
-  // ========================
-  // DELETE ACCOUNT
-  // ========================
-  async function handleDeleteAccount() {
-    if (!userEmail) return;
-    await supabase.from("farmer_profiles").delete().eq("user_email", userEmail);
-    await supabase.from("farm_tasks").delete().eq("user_email", userEmail);
-    await supabase.from("farm_finances").delete().eq("user_email", userEmail);
-    await supabase.auth.signOut();
-    navigate("/login");
   }
 
   const initials = (profileData.full_name || userEmail || "F").charAt(0).toUpperCase();
@@ -531,52 +520,6 @@ export default function Profile() {
                   }
                   {saving ? "Saving..." : "Save Profile"}
                 </button>
-
-                {/* DELETE ACCOUNT */}
-                {!deleteConfirm ? (
-                  <button
-                    onClick={() => setDeleteConfirm(true)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "6px",
-                      padding: "10px 16px", background: "none",
-                      border: "none", cursor: "pointer",
-                      color: "#ef4444", fontSize: "13px", fontWeight: "600"
-                    }}
-                  >
-                    <Trash2 size={14} />
-                    Delete Account
-                  </button>
-                ) : (
-                  <div style={{
-                    display: "flex", gap: "8px", alignItems: "center"
-                  }}>
-                    <span style={{
-                      fontSize: "13px", color: "#ef4444", fontWeight: "600"
-                    }}>
-                      Are you sure?
-                    </span>
-                    <button
-                      onClick={handleDeleteAccount}
-                      style={{
-                        padding: "8px 14px", background: "#ef4444",
-                        color: "#fff", border: "none", borderRadius: "8px",
-                        cursor: "pointer", fontWeight: "700", fontSize: "13px"
-                      }}
-                    >
-                      Yes, Delete
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirm(false)}
-                      style={{
-                        padding: "8px 14px", background: "#f3f4f6",
-                        color: "#374151", border: "none", borderRadius: "8px",
-                        cursor: "pointer", fontWeight: "600", fontSize: "13px"
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -717,6 +660,10 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      <BlockedMembers />
+
+      <DeleteAccountSection />
 
     </div>
   );

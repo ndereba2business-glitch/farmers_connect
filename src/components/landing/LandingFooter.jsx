@@ -1,5 +1,6 @@
 import BrandMark from "../BrandMark";
 import { Link } from "react-router-dom";
+import { POLICIES_PUBLISHED } from "../../config/features";
 
 export default function LandingFooter() {
   return (
@@ -29,6 +30,13 @@ export default function LandingFooter() {
             <h3>Account</h3>
             <Link to="/signup">Get started</Link>
             <Link to="/login">Log in</Link>
+          </nav>
+
+          <nav aria-label="Policies" className="lp-footer-col">
+            <h3>Policies</h3>
+            {POLICIES_PUBLISHED && <Link to="/privacy">Privacy Policy</Link>}
+            {POLICIES_PUBLISHED && <Link to="/terms">Terms and Community Rules</Link>}
+            <Link to="/delete-account">Delete your account</Link>
           </nav>
         </div>
 

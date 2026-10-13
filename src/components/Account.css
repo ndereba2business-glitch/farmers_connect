@@ -1,0 +1,66 @@
+/* Account deletion, terms acceptance and the admin's request list (ac-). */
+.ac-delete { display: grid; gap: 12px; margin-top: 20px; border-color: #fecaca; }
+.ac-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
+.ac-text { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fc-ink-2); }
+.ac-hint { margin: 0; font-size: 13px; line-height: 1.5; color: var(--fc-muted); }
+.ac-open { justify-self: start; }
+
+.ac-details { font-size: 13.5px; line-height: 1.55; color: var(--fc-ink-2); }
+.ac-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--fc-primary); }
+.ac-details h3 { margin: 10px 0 4px; font-size: 13px; font-weight: 700; color: var(--fc-ink); }
+.ac-details ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.ac-details p { margin: 10px 0 0; }
+.ac-details a { color: var(--fc-primary); font-weight: 600; }
+
+.ac-field { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--fc-ink-2); }
+.ac-input {
+  width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-md);
+  background: var(--fc-surface); color: var(--fc-ink); font-size: 16px;
+}
+.ac-input:focus { outline: 2px solid var(--fc-primary-line); outline-offset: 1px; border-color: var(--fc-primary); }
+textarea.ac-input { min-height: 96px; padding: 10px 12px; resize: vertical; font-family: inherit; line-height: 1.5; }
+
+/* Terms acceptance: covers the app until answered */
+.ac-terms-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; line-height: 1.5; color: var(--fc-ink-2); }
+.ac-check { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; font-size: 14px; line-height: 1.5; color: var(--fc-ink); cursor: pointer; }
+.ac-check input { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: var(--fc-primary); }
+.ac-check a { color: var(--fc-primary); font-weight: 600; }
+
+/* Admin > Requests */
+.ac-requests { display: grid; gap: 24px; }
+.ac-requests h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
+.ac-requests-note { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--fc-muted); max-width: 75ch; }
+.ac-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ac-row { display: grid; gap: 10px; }
+.ac-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.ac-row-head strong { font-size: 14.5px; color: var(--fc-ink); overflow-wrap: anywhere; }
+.ac-row-meta { font-size: 12.5px; color: var(--fc-muted); }
+.ac-row-text { margin: 0; font-size: 14px; line-height: 1.5; color: var(--fc-ink-2); overflow-wrap: anywhere; white-space: pre-wrap; }
+.ac-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ac-row-actions > .fc-btn { flex: 1 1 150px; }
+.ac-empty { margin: 0; text-align: center; font-size: 14px; color: var(--fc-muted); }
+
+@media (min-width: 768px) {
+  .ac-row-actions > .fc-btn { flex: 0 0 auto; }
+}
+
+/* Report dialog */
+.ac-report-preview { margin: 0; padding: 10px 12px; border-left: 3px solid var(--fc-line); background: var(--fc-bg); border-radius: 0 var(--fc-radius-sm) var(--fc-radius-sm) 0; font-size: 13.5px; line-height: 1.5; color: var(--fc-ink-2); overflow-wrap: anywhere; max-height: 96px; overflow: hidden; }
+.ac-reasons { margin: 0; padding: 0; border: none; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.ac-reasons legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--fc-ink-2); }
+.ac-chip { min-height: 44px; padding: 0 14px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-pill); background: var(--fc-surface); color: var(--fc-ink-2); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.ac-chip--on { background: var(--fc-primary); border-color: var(--fc-primary); color: #fff; }
+
+/* Profile > Blocked members */
+.ac-blocked { display: grid; gap: 12px; margin-top: 20px; }
+.ac-blocked-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 600; color: var(--fc-ink); overflow-wrap: anywhere; }
+
+/* Clucky: agreeing to AI processing before the first question */
+.ac-consent { display: grid; gap: 10px; margin: 0 12px 12px; padding: 16px; border: 1px solid var(--fc-line); border-radius: var(--fc-radius-lg); background: var(--fc-surface); }
+.ac-consent h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
+.ac-consent p, .ac-consent li { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fc-ink-2); }
+.ac-consent ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.ac-consent a { color: var(--fc-primary); font-weight: 600; }
+.ac-consent .fc-btn { justify-self: start; }
+.ac-link-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: none; background: none; color: var(--fc-muted); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.ac-link-btn:hover { color: var(--fc-danger); }

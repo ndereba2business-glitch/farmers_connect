@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { createNotification } from "../lib/notifications";
 import {
   Search, Plus, MapPin, ShoppingBag,
-  ChevronDown, X, ShoppingCart, Phone, MessageCircle, BadgeCheck, Check, Pencil, Package, Trash2, ImagePlus
+  ChevronDown, X, ShoppingCart, Phone, MessageCircle, BadgeCheck, Check, Pencil, Package, Trash2, ImagePlus, Flag
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -13,6 +13,9 @@ import { productMessage, recordContact, telHref, whatsappHref } from "../lib/con
 import { removeImageByUrl } from "../lib/imageUpload";
 import { useToast } from "../context/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ReportDialog from "../components/ReportDialog";
+import { LISTING_REASONS, reportContent, useBlockedMembers } from "../lib/safety";
+import "../components/Account.css";
 import "./Marketplace.css";
 
 const CATEGORIES = [
@@ -49,7 +52,10 @@ const labelStyle = {
 
 export default function Marketplace() {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, userEmail } = useAuth();
+  const toast = useToast();
+  const { blocked } = useBlockedMembers(userEmail);
+  const [reportingListing, setReportingListing] = useState(null);
   // Suppliers list through their own products page so listings are tied to
   // their supplier profile (dashboard, directory, verified badge).
   const startListing = () => (role === "supplier" ? navigate("/supplier/products/new") : setView("add"));
@@ -308,7 +314,8 @@ function handleContactSeller(product) {
       p.description?.toLowerCase().includes(search.toLowerCase());
     const matchCategory = category === "all" || p.category === category;
     const matchVerified = showVerifiedOnly ? p.is_verified : true;
-    return matchSearch && matchCategory && matchVerified;
+    // sellers this person has blocked are left out for them alone
+    return matchSearch && matchCategory && matchVerified && !blocked.has(p.user_email);
   });
 
   const selectedCategoryLabel = CATEGORIES.find(c => c.value === category)?.label || "All Categories";
@@ -529,12 +536,30 @@ function handleContactSeller(product) {
                   onContactSeller={handleContactSeller}
                   currentUserEmail={currentUserEmail}
                   currentUserId={currentUserId}
+                  onReport={setReportingListing}
                   onProductUpdated={() => fetchProducts({ quiet: true })}
                 />
               ))}
             </div>
           )}
         </div>
+      )}
+
+      {reportingListing && (
+        <ReportDialog
+          title="Report this listing"
+          preview={`${reportingListing.product_name}, ${priceText(reportingListing)}${unitSuffix(reportingListing.unit)}, by ${reportingListing.supplier_name || "a farmer"}`}
+          reasons={LISTING_REASONS}
+          onSubmit={reason => reportContent({
+            kind: "listing", targetId: reportingListing.id, reporter: userEmail, reason,
+            summary: `${reportingListing.product_name}, ${priceText(reportingListing)}${unitSuffix(reportingListing.unit)}, by ${reportingListing.supplier_name || "a farmer"}`
+          })}
+          onClose={() => setReportingListing(null)}
+          onSent={already => {
+            toast.success(already ? "You've already reported this listing. An admin will review it." : "Thanks. An admin will review this listing.");
+            setReportingListing(null);
+          }}
+        />
       )}
 
       {/* ======================== ADD PRODUCT ======================== */}
@@ -991,7 +1016,7 @@ function contactButton(primary) {
 }
 
 // ======================== PRODUCT CARD ========================
-function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, currentUserId, onProductUpdated }) {
+function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, currentUserId, onProductUpdated, onReport }) {
   const toast = useToast();
   const [hovered, setHovered] = useState(false);
   const [showSellerPanel, setShowSellerPanel] = useState(false);
@@ -1269,6 +1294,12 @@ function ProductCard({ product, onAddToCart, onContactSeller, currentUserEmail, 
     <MessageCircle size={16} aria-hidden="true" /> Contact seller
   </button>
 ))}
+        {!isSeller && (
+          <button type="button" className="ac-link-btn" onClick={() => onReport(product)} aria-label={`Report the listing ${product.product_name}`}>
+            <Flag size={14} aria-hidden="true" /> Report this listing
+          </button>
+        )}
+
         {/* SELLER CONTROLS */}
         {isSeller && (
           <div>

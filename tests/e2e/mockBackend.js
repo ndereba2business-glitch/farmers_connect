@@ -9,6 +9,10 @@
 export const MOCK_SUPABASE_URL = "https://e2e.supabase.test";
 export const MOCK_ANON_KEY = "e2e-anon-key";
 
+// Must match TERMS_VERSION in src/config/legal.js, or every mocked account
+// is asked to accept the terms again.
+export const MOCK_TERMS_VERSION = "2026-10-12";
+
 const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString("base64url");
 const fakeJwt = (sub) => `${b64url({ alg: "HS256", typ: "JWT" })}.${b64url({ sub, role: "authenticated", exp: 9999999999 })}.sig`;
 
@@ -28,6 +32,11 @@ export function createMockBackend() {
     productDeleteFails: false,
     // Tables whose reads fail with a server error, as on a dropped connection.
     failingTables: new Set(),
+    // The delete-account function: "ok" really removes the account from
+    // this mock; any other value is the problem code it reports instead.
+    deleteAccount: { mode: "ok", calls: [] },
+    // The public request form: true makes it fail as a dropped connection would.
+    accountRequestFails: false,
     // Any other table a test wants to use, as { table_name: [rows] }
     // (an empty list is enough to switch it on). Rows with a user_email
     // can only be read, added or deleted by that user, like the
@@ -48,8 +57,14 @@ export function createMockBackend() {
   // role: null is an account with no chosen role, like one Google just created.
   // admin: true gives the account the app_metadata role the real project
   // sets from the dashboard; it can't be self-declared.
-  function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false }) {
-    const user = { id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser, notificationsEnabled: true };
+  // termsAccepted: false is an account from before the terms existed.
+  // cluckyConsent: false is one that has not yet agreed to Clucky's AI processing.
+  function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false, termsAccepted = true, cluckyConsent = true }) {
+    const user = {
+      id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser, notificationsEnabled: true,
+      termsAcceptedAt: termsAccepted ? "2026-10-12T08:00:00Z" : null, termsVersion: termsAccepted ? MOCK_TERMS_VERSION : null,
+      cluckyConsentAt: cluckyConsent ? "2026-10-12T08:00:00Z" : null
+    };
     db.users.set(email, user);
     return user;
   }
@@ -144,6 +159,8 @@ export function createMockBackend() {
       const problem = (status, code, extra = {}) =>
         route.fulfill({ status, headers: cors, contentType: "application/json", body: JSON.stringify({ code, ...extra }) });
       if (!current) return problem(401, "not_signed_in");
+      // nothing is sent to the AI service before the person has agreed
+      if (!current.cluckyConsentAt) return problem(403, "consent_required");
 
       const { message } = JSON.parse(req.postData() || "{}");
       const { mode, reply } = db.clucky;
@@ -172,6 +189,56 @@ export function createMockBackend() {
         status: 200, headers: cors, contentType: "application/x-ndjson; charset=utf-8",
         body: events.map(e => JSON.stringify(e)).join("\n") + "\n"
       });
+    });
+
+    // The delete-account edge function: the typed word, then the password
+    // (or an admin naming someone else), then everything of theirs goes.
+    await context.route(`${MOCK_SUPABASE_URL}/functions/v1/delete-account`, async route => {
+      const req = route.request();
+      const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+      if (req.method() === "OPTIONS") return route.fulfill({ status: 200, headers: cors, body: "ok" });
+      const answer = (status, body) => route.fulfill({ status, headers: cors, contentType: "application/json", body: JSON.stringify(body) });
+      if (!current) return answer(401, { code: "not_signed_in" });
+      const input = JSON.parse(req.postData() || "{}");
+      db.deleteAccount.calls.push({ user: current.email, target: input.target || null });
+      if (db.deleteAccount.mode !== "ok") return answer(500, { code: db.deleteAccount.mode });
+
+      let leaving = current;
+      if (input.target) {
+        if (!current.admin) return answer(403, { code: "not_allowed" });
+        leaving = db.users.get(input.target);
+        if (!leaving) return answer(404, { code: "not_found" });
+      } else {
+        if (current.admin) return answer(403, { code: "admin_account" });
+        if (input.confirm !== "DELETE") return answer(400, { code: "confirm_required" });
+        if (input.password !== current.password) return answer(401, { code: "wrong_password" });
+      }
+      db.users.delete(leaving.email);
+      db.products = db.products.filter(p => p.user_email !== leaving.email);
+      db.supplier_profiles = db.supplier_profiles.filter(p => p.user_id !== leaving.id);
+      for (const name of Object.keys(db.tables)) {
+        db.tables[name] = db.tables[name].filter(r => r.user_email !== leaving.email && r.reporter !== leaving.email);
+      }
+      for (const r of db.tables.account_requests || []) if (r.identity === leaving.email) r.status = "done";
+      if (leaving === current) current = null;
+      return answer(200, { ok: true });
+    });
+
+    // The public request form: one row for an admin to read, nothing else.
+    await context.route(`${MOCK_SUPABASE_URL}/functions/v1/account-request`, async route => {
+      const req = route.request();
+      const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+      if (req.method() === "OPTIONS") return route.fulfill({ status: 200, headers: cors, body: "ok" });
+      if (db.accountRequestFails) return route.abort("failed");
+      const input = JSON.parse(req.postData() || "{}");
+      const identity = String(input.identity || "").trim().toLowerCase();
+      if (!identity.includes("@") && identity.replace(/[^0-9]/g, "").length < 9) {
+        return route.fulfill({ status: 400, headers: cors, contentType: "application/json", body: JSON.stringify({ code: "bad_identity" }) });
+      }
+      (db.tables.account_requests ||= []).push({
+        id: newId("req"), kind: input.kind, identity, message: input.message || null, status: "open", created_at: new Date().toISOString()
+      });
+      return route.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify({ ok: true }) });
     });
 
     await context.route(`${MOCK_SUPABASE_URL}/storage/v1/**`, route =>
@@ -232,8 +299,10 @@ export function createMockBackend() {
           const [changes] = body();
           if ("has_seen_onboarding" in changes) current.hasSeenOnboarding = changes.has_seen_onboarding;
           if ("notifications_enabled" in changes) current.notificationsEnabled = changes.notifications_enabled;
+          if ("terms_accepted_at" in changes) { current.termsAcceptedAt = changes.terms_accepted_at; current.termsVersion = changes.terms_version; }
+          if ("clucky_consent_at" in changes) current.cluckyConsentAt = changes.clucky_consent_at;
         }
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled }] : []);
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled, terms_accepted_at: current.termsAcceptedAt, terms_version: current.termsVersion, clucky_consent_at: current.cluckyConsentAt }] : []);
       }
 
       if (table === "supplier_profiles") {

@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { Suspense, lazy, useEffect } from 'react';
 import { readSignInProblem } from "./lib/signInReturn";
+import { POLICIES_PUBLISHED } from "./config/features";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
 // multi-megabyte bundle for the whole app.
@@ -33,6 +34,10 @@ const FeedCalculator = lazy(() => import("./pages/FeedCalculator"));
 const MyFarmers = lazy(() => import("./pages/MyFarmers"));
 const Appointments = lazy(() => import("./pages/Appointments"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const DeleteAccountPage = lazy(() => import("./pages/legal/DeleteAccountPage"));
+const AccountDeleted = lazy(() => import("./pages/legal/AccountDeleted"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -125,6 +130,14 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/signup" element={<Signup />} />
+
+        {/* Policies. Open to everyone, signed in or not, and they read
+            nothing from the database: these are the addresses given to
+            the Play Store. */}
+        {POLICIES_PUBLISHED && <Route path="/privacy" element={<PrivacyPolicy />} />}
+        {POLICIES_PUBLISHED && <Route path="/terms" element={<Terms />} />}
+        <Route path="/delete-account" element={<DeleteAccountPage />} />
+        <Route path="/account-deleted" element={<AccountDeleted />} />
 
 
         {/* Old standalone verification forms wrote to tables that never
