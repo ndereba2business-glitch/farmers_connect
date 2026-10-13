@@ -46,13 +46,13 @@ export function categoriesFor(role) {
 }
 
 const CATEGORY_COLOURS = {
-  vaccinations: "#dc2626",
-  farm: "#d97706",
-  vet: "#2563eb",
-  community: "#7c3aed",
-  marketplace: "#059669",
-  clucky: "#4f46e5",
-  account: "#475569"
+  vaccinations: "var(--fc-fg-red600)",
+  farm: "var(--fc-fg-amber600)",
+  vet: "var(--fc-fg-blue600)",
+  community: "var(--fc-fg-violet600)",
+  marketplace: "var(--fc-fg-green601)",
+  clucky: "var(--fc-fg-violet601)",
+  account: "var(--fc-fg-gray601)"
 };
 
 export function categoryColour(category) {

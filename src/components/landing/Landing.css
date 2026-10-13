@@ -841,3 +841,89 @@
 /* the brand lockup is dark ink in the nav and light in the footer */
 .lp-footer .lp-nav-word { color: var(--lp-on-dark); }
 .lp-footer .lp-nav-word-accent { color: var(--lp-green-400); }
+
+/* ------------------------------------------------------- photographs */
+/* Real photographs (photos.js), served from this site. The <img> carries
+   its width and height, and `aspect-ratio` comes from them, so the space
+   is held before the file arrives and nothing on the page moves. */
+.lp-photo { display: block; margin: 0; }
+.lp-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--lp-line);
+  background: var(--lp-cream-2);
+  object-fit: cover;
+}
+
+/* hero: words first on a phone, words and photograph side by side from 900px */
+.lp-hero-inner { display: grid; gap: 32px; align-items: center; }
+.lp-hero-photo { max-width: 420px; }
+@media (min-width: 900px) {
+  .lp-hero-inner { grid-template-columns: minmax(0, 1.25fr) minmax(0, 420px); gap: 56px; }
+  .lp-hero-photo { justify-self: end; width: 100%; }
+}
+
+/* community: what the group gives you */
+.lp-community-top { display: grid; gap: 28px; align-items: center; }
+.lp-community-photo { max-width: 420px; }
+@media (min-width: 900px) {
+  .lp-community-top { grid-template-columns: minmax(0, 1.25fr) minmax(0, 420px); gap: 56px; }
+  .lp-community-photo { justify-self: end; width: 100%; }
+}
+.lp-benefits {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 768px) {
+  .lp-benefits { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
+@media (min-width: 1100px) {
+  .lp-benefits { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.lp-benefit {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid var(--lp-line);
+  border-radius: 16px;
+}
+.lp-root .lp-benefit h3 {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+.lp-benefit p { margin-top: 6px; font-size: 0.93rem; line-height: 1.6; color: var(--lp-muted); }
+.lp-community-cta { margin-top: 32px; }
+.lp-community-cta > p { font-size: 0.98rem; color: var(--lp-ink); }
+.lp-community-cta .lp-hero-ctas { margin-top: 16px; }
+
+/* footer: four columns, and the credit the photographs' licences require */
+@media (min-width: 768px) {
+  .lp-footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1.2fr; }
+}
+.lp-credits { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--lp-line-on-dark); }
+.lp-root .lp-credits h3 {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lp-on-dark);
+}
+.lp-credits ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; font-size: 0.82rem; line-height: 1.6; }
+.lp-root .lp-credits a { color: var(--lp-on-dark); text-decoration: underline; text-underline-offset: 2px; }
+.lp-credits + .lp-footer-bottom { margin-top: 22px; }
+
+/* a section heading with a photograph beside it (My Farm, Marketplace, Community) */
+.lp-community-top + * { margin-top: 32px; }
+.lp-community-photo--square { max-width: 320px; }

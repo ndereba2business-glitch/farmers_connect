@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import BrandMark from "../../components/BrandMark";
+import ThemeToggle from "../../components/ThemeToggle";
 import { useAuth } from "../../context/AuthContext";
 import { APP_NAME } from "../../config/legal";
 import { POLICIES_PUBLISHED } from "../../config/features";
@@ -32,9 +33,12 @@ export default function LegalLayout({ title, updated, children }) {
           <BrandMark size={32} title="" />
           <span>{APP_NAME}</span>
         </Link>
-        <Link to="/" className="lg-back">
-          <ArrowLeft size={16} aria-hidden="true" /> {user ? "Back to the app" : "Home"}
-        </Link>
+        <span className="lg-bar-right">
+          <ThemeToggle />
+          <Link to="/" className="lg-back">
+            <ArrowLeft size={16} aria-hidden="true" /> {user ? "Back to the app" : "Home"}
+          </Link>
+        </span>
       </header>
 
       <main className="lg-main">

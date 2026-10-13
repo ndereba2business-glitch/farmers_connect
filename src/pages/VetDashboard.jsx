@@ -18,27 +18,27 @@ function todayISO() {
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+  background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "5px"
+  color: "var(--fc-fg-gray500)", marginBottom: "5px"
 };
 
 const URGENCY_COLORS = {
-  low: { bg: "#f0fdf4", color: "#15803d" },
-  medium: { bg: "#fffbeb", color: "#d97706" },
-  high: { bg: "#fff7ed", color: "#ea580c" },
+  low: { bg: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)" },
+  medium: { bg: "var(--fc-bg-amber50)", color: "var(--fc-fg-amber600)" },
+  high: { bg: "var(--fc-bg-amber51)", color: "var(--fc-fg-amber601)" },
 };
 
 const PROFILE_BANNER_META = {
-  missing: { bg: "#fffbeb", border: "#fde68a", color: "#92400e", text: "You haven't set up your vet profile yet. Complete it so farmers can find and book you." },
-  pending: { bg: "#eff6ff", border: "#bfdbfe", color: "#1e40af", text: "Your vet profile is pending admin review. You'll be listed to farmers once verified." },
-  rejected: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet profile was rejected. Update your details and resubmit." },
-  suspended: { bg: "#fef2f2", border: "#fecaca", color: "#991b1b", text: "Your vet account is suspended. Contact support to appeal." },
+  missing: { bg: "var(--fc-bg-amber50)", border: "var(--fc-line-amber200)", color: "var(--fc-fg-amber800)", text: "You haven't set up your vet profile yet. Complete it so farmers can find and book you." },
+  pending: { bg: "var(--fc-bg-blue50)", border: "var(--fc-line-blue200)", color: "var(--fc-fg-blue800)", text: "Your vet profile is pending admin review. You'll be listed to farmers once verified." },
+  rejected: { bg: "var(--fc-bg-red50)", border: "var(--fc-line-red200)", color: "var(--fc-fg-red800)", text: "Your vet profile was rejected. Update your details and resubmit." },
+  suspended: { bg: "var(--fc-bg-red50)", border: "var(--fc-line-red200)", color: "var(--fc-fg-red800)", text: "Your vet account is suspended. Contact support to appeal." },
 };
 
 const EMPTY_ESCALATE_FORM = {
@@ -397,17 +397,17 @@ export default function VetDashboard() {
         <div style={{
           display: "flex", alignItems: "center", gap: "10px",
           padding: "12px 16px", borderRadius: "12px",
-          background: "#fef2f2", border: "1px solid #fecaca",
-          color: "#991b1b", fontSize: "13px", marginBottom: "20px"
+          background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+          color: "var(--fc-fg-red800)", fontSize: "13px", marginBottom: "20px"
         }}>
           <AlertTriangle size={16} style={{ flexShrink: 0 }} />
           <span>{loadError}</span>
           <button
             onClick={loadDashboard}
             style={{
-              marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+              marginLeft: "auto", background: "none", border: "1px solid var(--fc-line-red300)",
               borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
-              color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+              color: "var(--fc-fg-red800)", fontWeight: "600", fontSize: "12px", flexShrink: 0
             }}
           >
             Retry
@@ -433,7 +433,7 @@ export default function VetDashboard() {
           <button
             onClick={() => navigate("/vet-profile")}
             style={{
-              padding: "8px 16px", background: "#fff", border: `1px solid ${profileBanner.border}`,
+              padding: "8px 16px", background: "var(--fc-bg-gray0)", border: `1px solid ${profileBanner.border}`,
               borderRadius: "8px", fontWeight: "700", fontSize: "12px", color: profileBanner.color,
               cursor: "pointer", whiteSpace: "nowrap"
             }}
@@ -461,19 +461,19 @@ export default function VetDashboard() {
 
         {/* UPCOMING APPOINTMENTS */}
         <div style={{
-          background: "#fff", borderRadius: "16px", padding: "24px",
-          border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)"
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "24px",
+          border: "1px solid var(--fc-line-gray200)", boxShadow: "var(--fc-shadow-card)"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "18px" }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 Upcoming visits
               </h2>
-              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>
+              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                 Next 7 days
               </p>
             </div>
-            <span style={{ fontSize: "13px", color: "#15803d", fontWeight: "600" }}>
+            <span style={{ fontSize: "13px", color: "var(--fc-fg-green700)", fontWeight: "600" }}>
               {appointments.length} scheduled
             </span>
           </div>
@@ -481,27 +481,27 @@ export default function VetDashboard() {
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {[1, 2, 3].map(i => (
-                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
               ))}
             </div>
           ) : appointments.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
-              <Calendar size={40} color="#e5e7eb" style={{ marginBottom: "10px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "14px" }}>No appointments scheduled in the next 7 days.</p>
+              <Calendar size={40} color="var(--fc-fg-gray200)" style={{ marginBottom: "10px" }} />
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>No appointments scheduled in the next 7 days.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {appointments.map(appt => {
                 const urgency = URGENCY_COLORS[appt.urgency] || URGENCY_COLORS.medium;
                 return (
-                  <div key={appt.id} style={{ border: "1px solid #f0f0f0", borderRadius: "16px", padding: "16px" }}>
+                  <div key={appt.id} style={{ border: "1px solid var(--fc-line-gray101)", borderRadius: "16px", padding: "16px" }}>
                     <div style={{
                       display: "flex", justifyContent: "space-between",
                       alignItems: "flex-start", flexWrap: "wrap", gap: "10px"
                     }}>
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
-                          <span style={{ fontWeight: "700", fontSize: "15px", color: "#111827" }}>
+                          <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--fc-fg-gray900)" }}>
                             {appt.farm_name}
                           </span>
                           <span style={{
@@ -513,8 +513,8 @@ export default function VetDashboard() {
                           </span>
                           <span style={{
                             fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
-                            background: appt.status === "accepted" ? "#dcfce7" : "#fef3c7",
-                            color: appt.status === "accepted" ? "#15803d" : "#d97706",
+                            background: appt.status === "accepted" ? "var(--fc-bg-green100)" : "var(--fc-bg-amber100)",
+                            color: appt.status === "accepted" ? "var(--fc-fg-green700)" : "var(--fc-fg-amber600)",
                             textTransform: "capitalize"
                           }}>
                             {appt.status}
@@ -522,7 +522,7 @@ export default function VetDashboard() {
                           {appt.appointment_date === todayStr && (
                             <span style={{
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
-                              background: "#dbeafe", color: "#1d4ed8"
+                              background: "var(--fc-bg-blue100)", color: "var(--fc-fg-blue700)"
                             }}>
                               Today
                             </span>
@@ -530,13 +530,13 @@ export default function VetDashboard() {
                           {appt.source === "escalated_question" && (
                             <span style={{
                               fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
-                              background: "#fef2f2", color: "#ef4444"
+                              background: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)"
                             }}>
                               <Siren size={14} aria-hidden="true" /> From Emergency
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: "12px", color: "#9ca3af", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        <div style={{ fontSize: "12px", color: "var(--fc-fg-gray400)", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                           {appt.farmer_email && <span><User size={14} aria-hidden="true" /> {appt.farmer_email}</span>}
                           {appt.appointment_time && (
                             <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -547,7 +547,7 @@ export default function VetDashboard() {
                           {appt.bird_count && <span><Bird size={14} aria-hidden="true" /> {appt.bird_count} birds</span>}
                         </div>
                         {appt.reason && (
-                          <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#6b7280" }}>{appt.reason}</p>
+                          <p style={{ margin: "8px 0 0", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>{appt.reason}</p>
                         )}
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
@@ -555,7 +555,7 @@ export default function VetDashboard() {
                           <button
                             onClick={() => updateAppointmentStatus(appt, "accepted")}
                             style={{
-                              padding: "8px 16px", background: "#15803d", color: "#fff",
+                              padding: "8px 16px", background: "#15803d", color: "var(--fc-fg-gray0)",
                               border: "none", borderRadius: "8px", fontWeight: "700",
                               fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
                             }}
@@ -566,8 +566,8 @@ export default function VetDashboard() {
                         <button
                           onClick={() => navigate("/appointments")}
                           style={{
-                            padding: "8px 16px", background: "#fff", color: "#374151",
-                            border: "1px solid #e5e7eb", borderRadius: "8px",
+                            padding: "8px 16px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray700)",
+                            border: "1px solid var(--fc-line-gray200)", borderRadius: "8px",
                             fontWeight: "600", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
                           }}
                         >
@@ -584,16 +584,16 @@ export default function VetDashboard() {
 
         {/* EMERGENCY REQUESTS */}
         <div style={{
-          background: "#fff", borderRadius: "16px", padding: "24px",
-          border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)"
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "24px",
+          border: "1px solid var(--fc-line-gray200)", boxShadow: "var(--fc-shadow-card)"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
               Emergency Requests
             </h2>
             {emergencies.length > 0 && (
               <span style={{
-                background: "#ef4444", color: "#fff", fontSize: "12px", fontWeight: "700",
+                background: "#dc2626", color: "var(--fc-fg-gray0)", fontSize: "12px", fontWeight: "700",
                 width: "22px", height: "22px", borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center"
               }}>
@@ -605,39 +605,39 @@ export default function VetDashboard() {
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {[1, 2].map(i => (
-                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "96px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
               ))}
             </div>
           ) : emergencies.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 10px" }}>
-              <AlertTriangle size={36} color="#e5e7eb" style={{ marginBottom: "10px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "13px" }}>No active emergencies.</p>
+              <AlertTriangle size={36} color="var(--fc-fg-gray200)" style={{ marginBottom: "10px" }} />
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "13px" }}>No active emergencies.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {emergencies.map(em => (
                 <div key={em.id} style={{
-                  border: "1px solid #fecaca", borderRadius: "16px", padding: "14px", background: "#fef2f2"
+                  border: "1px solid var(--fc-line-red200)", borderRadius: "16px", padding: "14px", background: "var(--fc-bg-red50)"
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px", gap: "8px" }}>
-                    <span style={{ fontWeight: "700", fontSize: "13px", color: "#111827", wordBreak: "break-word" }}>
+                    <span style={{ fontWeight: "700", fontSize: "13px", color: "var(--fc-fg-gray900)", wordBreak: "break-word" }}>
                       {em.user_email}
                     </span>
                     <span style={{
                       fontSize: "10px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
-                      background: "#ef4444", color: "#fff", textTransform: "uppercase", flexShrink: 0
+                      background: "#dc2626", color: "var(--fc-fg-gray0)", textTransform: "uppercase", flexShrink: 0
                     }}>
                       {em.severity || "high"}
                     </span>
                   </div>
-                  <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#7f1d1d" }}>
+                  <p style={{ margin: "0 0 10px", fontSize: "12px", color: "var(--fc-fg-red900)" }}>
                     {em.question}
                   </p>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
                       onClick={() => respondToEmergency(em)}
                       style={{
-                        flex: 1, padding: "8px", background: "#ef4444", color: "#fff",
+                        flex: 1, padding: "8px", background: "#dc2626", color: "var(--fc-fg-gray0)",
                         border: "none", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
                       }}
                     >
@@ -647,8 +647,8 @@ export default function VetDashboard() {
                       onClick={() => openEscalate(em)}
                       style={{
                         flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
-                        padding: "8px", background: "#fff", color: "#ef4444",
-                        border: "1px solid #ef4444", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
+                        padding: "8px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red500)",
+                        border: "1px solid var(--fc-line-red500)", borderRadius: "8px", fontWeight: "700", fontSize: "12px", cursor: "pointer"
                       }}
                     >
                       <CalendarPlus size={13} /> Escalate to Visit
@@ -663,21 +663,21 @@ export default function VetDashboard() {
 
       {/* RECENT ACTIVITY — NEW (Phase 2.1) */}
       <div style={{
-        background: "#fff", borderRadius: "16px", padding: "24px",
-        border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)", marginTop: "18px"
+        background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "24px",
+        border: "1px solid var(--fc-line-gray200)", boxShadow: "var(--fc-shadow-card)", marginTop: "18px"
       }}>
-        <h2 style={{ margin: "0 0 16px", fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+        <h2 style={{ margin: "0 0 16px", fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
           Recent Activity
         </h2>
 
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ height: "44px", borderRadius: "12px", background: "#f3f4f6" }} />
+              <div key={i} style={{ height: "44px", borderRadius: "12px", background: "var(--fc-bg-gray100)" }} />
             ))}
           </div>
         ) : recentActivity.length === 0 ? (
-          <p style={{ margin: 0, color: "#9ca3af", fontSize: "14px" }}>
+          <p style={{ margin: 0, color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
             No recent activity yet — new bookings and status changes will show up here.
           </p>
         ) : (
@@ -685,24 +685,24 @@ export default function VetDashboard() {
             {recentActivity.map(item => (
               <div key={item.id} style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "10px 14px", borderRadius: "12px", background: "#f9fafb"
+                padding: "10px 14px", borderRadius: "12px", background: "var(--fc-bg-gray50)"
               }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: "600", fontSize: "13px", color: "#111827" }}>
+                  <div style={{ fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                     {item.farm_name || "Untitled visit"}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#9ca3af" }}>
+                  <div style={{ fontSize: "11px", color: "var(--fc-fg-gray400)" }}>
                     {item.appointment_date} · {timeAgo(item.created_at)}
                   </div>
                 </div>
                 <span style={{
                   fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "16px",
-                  background: item.status === "completed" ? "#dcfce7"
-                    : item.status === "accepted" ? "#dbeafe"
-                    : "#fef3c7",
-                  color: item.status === "completed" ? "#15803d"
-                    : item.status === "accepted" ? "#1d4ed8"
-                    : "#d97706",
+                  background: item.status === "completed" ? "var(--fc-bg-green100)"
+                    : item.status === "accepted" ? "var(--fc-bg-blue100)"
+                    : "var(--fc-bg-amber100)",
+                  color: item.status === "completed" ? "var(--fc-fg-green700)"
+                    : item.status === "accepted" ? "var(--fc-fg-blue700)"
+                    : "var(--fc-fg-amber600)",
                   textTransform: "capitalize", flexShrink: 0
                 }}>
                   {item.status}
@@ -737,7 +737,7 @@ export default function VetDashboard() {
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: "16px", padding: "28px", maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}
+            style={{ background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px", maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Schedule a Visit</h2>
@@ -809,8 +809,8 @@ export default function VetDashboard() {
 
               {scheduleError && (
                 <div style={{
-                  background: "#fef2f2", border: "1px solid #fecaca",
-                  color: "#dc2626", padding: "10px 14px",
+                  background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                  color: "var(--fc-fg-red600)", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
                   <AlertTriangle size={14} aria-hidden="true" /> {scheduleError}
@@ -822,8 +822,8 @@ export default function VetDashboard() {
                 disabled={saving}
                 style={{
                   width: "100%", padding: "13px",
-                  background: saving ? "#86efac" : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  background: saving ? "var(--fc-bg-green300)" : "#15803d",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px", cursor: saving ? "not-allowed" : "pointer"
                 }}
               >
@@ -846,19 +846,19 @@ export default function VetDashboard() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "16px", padding: "28px",
+              background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px",
               maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#111827" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 Escalate to Visit
               </h2>
               <button onClick={() => setEscalateTarget(null)} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer" }}>
-                <X size={18} color="#9ca3af" />
+                <X size={18} color="var(--fc-fg-gray400)" />
               </button>
             </div>
-            <p style={{ margin: "0 0 18px", fontSize: "12px", color: "#9ca3af" }}>
+            <p style={{ margin: "0 0 18px", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
               From: {escalateTarget.user_email}
             </p>
 
@@ -938,8 +938,8 @@ export default function VetDashboard() {
 
               {escalateError && (
                 <div style={{
-                  background: "#fef2f2", border: "1px solid #fecaca",
-                  color: "#dc2626", padding: "10px 14px",
+                  background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                  color: "var(--fc-fg-red600)", padding: "10px 14px",
                   borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
                 }}>
                   <AlertTriangle size={14} aria-hidden="true" /> {escalateError}
@@ -951,8 +951,8 @@ export default function VetDashboard() {
                 disabled={escalateSaving}
                 style={{
                   width: "100%", padding: "13px",
-                  background: escalateSaving ? "#fca5a5" : "#ef4444",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  background: escalateSaving ? "var(--fc-bg-red300)" : "#dc2626",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px", cursor: escalateSaving ? "not-allowed" : "pointer"
                 }}
               >

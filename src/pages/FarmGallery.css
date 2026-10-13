@@ -10,12 +10,12 @@
   padding: 10px 2px 8px;
   font-size: 14px;
   font-weight: 700;
-  color: #374151;
+  color: var(--fc-fg-gray700);
 }
 
 .fg-month-count {
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--fc-fg-gray400);
 }
 
 .fg-grid {
@@ -44,7 +44,7 @@
   border: none;
   border-radius: 4px;
   overflow: hidden;
-  background: #e5e7eb;
+  background: var(--fc-bg-gray200);
   cursor: pointer;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .fg-tile:focus-visible {
-  outline: 3px solid #15803d;
+  outline: 3px solid var(--fc-line-green700);
   outline-offset: -3px;
 }
 
@@ -69,7 +69,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--fc-bg-gray0);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
@@ -87,22 +87,22 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--fc-bg-gray100);
+  color: var(--fc-fg-gray700);
 }
 
 .fg-tag--active {
   background: #15803d;
-  color: #fff;
+  color: var(--fc-fg-gray0);
 }
 
 .fg-status {
   text-align: center;
   padding: 40px 20px;
-  background: #fff;
+  background: var(--fc-bg-gray0);
   border-radius: 16px;
-  border: 1px solid #f0f0f0;
-  color: #6b7280;
+  border: 1px solid var(--fc-line-gray101);
+  color: var(--fc-fg-gray500);
   font-size: 14px;
 }
 
@@ -114,7 +114,7 @@
   border: none;
   border-radius: 12px;
   background: #15803d;
-  color: #fff;
+  color: var(--fc-fg-gray0);
   font-weight: 700;
   cursor: pointer;
 }
@@ -128,7 +128,7 @@
   display: flex;
   flex-direction: column;
   background: rgba(0, 0, 0, 0.94);
-  color: #fff;
+  color: var(--fc-fg-gray0);
 }
 
 .fg-viewer-bar {
@@ -141,7 +141,7 @@
 
 .fg-viewer-count {
   font-size: 13px;
-  color: #d1d5db;
+  color: var(--fc-fg-gray300);
   padding-left: 8px;
 }
 
@@ -156,7 +156,7 @@
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: var(--fc-fg-gray0);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -195,14 +195,14 @@
 .fg-viewer-info {
   padding: 12px 16px 20px;
   font-size: 13px;
-  color: #d1d5db;
+  color: var(--fc-fg-gray300);
 }
 
 .fg-viewer-caption {
   margin: 0 0 4px;
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--fc-fg-gray0);
   overflow-wrap: anywhere;
 }
 

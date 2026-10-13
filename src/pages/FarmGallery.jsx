@@ -8,13 +8,13 @@ import "./FarmGallery.css";
 
 const inputStyle = {
   width: "100%", padding: "10px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
-  outline: "none", boxSizing: "border-box", background: "#fff"
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
+  outline: "none", boxSizing: "border-box", background: "var(--fc-bg-gray0)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "5px"
+  color: "var(--fc-fg-gray500)", marginBottom: "5px"
 };
 
 const tagsOf = (photo) => (photo.tags || "").split(",").map(t => t.trim()).filter(Boolean);
@@ -202,8 +202,8 @@ export default function FarmGallery() {
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-          <Camera size={26} color="#15803d" style={{ flexShrink: 0 }} />
-          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 28px)", fontWeight: "700", color: "#111827", letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
+          <Camera size={26} color="var(--fc-fg-green700)" style={{ flexShrink: 0 }} />
+          <h1 style={{ margin: 0, fontSize: "var(--fs-display, 28px)", fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
             Farm Gallery
           </h1>
         </div>
@@ -222,15 +222,15 @@ export default function FarmGallery() {
           <Camera size={16} /> Add Photo
         </button>
       </div>
-      <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "24px" }}>
+      <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px", marginBottom: "24px" }}>
         {photos.length} photo{photos.length !== 1 ? "s" : ""} • Your farm visual reference
       </p>
 
       {/* ADD PHOTO FORM */}
       {showForm && (
         <div style={{
-          background: "#fff", borderRadius: "16px",
-          border: "1px solid #e5e7eb", padding: "24px",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px",
+          border: "1px solid var(--fc-line-gray200)", padding: "24px",
           marginBottom: "24px", boxShadow: "var(--fc-shadow-card)"
         }}>
           <form onSubmit={handleSavePhoto}>
@@ -239,13 +239,13 @@ export default function FarmGallery() {
             <div
               onClick={() => document.getElementById("gallery-upload").click()}
               style={{
-                border: "2px dashed #d1fae5", borderRadius: "12px",
+                border: "2px dashed var(--fc-line-green101)", borderRadius: "12px",
                 padding: "32px", textAlign: "center", cursor: "pointer",
-                background: form.imagePreview ? "#f0fdf4" : "#fafafa",
+                background: form.imagePreview ? "var(--fc-bg-green50)" : "var(--fc-bg-gray25)",
                 marginBottom: "16px", transition: "all 0.2s"
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "#15803d"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "#d1fae5"}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "var(--fc-line-green700)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--fc-line-green101)"}
             >
               {form.imagePreview ? (
                 <div style={{ position: "relative", display: "inline-block" }}>
@@ -263,7 +263,7 @@ export default function FarmGallery() {
                     style={{
                       position: "absolute", top: "-14px", right: "-14px",
                       width: "44px", height: "44px", borderRadius: "50%",
-                      background: "#ef4444", color: "#fff", border: "none",
+                      background: "#dc2626", color: "var(--fc-fg-gray0)", border: "none",
                       cursor: "pointer", display: "flex",
                       alignItems: "center", justifyContent: "center"
                     }}
@@ -273,11 +273,11 @@ export default function FarmGallery() {
                 </div>
               ) : (
                 <div>
-                  <Upload size={32} color="#9ca3af" style={{ marginBottom: "10px" }} />
-                  <p style={{ margin: "0 0 4px", fontWeight: "600", color: "#374151", fontSize: "14px" }}>
+                  <Upload size={32} color="var(--fc-fg-gray400)" style={{ marginBottom: "10px" }} />
+                  <p style={{ margin: "0 0 4px", fontWeight: "600", color: "var(--fc-fg-gray700)", fontSize: "14px" }}>
                     Tap to select a photo from your device
                   </p>
-                  <p style={{ margin: 0, color: "#9ca3af", fontSize: "12px" }}>
+                  <p style={{ margin: 0, color: "var(--fc-fg-gray400)", fontSize: "12px" }}>
                     JPG, PNG, HEIC — max 5MB
                   </p>
                 </div>
@@ -356,8 +356,8 @@ export default function FarmGallery() {
             {/* ERROR */}
             {error && (
               <div style={{
-                background: "#fef2f2", border: "1px solid #fecaca",
-                color: "#dc2626", padding: "10px 14px",
+                background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                color: "var(--fc-fg-red600)", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
                 <AlertTriangle size={14} aria-hidden="true" /> {error}
@@ -371,9 +371,9 @@ export default function FarmGallery() {
                 style={{
                   flex: 1, padding: "12px",
                   background: uploading
-                    ? "#86efac"
+                    ? "var(--fc-bg-green300)"
                     : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "14px",
                   cursor: uploading ? "not-allowed" : "pointer"
                 }}
@@ -384,9 +384,9 @@ export default function FarmGallery() {
                 type="button"
                 onClick={() => { setShowForm(false); setError(""); }}
                 style={{
-                  padding: "12px 20px", background: "#f9fafb",
-                  border: "1px solid #e5e7eb", borderRadius: "12px",
-                  cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "#374151"
+                  padding: "12px 20px", background: "var(--fc-bg-gray50)",
+                  border: "1px solid var(--fc-line-gray200)", borderRadius: "12px",
+                  cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "var(--fc-fg-gray700)"
                 }}
               >
                 Cancel
@@ -426,20 +426,20 @@ export default function FarmGallery() {
       {!loading && !loadError && filteredPhotos.length === 0 && (
         <div style={{
           textAlign: "center", padding: "80px 20px",
-          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
         }}>
-          <Camera size={56} color="#e5e7eb" style={{ marginBottom: "16px" }} />
-          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
+          <Camera size={56} color="var(--fc-fg-gray200)" style={{ marginBottom: "16px" }} />
+          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)", margin: "0 0 8px" }}>
             No photos yet
           </h3>
-          <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "20px" }}>
+          <p style={{ color: "var(--fc-fg-gray500)", fontSize: "14px", marginBottom: "20px" }}>
             Add your first farm photo to start your visual diary
           </p>
           <button
             onClick={() => setShowForm(true)}
             style={{
               minHeight: "44px", padding: "12px 24px", background: "#15803d",
-              color: "#fff", border: "none", borderRadius: "12px",
+              color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
               fontWeight: "700", cursor: "pointer"
             }}
           >

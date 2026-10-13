@@ -1,8 +1,10 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Suspense, lazy, useEffect } from 'react';
 import { readSignInProblem } from "./lib/signInReturn";
+import { supabase } from "./lib/supabaseClient";
 import { POLICIES_PUBLISHED } from "./config/features";
 
 // PAGES — lazy-loaded so each route ships its own chunk instead of one
@@ -38,6 +40,8 @@ const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const DeleteAccountPage = lazy(() => import("./pages/legal/DeleteAccountPage"));
 const AccountDeleted = lazy(() => import("./pages/legal/AccountDeleted"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // COMPONENTS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -52,7 +56,7 @@ function LoadingScreen({ label }) {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        background: "#f0fdf4",
+        background: "var(--fc-bg-green50)",
         gap: "12px"
       }}
     >
@@ -60,8 +64,8 @@ function LoadingScreen({ label }) {
         style={{
           width: "40px",
           height: "40px",
-          border: "4px solid #dcfce7",
-          borderTop: "4px solid #15803d",
+          border: "4px solid var(--fc-line-green100)",
+          borderTop: "4px solid var(--fc-line-green700)",
           borderRadius: "50%",
           animation: "spin 1s linear infinite"
         }}
@@ -69,7 +73,7 @@ function LoadingScreen({ label }) {
 
       <p
         style={{
-          color: "#666",
+          color: "var(--fc-fg-gray550)",
           fontSize: "14px"
         }}
       >
@@ -109,6 +113,20 @@ function AppRoutes() {
   }, [loading]);
 
   // =========================
+  // BACK FROM A PASSWORD-RESET EMAIL
+  // The link signs the person in for one purpose. Wherever Supabase sent
+  // them (it falls back to its Site URL if the address is not on its
+  // list), take them to the page where a new password is chosen.
+  // =========================
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") navigate("/reset-password", { replace: true });
+    });
+    return () => listener.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // =========================
   // LOADING SCREEN
   // =========================
   if (loading) {
@@ -138,6 +156,10 @@ function AppRoutes() {
         {POLICIES_PUBLISHED && <Route path="/terms" element={<Terms />} />}
         <Route path="/delete-account" element={<DeleteAccountPage />} />
         <Route path="/account-deleted" element={<AccountDeleted />} />
+
+        {/* Recovering an account: ask for a link, then choose a new password. */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
 
         {/* Old standalone verification forms wrote to tables that never
@@ -385,9 +407,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

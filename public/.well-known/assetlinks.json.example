@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "REPLACE_WITH_THE_APPLICATION_ID_FROM_android/twa-manifest.json",
+      "sha256_cert_fingerprints": [
+        "REPLACE_WITH_THE_APP_SIGNING_KEY_SHA256_FROM_PLAY_CONSOLE",
+        "REPLACE_WITH_THE_UPLOAD_KEY_SHA256_OR_DELETE_THIS_LINE"
+      ]
+    }
+  }
+]

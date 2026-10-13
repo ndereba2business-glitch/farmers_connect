@@ -57,20 +57,20 @@ async function hasConflictingAcceptedAppointment(vetId, appt) {
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+  background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "5px"
+  color: "var(--fc-fg-gray500)", marginBottom: "5px"
 };
 
 const URGENCY_COLORS = {
-  low: { bg: "#f0fdf4", color: "#15803d" },
-  medium: { bg: "#fffbeb", color: "#d97706" },
-  high: { bg: "#fff7ed", color: "#ea580c" },
+  low: { bg: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)" },
+  medium: { bg: "var(--fc-bg-amber50)", color: "var(--fc-fg-amber600)" },
+  high: { bg: "var(--fc-bg-amber51)", color: "var(--fc-fg-amber601)" },
 };
 
 const EMPTY_FORM = {
@@ -452,10 +452,10 @@ export default function Appointments() {
       {/* HEADER */}
       <div className="fc-page-header" style={{ marginBottom: "20px" }}>
         <div>
-          <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+          <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
             Appointments
           </h1>
-          <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+          <p style={{ marginTop: "6px", color: "var(--fc-fg-gray500)", fontSize: "15px" }}>
             Manage farm visits, requests, and your visit history
           </p>
         </div>
@@ -463,7 +463,7 @@ export default function Appointments() {
           onClick={() => { setNewFormError(""); setShowNewForm(true); }}
           style={{
             height: "44px", padding: "0 20px", border: "none", borderRadius: "12px",
-            background: "#15803d", color: "#fff",
+            background: "#15803d", color: "var(--fc-fg-gray0)",
             fontWeight: "700", cursor: "pointer", fontSize: "14px",
             display: "flex", alignItems: "center", gap: "8px",
             boxShadow: "none"
@@ -478,17 +478,17 @@ export default function Appointments() {
         <div style={{
           display: "flex", alignItems: "center", gap: "10px",
           padding: "12px 16px", borderRadius: "12px",
-          background: "#fef2f2", border: "1px solid #fecaca",
-          color: "#991b1b", fontSize: "13px", marginBottom: "20px"
+          background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+          color: "var(--fc-fg-red800)", fontSize: "13px", marginBottom: "20px"
         }}>
           <AlertTriangle size={16} style={{ flexShrink: 0 }} />
           <span>{loadError}</span>
           <button
             onClick={loadAppointments}
             style={{
-              marginLeft: "auto", background: "none", border: "1px solid #fca5a5",
+              marginLeft: "auto", background: "none", border: "1px solid var(--fc-line-red300)",
               borderRadius: "8px", padding: "4px 12px", cursor: "pointer",
-              color: "#991b1b", fontWeight: "600", fontSize: "12px", flexShrink: 0
+              color: "var(--fc-fg-red800)", fontWeight: "600", fontSize: "12px", flexShrink: 0
             }}
           >
             Retry
@@ -505,9 +505,9 @@ export default function Appointments() {
             onClick={() => setActiveTab(tab.key)}
             style={{
               padding: "9px 18px", borderRadius: "16px",
-              border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
-              background: activeTab === tab.key ? "#111827" : "#fff",
-              color: activeTab === tab.key ? "#fff" : "#6b7280",
+              border: `1.5px solid ${activeTab === tab.key ? "var(--fc-line-gray900)" : "var(--fc-line-gray200)"}`,
+              background: activeTab === tab.key ? "var(--fc-bg-gray900)" : "var(--fc-bg-gray0)",
+              color: activeTab === tab.key ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray500)",
               fontWeight: "600", fontSize: "13px", cursor: "pointer"
             }}
           >
@@ -520,26 +520,26 @@ export default function Appointments() {
       {loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ height: "120px", borderRadius: "16px", background: "#f3f4f6" }} />
+            <div key={i} style={{ height: "120px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
           ))}
         </div>
       ) : displayList.length === 0 ? (
         <div style={{
           textAlign: "center", padding: "70px 20px",
-          background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
         }}>
           {activeTab === "unassigned" ? (
-            <Inbox size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+            <Inbox size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "14px" }} />
           ) : activeTab === "completed" ? (
-            <CheckCircle2 size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+            <CheckCircle2 size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "14px" }} />
           ) : activeTab === "cancelled" ? (
-            <XCircle size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+            <XCircle size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "14px" }} />
           ) : activeTab === "rejected" ? (
-            <Ban size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+            <Ban size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "14px" }} />
           ) : (
-            <Calendar size={48} color="#e5e7eb" style={{ marginBottom: "14px" }} />
+            <Calendar size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "14px" }} />
           )}
-          <p style={{ color: "#9ca3af", fontSize: "14px" }}>
+          <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px" }}>
             {activeTab === "upcoming" && "No upcoming appointments. Schedule one to get started."}
             {activeTab === "unassigned" && "No unclaimed requests right now."}
             {activeTab === "completed" && "No completed visits yet."}
@@ -553,14 +553,14 @@ export default function Appointments() {
             const urgency = URGENCY_COLORS[appt.urgency] || URGENCY_COLORS.medium;
             return (
               <div key={appt.id} style={{
-                background: "#fff", borderRadius: "16px", padding: "18px 20px",
-                border: "1px solid #e5e7eb", boxShadow: "var(--fc-shadow-card)",
+                background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "18px 20px",
+                border: "1px solid var(--fc-line-gray200)", boxShadow: "var(--fc-shadow-card)",
                 display: "flex", justifyContent: "space-between",
                 alignItems: "flex-start", flexWrap: "wrap", gap: "14px"
               }}>
                 <div style={{ flex: 1, minWidth: "220px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
-                    <span style={{ fontWeight: "700", fontSize: "16px", color: "#111827" }}>
+                    <span style={{ fontWeight: "700", fontSize: "16px", color: "var(--fc-fg-gray900)" }}>
                       {appt.farm_name}
                     </span>
                     <span style={{
@@ -573,7 +573,7 @@ export default function Appointments() {
                     {activeTab === "unassigned" && (
                       <span style={{
                         fontSize: "11px", fontWeight: "700", padding: "2px 8px",
-                        borderRadius: "16px", background: "#eff6ff", color: "#3b82f6"
+                        borderRadius: "16px", background: "var(--fc-bg-blue50)", color: "var(--fc-fg-blue500)"
                       }}>
                         {appt.requested_vet_id ? "Requested — You" : "Unclaimed"}
                       </span>
@@ -581,15 +581,15 @@ export default function Appointments() {
                     {activeTab === "upcoming" && (
                       <span style={{
                         fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "16px",
-                        background: appt.status === "accepted" ? "#dcfce7" : "#fef3c7",
-                        color: appt.status === "accepted" ? "#15803d" : "#d97706",
+                        background: appt.status === "accepted" ? "var(--fc-bg-green100)" : "var(--fc-bg-amber100)",
+                        color: appt.status === "accepted" ? "var(--fc-fg-green700)" : "var(--fc-fg-amber600)",
                         textTransform: "capitalize"
                       }}>
                         {appt.status}
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: "13px", color: "#6b7280", display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                  <div style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", display: "flex", gap: "14px", flexWrap: "wrap" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                       <Calendar size={12} /> {appt.appointment_date}
                     </span>
@@ -601,16 +601,16 @@ export default function Appointments() {
                     {appt.county && <span><MapPin size={14} aria-hidden="true" /> {appt.county}</span>}
                     {appt.bird_count && <span><Bird size={14} aria-hidden="true" /> {appt.bird_count} birds</span>}
                     {activeTab === "completed" && (
-                      <span style={{ color: "#15803d", fontWeight: "700" }}>
+                      <span style={{ color: "var(--fc-fg-green700)", fontWeight: "700" }}>
                         KES {Number(appt.fee || 0).toLocaleString()}
                       </span>
                     )}
                   </div>
                   {appt.reason && (
-                    <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#6b7280" }}>{appt.reason}</p>
+                    <p style={{ margin: "10px 0 0", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>{appt.reason}</p>
                   )}
                   {activeTab === "rejected" && appt.rejection_reason && (
-                    <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#991b1b", background: "#fef2f2", padding: "8px 12px", borderRadius: "8px" }}>
+                    <p style={{ margin: "10px 0 0", fontSize: "13px", color: "var(--fc-fg-red800)", background: "var(--fc-bg-red50)", padding: "8px 12px", borderRadius: "8px" }}>
                       <strong>Reason:</strong> {appt.rejection_reason}
                     </p>
                   )}
@@ -669,8 +669,8 @@ export default function Appointments() {
             <AppointmentFields form={newForm} setForm={setNewForm} />
             {newFormError && (
               <div style={{
-                background: "#fef2f2", border: "1px solid #fecaca",
-                color: "#dc2626", padding: "10px 14px",
+                background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                color: "var(--fc-fg-red600)", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
                 <AlertTriangle size={14} aria-hidden="true" /> {newFormError}
@@ -688,8 +688,8 @@ export default function Appointments() {
             <AppointmentFields form={editForm} setForm={setEditForm} />
             {editFormError && (
               <div style={{
-                background: "#fef2f2", border: "1px solid #fecaca",
-                color: "#dc2626", padding: "10px 14px",
+                background: "var(--fc-bg-red50)", border: "1px solid var(--fc-line-red200)",
+                color: "var(--fc-fg-red600)", padding: "10px 14px",
                 borderRadius: "8px", fontSize: "13px", marginBottom: "14px"
               }}>
                 <AlertTriangle size={14} aria-hidden="true" /> {editFormError}
@@ -704,7 +704,7 @@ export default function Appointments() {
       {completeTarget && (
         <Modal title="Complete Visit" onClose={() => setCompleteTarget(null)}>
           <form onSubmit={handleCompleteSave}>
-            <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "16px" }}>
+            <p style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", marginBottom: "16px" }}>
               {completeTarget.farm_name} — {completeTarget.appointment_date}
             </p>
 
@@ -741,20 +741,20 @@ export default function Appointments() {
               </button>
             </div>
             {medications.length === 0 ? (
-              <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#9ca3af" }}>
+              <p style={{ margin: "0 0 14px", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                 None added yet.
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "14px" }}>
                 {medications.map((med, i) => (
                   <div key={i} style={{
-                    border: "1px solid #e5e7eb", borderRadius: "12px", padding: "12px",
+                    border: "1px solid var(--fc-line-gray200)", borderRadius: "12px", padding: "12px",
                     display: "flex", flexDirection: "column", gap: "8px"
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "12px", fontWeight: "700", color: "#6b7280" }}>Medication {i + 1}</span>
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--fc-fg-gray500)" }}>Medication {i + 1}</span>
                       <button type="button" onClick={() => removeMedication(i)} aria-label={`Remove medication ${i + 1}`} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                        <X size={14} color="#9ca3af" />
+                        <X size={14} color="var(--fc-fg-gray400)" />
                       </button>
                     </div>
                     <input
@@ -804,7 +804,7 @@ export default function Appointments() {
       {rejectTarget && (
         <Modal title="Reject Visit Request" onClose={() => setRejectTarget(null)}>
           <form onSubmit={handleRejectSave}>
-            <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "16px" }}>
+            <p style={{ fontSize: "13px", color: "var(--fc-fg-gray500)", marginBottom: "16px" }}>
               {rejectTarget.farm_name} — {rejectTarget.appointment_date}
             </p>
             <label style={labelStyle}>Reason for rejecting (shown to the farmer)</label>
@@ -849,12 +849,12 @@ export default function Appointments() {
           </div>
 
           {detailsTarget.status === "completed" && (
-            <div style={{ marginTop: "18px", paddingTop: "18px", borderTop: "1px solid #f0f0f0" }}>
-              <h3 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+            <div style={{ marginTop: "18px", paddingTop: "18px", borderTop: "1px solid var(--fc-line-gray101)" }}>
+              <h3 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 Visit Report
               </h3>
               {loadingVisitRecord ? (
-                <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+                <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
               ) : (
                 <VisitReportFields record={visitRecord} />
               )}
@@ -881,7 +881,7 @@ function Modal({ title, onClose, children }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "16px", padding: "28px",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >
@@ -901,9 +901,9 @@ function DetailRow({ label, value, capitalize }) {
   if (value === null || value === undefined || value === "") return null;
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
-      <span style={{ fontSize: "12px", fontWeight: "600", color: "#6b7280" }}>{label}</span>
+      <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--fc-fg-gray500)" }}>{label}</span>
       <span style={{
-        fontSize: "13px", fontWeight: "600", color: "#111827",
+        fontSize: "13px", fontWeight: "600", color: "var(--fc-fg-gray900)",
         textAlign: "right", textTransform: capitalize ? "capitalize" : "none", wordBreak: "break-word"
       }}>
         {value}
@@ -978,8 +978,8 @@ function SubmitButton({ saving, label }) {
       disabled={saving}
       style={{
         width: "100%", padding: "13px",
-        background: saving ? "#86efac" : "#15803d",
-        color: "#fff", border: "none", borderRadius: "12px",
+        background: saving ? "var(--fc-bg-green300)" : "#15803d",
+        color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
         fontWeight: "700", fontSize: "14px", cursor: saving ? "not-allowed" : "pointer"
       }}
     >
@@ -989,19 +989,19 @@ function SubmitButton({ saving, label }) {
 }
 
 const btnPrimary = {
-  padding: "8px 16px", background: "#15803d", color: "#fff",
+  padding: "8px 16px", background: "#15803d", color: "var(--fc-fg-gray0)",
   border: "none", borderRadius: "8px", fontWeight: "700",
   fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
 };
 
 const btnGhost = {
-  padding: "8px 16px", background: "#fff", color: "#374151",
-  border: "1px solid #e5e7eb", borderRadius: "8px", fontWeight: "600",
+  padding: "8px 16px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray700)",
+  border: "1px solid var(--fc-line-gray200)", borderRadius: "8px", fontWeight: "600",
   fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
 };
 
 const btnDanger = {
-  padding: "8px 16px", background: "#fff", color: "#ef4444",
-  border: "1px solid #fecaca", borderRadius: "8px", fontWeight: "600",
+  padding: "8px 16px", background: "var(--fc-bg-gray0)", color: "var(--fc-fg-red500)",
+  border: "1px solid var(--fc-line-red200)", borderRadius: "8px", fontWeight: "600",
   fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap"
 };

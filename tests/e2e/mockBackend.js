@@ -143,8 +143,13 @@ export function createMockBackend() {
       if (url.pathname.endsWith("/user")) {
         if (!current) return json(401, { message: "not signed in" });
         if (req.method() === "PUT") {
-          const { data } = JSON.parse(req.postData() || "{}");
+          const { data, password } = JSON.parse(req.postData() || "{}");
           if (data?.role) current.role = data.role;
+          // choosing a new password (the reset page)
+          if (password) {
+            if (password === current.password) return json(422, { code: "same_password", message: "New password should be different from the old password." });
+            current.password = password;
+          }
         }
         return json(200, authUser(current));
       }
@@ -307,8 +312,9 @@ export function createMockBackend() {
           if ("notifications_enabled" in changes) current.notificationsEnabled = changes.notifications_enabled;
           if ("terms_accepted_at" in changes) { current.termsAcceptedAt = changes.terms_accepted_at; current.termsVersion = changes.terms_version; }
           if ("clucky_consent_at" in changes) current.cluckyConsentAt = changes.clucky_consent_at;
+          if ("theme_preference" in changes) current.themePreference = changes.theme_preference;
         }
-        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled, terms_accepted_at: current.termsAcceptedAt, terms_version: current.termsVersion, clucky_consent_at: current.cluckyConsentAt }] : []);
+        return reply(200, current ? [{ id: "fp-" + current.id, user_email: current.email, full_name: "Test " + (current.role || "farmer"), has_seen_onboarding: current.hasSeenOnboarding, notifications_enabled: current.notificationsEnabled, terms_accepted_at: current.termsAcceptedAt, terms_version: current.termsVersion, clucky_consent_at: current.cluckyConsentAt, theme_preference: current.themePreference ?? null }] : []);
       }
 
       if (table === "supplier_profiles") {

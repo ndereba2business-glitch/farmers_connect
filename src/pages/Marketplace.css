@@ -21,7 +21,7 @@
   gap: 12px;
   margin-bottom: 16px;
   padding: 14px 16px;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--fc-line-red200);
   border-radius: var(--fc-radius-md);
   background: var(--fc-danger-soft);
   color: var(--fc-danger);

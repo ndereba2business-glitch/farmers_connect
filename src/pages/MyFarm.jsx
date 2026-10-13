@@ -36,10 +36,10 @@ const ACTIVITY_TYPES = [
 ];
 
 const TYPE_COLORS = {
-  broiler: { bg: "#fff7e6", color: "#d97706" },
-  layer: { bg: "#edf9f1", color: "#15803d" },
-  dual_purpose: { bg: "#f3f0ff", color: "#7c3aed" },
-  indigenous: { bg: "#fff0eb", color: "#ea580c" },
+  broiler: { bg: "var(--fc-bg-amber52)", color: "var(--fc-fg-amber600)" },
+  layer: { bg: "var(--fc-bg-green51)", color: "var(--fc-fg-green700)" },
+  dual_purpose: { bg: "var(--fc-bg-violet51)", color: "var(--fc-fg-violet600)" },
+  indigenous: { bg: "var(--fc-bg-red52)", color: "var(--fc-fg-amber601)" },
 };
 
 function generateVaccinationSchedule(hatchDate, batchType) {
@@ -76,14 +76,14 @@ function generateVaccinationSchedule(hatchDate, batchType) {
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+  background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "13px", fontWeight: "600",
-  color: "#374151", marginBottom: "6px"
+  color: "var(--fc-fg-gray700)", marginBottom: "6px"
 };
 
 export default function MyFarm() {
@@ -191,8 +191,8 @@ export default function MyFarm() {
         <div style={{
           display: "flex", alignItems: "center", gap: "12px",
           padding: "12px 16px", borderRadius: "12px",
-          background: "#fffbeb", border: "1px solid #fde68a",
-          color: "#92400e", fontSize: "13px", marginBottom: "20px"
+          background: "var(--fc-bg-amber50)", border: "1px solid var(--fc-line-amber200)",
+          color: "var(--fc-fg-amber800)", fontSize: "13px", marginBottom: "20px"
         }}>
           <WifiOff size={16} />
           <span><strong>You're offline.</strong> Changes will sync when you reconnect.</span>
@@ -206,10 +206,10 @@ export default function MyFarm() {
             alignItems: "flex-start", marginBottom: "24px"
           }}>
             <div>
-              <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "#111827", letterSpacing: "-1px" }}>
+              <h1 className="fc-page-title" style={{ margin: 0, fontWeight: "700", color: "var(--fc-fg-gray900)", letterSpacing: "-1px" }}>
                 My Farm
               </h1>
-              <p style={{ marginTop: "6px", color: "#6b7280", fontSize: "15px" }}>
+              <p style={{ marginTop: "6px", color: "var(--fc-fg-gray500)", fontSize: "15px" }}>
                 Manage your chick batches and vaccinations
               </p>
             </div>
@@ -239,9 +239,9 @@ export default function MyFarm() {
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   padding: "8px 20px", borderRadius: "16px",
-                  border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
-                  background: activeTab === tab.key ? "#111827" : "#fff",
-                  color: activeTab === tab.key ? "#fff" : "#6b7280",
+                  border: `1.5px solid ${activeTab === tab.key ? "var(--fc-line-gray900)" : "var(--fc-line-gray200)"}`,
+                  background: activeTab === tab.key ? "var(--fc-bg-gray900)" : "var(--fc-bg-gray0)",
+                  color: activeTab === tab.key ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray500)",
                   fontWeight: "600", fontSize: "13px", cursor: "pointer"
                 }}
               >
@@ -253,7 +253,7 @@ export default function MyFarm() {
           {loading && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {[1, 2].map(i => (
-                <div key={i} style={{ height: "200px", borderRadius: "16px", background: "#f3f4f6" }} />
+                <div key={i} style={{ height: "200px", borderRadius: "16px", background: "var(--fc-bg-gray100)" }} />
               ))}
             </div>
           )}
@@ -262,13 +262,13 @@ export default function MyFarm() {
             activeBatches.length === 0 ? (
               <div style={{
                 textAlign: "center", padding: "80px 20px",
-                background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+                background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
               }}>
-                <Egg size={64} color="#e5e7eb" style={{ marginBottom: "16px" }} />
-                <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: "0 0 8px" }}>
+                <Egg size={64} color="var(--fc-fg-gray200)" style={{ marginBottom: "16px" }} />
+                <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--fc-fg-gray900)", margin: "0 0 8px" }}>
                   No active batches
                 </h3>
-                <p style={{ color: "#9ca3af", fontSize: "14px", marginBottom: "20px" }}>
+                <p style={{ color: "var(--fc-fg-gray400)", fontSize: "14px", marginBottom: "20px" }}>
                   Start by adding your first chick batch
                 </p>
                 <button
@@ -276,7 +276,7 @@ export default function MyFarm() {
                   style={{
                     padding: "12px 24px",
                     background: "#15803d",
-                    color: "#fff", border: "none", borderRadius: "12px",
+                    color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                     fontWeight: "700", fontSize: "14px", cursor: "pointer"
                   }}
                 >
@@ -305,10 +305,10 @@ export default function MyFarm() {
             completedBatches.length === 0 ? (
               <div style={{
                 textAlign: "center", padding: "60px 20px",
-                background: "#fff", borderRadius: "16px", border: "1px solid #f0f0f0"
+                background: "var(--fc-bg-gray0)", borderRadius: "16px", border: "1px solid var(--fc-line-gray101)"
               }}>
-                <CheckCircle2 size={48} color="#e5e7eb" style={{ marginBottom: "12px" }} />
-                <p style={{ color: "#9ca3af", fontSize: "15px" }}>No completed batches yet.</p>
+                <CheckCircle2 size={48} color="var(--fc-fg-gray200)" style={{ marginBottom: "12px" }} />
+                <p style={{ color: "var(--fc-fg-gray400)", fontSize: "15px" }}>No completed batches yet.</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -338,25 +338,25 @@ export default function MyFarm() {
               onClick={() => setView("list")}
               style={{
                 width: "38px", height: "38px", borderRadius: "12px",
-                border: "1.5px solid #e5e7eb", background: "#fff",
+                border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
               }}
             >
-              <X size={18} color="#374151" />
+              <X size={18} color="var(--fc-fg-gray700)" />
             </button>
             <div>
-              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "700", color: "#111827" }}>
+              <h1 style={{ margin: 0, fontSize: "28px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 Add Chick Batch
               </h1>
-              <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: "14px" }}>
+              <p style={{ margin: "4px 0 0", color: "var(--fc-fg-gray500)", fontSize: "14px" }}>
                 Register a new batch and auto-generate vaccination schedule
               </p>
             </div>
           </div>
 
           <div style={{
-            background: "#fff", borderRadius: "16px",
-            border: "1px solid #e5e7eb", padding: "28px",
+            background: "var(--fc-bg-gray0)", borderRadius: "16px",
+            border: "1px solid var(--fc-line-gray200)", padding: "28px",
             boxShadow: "var(--fc-shadow-card)"
           }}>
             <form onSubmit={handleAddBatch}>
@@ -422,12 +422,12 @@ export default function MyFarm() {
                 />
               </div>
               <div style={{
-                background: "#f0fdf4", border: "1px solid #dcfce7",
+                background: "var(--fc-bg-green50)", border: "1px solid var(--fc-line-green100)",
                 borderRadius: "12px", padding: "14px 16px",
                 marginBottom: "24px", display: "flex", alignItems: "flex-start", gap: "10px"
               }}>
-                <Syringe size={16} color="#15803d" style={{ marginTop: "2px", flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: "13px", color: "#15803d", fontWeight: "500" }}>
+                <Syringe size={16} color="var(--fc-fg-green700)" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-green700)", fontWeight: "500" }}>
                   A vaccination schedule will be auto-generated based on the hatch date and batch type.
                 </p>
               </div>
@@ -435,8 +435,8 @@ export default function MyFarm() {
                 type="submit" disabled={saving}
                 style={{
                   width: "100%", padding: "14px",
-                  background: saving ? "#86efac" : "#15803d",
-                  color: "#fff", border: "none", borderRadius: "12px",
+                  background: saving ? "var(--fc-bg-green300)" : "#15803d",
+                  color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                   fontWeight: "700", fontSize: "15px",
                   cursor: saving ? "not-allowed" : "pointer"
                 }}
@@ -486,7 +486,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
   const progress = total > 0 ? (completed / total) * 100 : 0;
   const nextVaccine = vaccinations.filter(v => !v.completed).sort((a, b) => a.day_number - b.day_number)[0];
   const overdueCount = vaccinations.filter(v => !v.completed && v.scheduled_date < today).length;
-  const typeColor = TYPE_COLORS[batch.batch_type] || { bg: "#f3f4f6", color: "#6b7280" };
+  const typeColor = TYPE_COLORS[batch.batch_type] || { bg: "var(--fc-bg-gray100)", color: "var(--fc-fg-gray500)" };
   const typeLabel = BATCH_TYPES.find(t => t.value === batch.batch_type)?.label || batch.batch_type;
 
   // Load sales and expenses for this batch
@@ -631,8 +631,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
 
   return (
     <div style={{
-      background: "#fff", borderRadius: "16px",
-      border: "1px solid #e5e7eb",
+      background: "var(--fc-bg-gray0)", borderRadius: "16px",
+      border: "1px solid var(--fc-line-gray200)",
       boxShadow: "var(--fc-shadow-card)", overflow: "hidden"
     }}>
       <div style={{ padding: "20px 24px" }}>
@@ -646,13 +646,13 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
             <div style={{
               width: "44px", height: "44px", borderRadius: "12px",
-              background: "#edf9f1", display: "flex",
+              background: "var(--fc-bg-green51)", display: "flex",
               alignItems: "center", justifyContent: "center", flexShrink: 0
             }}>
-              <Egg size={22} color="#15803d" />
+              <Egg size={22} color="var(--fc-fg-green700)" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#111827" }}>
+              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
                 {batch.batch_name}
               </h3>
               <div style={{ display: "flex", gap: "8px", marginTop: "6px", flexWrap: "wrap", alignItems: "center" }}>
@@ -662,16 +662,16 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 }}>
                   {typeLabel}
                 </span>
-                {batch.breed && <span style={{ fontSize: "12px", color: "#9ca3af" }}>{batch.breed}</span>}
-                <span style={{ fontSize: "12px", color: "#9ca3af" }}>
+                {batch.breed && <span style={{ fontSize: "12px", color: "var(--fc-fg-gray400)" }}>{batch.breed}</span>}
+                <span style={{ fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
                   · {batch.current_count || batch.quantity} birds alive
                 </span>
                 {batch.mortality > 0 && (
-                  <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "600" }}>
+                  <span style={{ fontSize: "12px", color: "var(--fc-fg-red500)", fontWeight: "600" }}>
                     · {batch.mortality} deaths
                   </span>
                 )}
-                <span style={{ fontSize: "12px", color: "#9ca3af" }}>· Day {ageInDays}</span>
+                <span style={{ fontSize: "12px", color: "var(--fc-fg-gray400)" }}>· Day {ageInDays}</span>
               </div>
             </div>
           </div>
@@ -679,7 +679,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             {overdueCount > 0 && (
               <span style={{
                 display: "flex", alignItems: "center", gap: "4px",
-                background: "#fef2f2", color: "#ef4444",
+                background: "var(--fc-bg-red50)", color: "var(--fc-fg-red500)",
                 fontSize: "12px", fontWeight: "600", padding: "4px 10px", borderRadius: "16px"
               }}>
                 <AlertTriangle size={12} /> {overdueCount} overdue
@@ -691,22 +691,22 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               className="fc-tap"
               style={{
                 width: "44px", height: "32px", borderRadius: "8px",
-                border: "1px solid #fee2e2", background: "#fff",
+                border: "1px solid var(--fc-line-red100)", background: "var(--fc-bg-gray0)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
               }}
             >
-              <Trash2 size={14} color="#ef4444" />
+              <Trash2 size={14} color="var(--fc-fg-red500)" />
             </button>
           </div>
         </div>
 
         {/* VACCINATION PROGRESS */}
         <div style={{ marginBottom: "14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#9ca3af", marginBottom: "6px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--fc-fg-gray400)", marginBottom: "6px" }}>
             <span>Vaccination Progress</span>
             <span>{completed}/{total} completed</span>
           </div>
-          <div style={{ height: "8px", background: "#f3f4f6", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ height: "8px", background: "var(--fc-bg-gray100)", borderRadius: "16px", overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${progress}%`,
               background: "#15803d",
@@ -719,19 +719,19 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {nextVaccine && (
           <div style={{
             padding: "12px 14px", borderRadius: "12px", marginBottom: "14px",
-            background: nextVaccine.scheduled_date < today ? "#fef2f2" : nextVaccine.scheduled_date === today ? "#fffbeb" : "#f9fafb",
-            border: `1px solid ${nextVaccine.scheduled_date < today ? "#fecaca" : nextVaccine.scheduled_date === today ? "#fde68a" : "#e5e7eb"}`
+            background: nextVaccine.scheduled_date < today ? "var(--fc-bg-red50)" : nextVaccine.scheduled_date === today ? "var(--fc-bg-amber50)" : "var(--fc-bg-gray50)",
+            border: `1px solid ${nextVaccine.scheduled_date < today ? "var(--fc-line-red200)" : nextVaccine.scheduled_date === today ? "var(--fc-line-amber200)" : "var(--fc-line-gray200)"}`
           }}>
-            <p style={{ margin: "0 0 2px", fontSize: "12px", color: "#6b7280", fontWeight: "600" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "12px", color: "var(--fc-fg-gray500)", fontWeight: "600" }}>
               Next vaccination
             </p>
-            <p style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
               {nextVaccine.vaccine_name}
             </p>
-            <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray500)" }}>
               Day {nextVaccine.day_number} · {nextVaccine.scheduled_date}
-              {nextVaccine.scheduled_date === today && <span style={{ color: "#b45309", fontWeight: "700" }}> · Today</span>}
-              {nextVaccine.scheduled_date < today && <span style={{ color: "#b91c1c", fontWeight: "700" }}> · Overdue</span>}
+              {nextVaccine.scheduled_date === today && <span style={{ color: "var(--fc-fg-amber700)", fontWeight: "700" }}> · Today</span>}
+              {nextVaccine.scheduled_date < today && <span style={{ color: "var(--fc-fg-red700)", fontWeight: "700" }}> · Overdue</span>}
             </p>
           </div>
         )}
@@ -742,10 +742,10 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             onClick={() => { setShowMortality(!showMortality); setShowExpense(false); setShowSale(false); }}
             style={{
               flex: 1, padding: "9px 14px",
-              background: showMortality ? "#fef2f2" : "#f9fafb",
-              border: `1px solid ${showMortality ? "#fecaca" : "#e5e7eb"}`,
+              background: showMortality ? "var(--fc-bg-red50)" : "var(--fc-bg-gray50)",
+              border: `1px solid ${showMortality ? "var(--fc-line-red200)" : "var(--fc-line-gray200)"}`,
               borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
-              color: showMortality ? "#ef4444" : "#374151",
+              color: showMortality ? "var(--fc-fg-red500)" : "var(--fc-fg-gray700)",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
           >
@@ -755,10 +755,10 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             onClick={() => { setShowExpense(!showExpense); setShowMortality(false); setShowSale(false); }}
             style={{
               flex: 1, padding: "9px 14px",
-              background: showExpense ? "#fffbeb" : "#f9fafb",
-              border: `1px solid ${showExpense ? "#fde68a" : "#e5e7eb"}`,
+              background: showExpense ? "var(--fc-bg-amber50)" : "var(--fc-bg-gray50)",
+              border: `1px solid ${showExpense ? "var(--fc-line-amber200)" : "var(--fc-line-gray200)"}`,
               borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "13px",
-              color: showExpense ? "#d97706" : "#374151",
+              color: showExpense ? "var(--fc-fg-amber600)" : "var(--fc-fg-gray700)",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
             }}
           >
@@ -769,9 +769,9 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               onClick={() => onMarkComplete(batch.id)}
               style={{
                 flex: 1, padding: "9px 14px",
-                background: "#f9fafb", border: "1px solid #e5e7eb",
+                background: "var(--fc-bg-gray50)", border: "1px solid var(--fc-line-gray200)",
                 borderRadius: "12px", cursor: "pointer",
-                fontWeight: "600", fontSize: "13px", color: "#374151",
+                fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray700)",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
               }}
             >
@@ -784,21 +784,21 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {showMortality && (
           <form onSubmit={handleLogMortality} style={{
             marginTop: "14px", padding: "16px",
-            background: "#fef2f2", borderRadius: "12px", border: "1px solid #fecaca"
+            background: "var(--fc-bg-red50)", borderRadius: "12px", border: "1px solid var(--fc-line-red200)"
           }}>
-            <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#ef4444" }}>
+            <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "var(--fc-fg-red500)" }}>
               <TrendingDown size={14} aria-hidden="true" /> Log Mortality
             </p>
             <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
-                <label style={{ ...labelStyle, color: "#7f1d1d" }}>Number of Deaths</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-red900)" }}>Number of Deaths</label>
                 <input type="number" min="1" placeholder="e.g. 3"
                   value={mortalityForm.count}
                   onChange={e => setMortalityForm({ ...mortalityForm, count: e.target.value })}
                   required style={inputStyle} />
               </div>
               <div>
-                <label style={{ ...labelStyle, color: "#7f1d1d" }}>Date</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-red900)" }}>Date</label>
                 <input type="date" value={mortalityForm.date}
                   onChange={e => setMortalityForm({ ...mortalityForm, date: e.target.value })}
                   style={inputStyle} />
@@ -810,16 +810,16 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               style={{ ...inputStyle, marginBottom: "10px" }} />
             <div style={{ display: "flex", gap: "8px" }}>
               <button type="submit" disabled={savingMortality} style={{
-                padding: "9px 20px", background: "#ef4444",
-                color: "#fff", border: "none", borderRadius: "8px",
+                padding: "9px 20px", background: "#dc2626",
+                color: "var(--fc-fg-gray0)", border: "none", borderRadius: "8px",
                 fontWeight: "700", fontSize: "13px", cursor: "pointer"
               }}>
                 {savingMortality ? "Saving..." : "Save"}
               </button>
               <button type="button" onClick={() => setShowMortality(false)} style={{
-                padding: "9px 16px", background: "#fff",
-                border: "1px solid #e5e7eb", borderRadius: "8px",
-                cursor: "pointer", fontSize: "13px", color: "#374151"
+                padding: "9px 16px", background: "var(--fc-bg-gray0)",
+                border: "1px solid var(--fc-line-gray200)", borderRadius: "8px",
+                cursor: "pointer", fontSize: "13px", color: "var(--fc-fg-gray700)"
               }}>Cancel</button>
             </div>
           </form>
@@ -829,14 +829,14 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {showExpense && (
           <form onSubmit={handleLogExpense} style={{
             marginTop: "14px", padding: "16px",
-            background: "#fffbeb", borderRadius: "12px", border: "1px solid #fde68a"
+            background: "var(--fc-bg-amber50)", borderRadius: "12px", border: "1px solid var(--fc-line-amber200)"
           }}>
-            <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "#d97706" }}>
+            <p style={{ margin: "0 0 12px", fontWeight: "700", fontSize: "14px", color: "var(--fc-fg-amber600)" }}>
               <Banknote size={14} aria-hidden="true" /> Log Expense
             </p>
             <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
-                <label style={{ ...labelStyle, color: "#78350f" }}>Category</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-amber900)" }}>Category</label>
                 <select value={expenseForm.category}
                   onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })}
                   style={{ ...inputStyle, appearance: "none" }}>
@@ -844,7 +844,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 </select>
               </div>
               <div>
-                <label style={{ ...labelStyle, color: "#78350f" }}>Amount (KES)</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-amber900)" }}>Amount (KES)</label>
                 <input type="number" placeholder="e.g. 5000"
                   value={expenseForm.amount}
                   onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })}
@@ -853,13 +853,13 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             </div>
             <div className="fc-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               <div>
-                <label style={{ ...labelStyle, color: "#78350f" }}>Date</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-amber900)" }}>Date</label>
                 <input type="date" value={expenseForm.date}
                   onChange={e => setExpenseForm({ ...expenseForm, date: e.target.value })}
                   style={inputStyle} />
               </div>
               <div>
-                <label style={{ ...labelStyle, color: "#78350f" }}>Notes (Optional)</label>
+                <label style={{ ...labelStyle, color: "var(--fc-fg-amber900)" }}>Notes (Optional)</label>
                 <input placeholder="e.g. Unga feeds 50kg"
                   value={expenseForm.notes}
                   onChange={e => setExpenseForm({ ...expenseForm, notes: e.target.value })}
@@ -869,15 +869,15 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <div style={{ display: "flex", gap: "8px" }}>
               <button type="submit" disabled={savingExpense} style={{
                 padding: "9px 20px", background: "#d97706",
-                color: "#fff", border: "none", borderRadius: "8px",
+                color: "var(--fc-fg-gray0)", border: "none", borderRadius: "8px",
                 fontWeight: "700", fontSize: "13px", cursor: "pointer"
               }}>
                 {savingExpense ? "Saving..." : "Save"}
               </button>
               <button type="button" onClick={() => setShowExpense(false)} style={{
-                padding: "9px 16px", background: "#fff",
-                border: "1px solid #e5e7eb", borderRadius: "8px",
-                cursor: "pointer", fontSize: "13px", color: "#374151"
+                padding: "9px 16px", background: "var(--fc-bg-gray0)",
+                border: "1px solid var(--fc-line-gray200)", borderRadius: "8px",
+                cursor: "pointer", fontSize: "13px", color: "var(--fc-fg-gray700)"
               }}>Cancel</button>
             </div>
           </form>
@@ -885,13 +885,13 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       </div>
 
       {/* ── LOG DAILY ACTIVITY ── */}
-      <div style={{ borderTop: "1px solid #f3f4f6", padding: "16px 24px" }}>
-        <h4 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: "700", color: "#6b7280" }}>
+      <div style={{ borderTop: "1px solid var(--fc-line-gray100)", padding: "16px 24px" }}>
+        <h4 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: "700", color: "var(--fc-fg-gray500)" }}>
           Log Daily Activity
         </h4>
         {/* ACTIVITY TYPE TABS */}
         <div style={{
-          display: "flex", background: "#f3f4f6",
+          display: "flex", background: "var(--fc-bg-gray100)",
           borderRadius: "12px", padding: "3px",
           marginBottom: "12px", gap: "2px"
         }}>
@@ -903,8 +903,8 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                 flex: 1, padding: "7px 8px",
                 borderRadius: "8px", border: "none", cursor: "pointer",
                 fontWeight: "600", fontSize: "12px",
-                background: activityType === type ? "#fff" : "transparent",
-                color: activityType === type ? "#111827" : "#9ca3af",
+                background: activityType === type ? "var(--fc-bg-gray0)" : "transparent",
+                color: activityType === type ? "var(--fc-fg-gray900)" : "var(--fc-fg-gray400)",
                 boxShadow: activityType === type ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
                 transition: "all 0.15s"
               }}
@@ -940,7 +940,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           style={{
             width: "100%", padding: "12px",
             background: "#15803d",
-            color: "#fff", border: "none", borderRadius: "12px",
+            color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
             fontWeight: "700", fontSize: "14px", cursor: "pointer"
           }}
         >
@@ -949,7 +949,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       </div>
 
       {/* ── RECORD A SALE ── */}
-      <div style={{ borderTop: "1px solid #f3f4f6" }}>
+      <div style={{ borderTop: "1px solid var(--fc-line-gray100)" }}>
         <div
           style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -958,17 +958,17 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           onClick={() => setShowSale(!showSale)}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <ShoppingCart size={16} color="#374151" />
-            <span style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+            <ShoppingCart size={16} color="var(--fc-fg-gray700)" />
+            <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>
               Record a Sale
             </span>
           </div>
           <button style={{
             width: "28px", height: "28px", borderRadius: "50%",
-            border: "1px solid #e5e7eb", background: "#fff",
+            border: "1px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
             cursor: "pointer", display: "flex",
             alignItems: "center", justifyContent: "center",
-            fontSize: "18px", color: "#374151", fontWeight: "300"
+            fontSize: "18px", color: "var(--fc-fg-gray700)", fontWeight: "300"
           }}>
             {showSale ? "×" : "+"}
           </button>
@@ -1039,7 +1039,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
             <button type="submit" disabled={savingSale} style={{
               width: "100%", padding: "13px",
               background: "#15803d",
-              color: "#fff", border: "none", borderRadius: "12px",
+              color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
               fontWeight: "700", fontSize: "14px", cursor: "pointer"
             }}>
               {savingSale ? "Saving..." : "Save Sale"}
@@ -1049,7 +1049,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       </div>
 
       {/* ── BATCH P&L ── */}
-      <div style={{ borderTop: "1px solid #f3f4f6" }}>
+      <div style={{ borderTop: "1px solid var(--fc-line-gray100)" }}>
         <div
           style={{
             display: "flex", justifyContent: "space-between",
@@ -1061,44 +1061,44 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{
               width: "36px", height: "36px", borderRadius: "50%",
-              background: netPL >= 0 ? "#f0fdf4" : "#fef2f2",
+              background: netPL >= 0 ? "var(--fc-bg-green50)" : "var(--fc-bg-red50)",
               display: "flex", alignItems: "center", justifyContent: "center"
             }}>
               {netPL >= 0
                 ? <TrendingUp size={14} aria-hidden="true" />
-                : <TrendingDown size={14} color="#b91c1c" aria-hidden="true" />}
+                : <TrendingDown size={14} color="var(--fc-fg-red700)" aria-hidden="true" />}
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "#6b7280" }}>
+              <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", color: "var(--fc-fg-gray500)" }}>
                 Batch P&L
               </p>
               <p style={{
                 margin: 0, fontSize: "18px", fontWeight: "700",
-                color: netPL >= 0 ? "#15803d" : "#ef4444"
+                color: netPL >= 0 ? "var(--fc-fg-green700)" : "var(--fc-fg-red500)"
               }}>
                 {netPL >= 0 ? "+" : ""}KES {netPL.toLocaleString()}
               </p>
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ margin: "0 0 2px", fontSize: "13px", color: "#15803d" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "13px", color: "var(--fc-fg-green700)" }}>
               Revenue: KES {totalRevenue.toLocaleString()}
             </p>
-            <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#ef4444" }}>
+            <p style={{ margin: "0 0 6px", fontSize: "13px", color: "var(--fc-fg-red500)" }}>
               Expenses: KES {totalExpenses.toLocaleString()}
             </p>
-            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: "var(--fc-fg-gray400)" }}>
               {salesList.length} sale{salesList.length !== 1 ? "s" : ""} recorded
             </p>
           </div>
-          <ChevronDown size={16} color="#9ca3af"
+          <ChevronDown size={16} color="var(--fc-fg-gray400)"
             style={{ transform: expandedSales ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
         </div>
 
         {expandedSales && salesList.length > 0 && (
           <div style={{ padding: "0 24px 16px" }}>
             <p style={{
-              fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+              fontSize: "11px", fontWeight: "700", color: "var(--fc-fg-gray400)",
               textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
             }}>
               Sales History
@@ -1107,18 +1107,18 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
               <div key={sale.id} style={{
                 display: "flex", justifyContent: "space-between",
                 alignItems: "center", padding: "10px 12px",
-                background: "#f9fafb", borderRadius: "12px",
+                background: "var(--fc-bg-gray50)", borderRadius: "12px",
                 marginBottom: "6px"
               }}>
                 <div>
-                  <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "#111827" }}>
+                  <p style={{ margin: 0, fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-gray900)" }}>
                     {sale.what_sold} — {sale.quantity} {sale.unit}
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#9ca3af" }}>
+                  <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--fc-fg-gray400)" }}>
                     {sale.sale_date}{sale.buyer_name ? ` · ${sale.buyer_name}` : ""}
                   </p>
                 </div>
-                <p style={{ margin: 0, fontWeight: "700", fontSize: "14px", color: "#15803d" }}>
+                <p style={{ margin: 0, fontWeight: "700", fontSize: "14px", color: "var(--fc-fg-green700)" }}>
                   +KES {Number(sale.total_amount).toLocaleString()}
                 </p>
               </div>
@@ -1128,14 +1128,14 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       </div>
 
       {/* ── VACCINATION SCHEDULE ── */}
-      <div style={{ borderTop: "1px solid #f3f4f6" }}>
+      <div style={{ borderTop: "1px solid var(--fc-line-gray100)" }}>
         <button
           onClick={() => setExpandedVacc(!expandedVacc)}
           style={{
             width: "100%", padding: "14px 24px",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             background: "none", border: "none", cursor: "pointer",
-            fontSize: "13px", color: "#6b7280", fontWeight: "600"
+            fontSize: "13px", color: "var(--fc-fg-gray500)", fontWeight: "600"
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1147,7 +1147,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
         {expandedVacc && (
           <div style={{ padding: "0 24px 20px" }}>
             {vaccinations.length === 0 ? (
-              <p style={{ textAlign: "center", color: "#9ca3af", fontSize: "13px", padding: "16px 0" }}>
+              <p style={{ textAlign: "center", color: "var(--fc-fg-gray400)", fontSize: "13px", padding: "16px 0" }}>
                 No vaccination schedule generated.
               </p>
             ) : (
@@ -1159,30 +1159,30 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
                     <div key={task.id} style={{
                       display: "flex", alignItems: "center", gap: "12px",
                       padding: "12px 14px", borderRadius: "12px",
-                      background: task.completed ? "#f0fdf4" : isOverdue ? "#fef2f2" : isDueToday ? "#fffbeb" : "#f9fafb",
-                      border: `1px solid ${task.completed ? "#dcfce7" : isOverdue ? "#fecaca" : isDueToday ? "#fde68a" : "#f0f0f0"}`
+                      background: task.completed ? "var(--fc-bg-green50)" : isOverdue ? "var(--fc-bg-red50)" : isDueToday ? "var(--fc-bg-amber50)" : "var(--fc-bg-gray50)",
+                      border: `1px solid ${task.completed ? "var(--fc-line-green100)" : isOverdue ? "var(--fc-line-red200)" : isDueToday ? "var(--fc-line-amber200)" : "var(--fc-line-gray101)"}`
                     }}>
                       <input
                         type="checkbox" checked={task.completed}
                         onChange={() => onToggleVaccination(task)}
-                        style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0, accentColor: "#15803d" }}
+                        style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0, accentColor: "var(--fc-fg-green700)" }}
                       />
                       <div style={{ flex: 1 }}>
                         <p style={{
                           margin: 0, fontSize: "13px", fontWeight: "600",
-                          color: task.completed ? "#9ca3af" : "#111827",
+                          color: task.completed ? "var(--fc-fg-gray400)" : "var(--fc-fg-gray900)",
                           textDecoration: task.completed ? "line-through" : "none"
                         }}>
                           {task.vaccine_name}
                         </p>
-                        <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#9ca3af" }}>
+                        <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--fc-fg-gray400)" }}>
                           Day {task.day_number} · {task.method?.replace("_", " ")} · {task.scheduled_date}
                         </p>
                       </div>
-                      {task.completed ? <CheckCircle2 size={16} color="#15803d" />
-                        : isOverdue ? <AlertTriangle size={16} color="#ef4444" />
-                        : isDueToday ? <Clock size={16} color="#f59e0b" />
-                        : <Calendar size={16} color="#9ca3af" />}
+                      {task.completed ? <CheckCircle2 size={16} color="var(--fc-fg-green700)" />
+                        : isOverdue ? <AlertTriangle size={16} color="var(--fc-fg-red500)" />
+                        : isDueToday ? <Clock size={16} color="var(--fc-fg-amber500)" />
+                        : <Calendar size={16} color="var(--fc-fg-gray400)" />}
                     </div>
                   );
                 })}

@@ -173,7 +173,7 @@ export default function CommunityModeration({ onOpenCount }) {
         <h2>Reported messages ({groups.length})</h2>
         {groups.length === 0 ? (
           <div className="md-empty">
-            <CheckCircle2 size={28} color="#15803d" aria-hidden="true" />
+            <CheckCircle2 size={28} color="var(--fc-fg-green700)" aria-hidden="true" />
             Nothing waiting. Members' reports appear here.
           </div>
         ) : groups.map(({ message, reports: filed }) => (

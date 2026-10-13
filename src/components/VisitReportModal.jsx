@@ -2,7 +2,7 @@ import { X, Pill } from "lucide-react";
 
 const labelStyle = {
   display: "block", fontSize: "12px", fontWeight: "600",
-  color: "#6b7280", marginBottom: "4px"
+  color: "var(--fc-fg-gray500)", marginBottom: "4px"
 };
 
 // Presentational-only — the actual fields of a visit_records row. Shared so
@@ -12,7 +12,7 @@ const labelStyle = {
 export function VisitReportFields({ record }) {
   if (!record) {
     return (
-      <p style={{ fontSize: "13px", color: "#9ca3af" }}>
+      <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>
         No clinical record was saved for this visit.
       </p>
     );
@@ -23,19 +23,19 @@ export function VisitReportFields({ record }) {
       {record.symptoms && (
         <div>
           <label style={labelStyle}>Symptoms</label>
-          <p style={{ margin: 0, fontSize: "13px", color: "#111827" }}>{record.symptoms}</p>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-gray900)" }}>{record.symptoms}</p>
         </div>
       )}
       {record.diagnosis && (
         <div>
           <label style={labelStyle}>Diagnosis</label>
-          <p style={{ margin: 0, fontSize: "13px", color: "#111827" }}>{record.diagnosis}</p>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-gray900)" }}>{record.diagnosis}</p>
         </div>
       )}
       {record.treatment && (
         <div>
           <label style={labelStyle}>Treatment</label>
-          <p style={{ margin: 0, fontSize: "13px", color: "#111827" }}>{record.treatment}</p>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-gray900)" }}>{record.treatment}</p>
         </div>
       )}
       {Array.isArray(record.medications) && record.medications.length > 0 && (
@@ -44,14 +44,14 @@ export function VisitReportFields({ record }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {record.medications.map((med, i) => (
               <div key={i} style={{
-                border: "1px solid #e5e7eb", borderRadius: "12px", padding: "10px 12px",
+                border: "1px solid var(--fc-line-gray200)", borderRadius: "12px", padding: "10px 12px",
                 display: "flex", alignItems: "flex-start", gap: "8px"
               }}>
-                <Pill size={14} color="#15803d" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <Pill size={14} color="var(--fc-fg-green700)" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <div>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#111827" }}>{med.name}</p>
-                  {med.dosage && <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#6b7280" }}>{med.dosage}</p>}
-                  {med.instructions && <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>{med.instructions}</p>}
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "var(--fc-fg-gray900)" }}>{med.name}</p>
+                  {med.dosage && <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--fc-fg-gray500)" }}>{med.dosage}</p>}
+                  {med.instructions && <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--fc-fg-gray400)" }}>{med.instructions}</p>}
                 </div>
               </div>
             ))}
@@ -61,12 +61,12 @@ export function VisitReportFields({ record }) {
       {record.vet_notes && (
         <div>
           <label style={labelStyle}>Vet Notes</label>
-          <p style={{ margin: 0, fontSize: "13px", color: "#111827" }}>{record.vet_notes}</p>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--fc-fg-gray900)" }}>{record.vet_notes}</p>
         </div>
       )}
       {!record.symptoms && !record.diagnosis && !record.treatment && !record.vet_notes &&
         (!Array.isArray(record.medications) || record.medications.length === 0) && (
-        <p style={{ fontSize: "13px", color: "#9ca3af" }}>No details were recorded for this visit.</p>
+        <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>No details were recorded for this visit.</p>
       )}
     </div>
   );
@@ -86,7 +86,7 @@ export default function VisitReportModal({ appointment, record, loading, onClose
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "16px", padding: "28px",
+          background: "var(--fc-bg-gray0)", borderRadius: "16px", padding: "28px",
           maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto"
         }}
       >
@@ -97,12 +97,12 @@ export default function VisitReportModal({ appointment, record, loading, onClose
           </button>
         </div>
         {appointment && (
-          <p style={{ margin: "0 0 18px", fontSize: "13px", color: "#6b7280" }}>
+          <p style={{ margin: "0 0 18px", fontSize: "13px", color: "var(--fc-fg-gray500)" }}>
             {appointment.farm_name} — {appointment.appointment_date}
           </p>
         )}
         {loading ? (
-          <p style={{ fontSize: "13px", color: "#9ca3af" }}>Loading...</p>
+          <p style={{ fontSize: "13px", color: "var(--fc-fg-gray400)" }}>Loading...</p>
         ) : (
           <VisitReportFields record={record} />
         )}

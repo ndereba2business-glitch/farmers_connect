@@ -1,6 +1,7 @@
 import NotificationSettings from "../components/NotificationSettings";
 import DeleteAccountSection from "../components/DeleteAccountSection";
 import BlockedMembers from "../components/BlockedMembers";
+import { ThemeSetting } from "../components/ThemeToggle";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -26,14 +27,14 @@ const COUNTRY_CODES = [
 
 const inputStyle = {
   width: "100%", padding: "11px 14px", borderRadius: "12px",
-  border: "1.5px solid #e5e7eb", fontSize: "14px",
+  border: "1.5px solid var(--fc-line-gray200)", fontSize: "14px",
   outline: "none", boxSizing: "border-box",
-  background: "#fff", color: "#111827"
+  background: "var(--fc-bg-gray0)", color: "var(--fc-fg-gray900)"
 };
 
 const labelStyle = {
   display: "block", fontSize: "13px", fontWeight: "600",
-  color: "#374151", marginBottom: "6px"
+  color: "var(--fc-fg-gray700)", marginBottom: "6px"
 };
 
 export default function Profile() {
@@ -219,8 +220,8 @@ export default function Profile() {
 
       {/* ======================== PROFILE HEADER CARD ======================== */}
       <div style={{
-        background: "#fff", borderRadius: "16px",
-        border: "1px solid #e5e7eb",
+        background: "var(--fc-bg-gray0)", borderRadius: "16px",
+        border: "1px solid var(--fc-line-gray200)",
         boxShadow: "var(--fc-shadow-card)",
         overflow: "hidden", marginBottom: "20px"
       }}>
@@ -242,8 +243,8 @@ export default function Profile() {
             <div style={{ position: "relative", display: "inline-block" }}>
               <div style={{
                 width: "80px", height: "80px", borderRadius: "16px",
-                border: "4px solid #fff", overflow: "hidden",
-                background: "#dcfce7", display: "flex",
+                border: "4px solid var(--fc-line-gray0)", overflow: "hidden",
+                background: "var(--fc-bg-green100)", display: "flex",
                 alignItems: "center", justifyContent: "center",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
               }}>
@@ -255,7 +256,7 @@ export default function Profile() {
                   />
                 ) : (
                   <span style={{
-                    fontSize: "28px", fontWeight: "700", color: "#15803d"
+                    fontSize: "28px", fontWeight: "700", color: "var(--fc-fg-green700)"
                   }}>
                     {initials}
                   </span>
@@ -275,8 +276,8 @@ export default function Profile() {
                 onMouseLeave={e => e.currentTarget.style.opacity = 0}
               >
                 {uploadingPhoto
-                  ? <Loader2 size={18} color="#fff" />
-                  : <Camera size={18} color="#fff" />
+                  ? <Loader2 size={18} color="var(--fc-fg-gray0)" />
+                  : <Camera size={18} color="var(--fc-fg-gray0)" />
                 }
                 <input
                   type="file" accept={IMAGE_ACCEPT}
@@ -289,11 +290,11 @@ export default function Profile() {
             {/* NAME + EMAIL */}
             <div style={{ flex: 1, paddingTop: "44px" }}>
               <h1 style={{
-                margin: 0, fontSize: "22px", fontWeight: "700", color: "#111827"
+                margin: 0, fontSize: "22px", fontWeight: "700", color: "var(--fc-fg-gray900)"
               }}>
                 {profileData.full_name || "Farmer"}
               </h1>
-              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#6b7280" }}>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "var(--fc-fg-gray500)" }}>
                 {userEmail}
               </p>
               <div style={{
@@ -301,10 +302,10 @@ export default function Profile() {
               }}>
                 {profileData.farm_name && (
                   <span style={{
-                    background: "#f0fdf4", color: "#15803d",
+                    background: "var(--fc-bg-green50)", color: "var(--fc-fg-green700)",
                     fontSize: "12px", fontWeight: "600",
                     padding: "3px 10px", borderRadius: "16px",
-                    border: "1px solid #dcfce7"
+                    border: "1px solid var(--fc-line-green100)"
                   }}>
                     {profileData.farm_name}
                   </span>
@@ -312,7 +313,7 @@ export default function Profile() {
                 {profileData.county && (
                   <span style={{
                     display: "flex", alignItems: "center", gap: "4px",
-                    fontSize: "12px", color: "#9ca3af"
+                    fontSize: "12px", color: "var(--fc-fg-gray400)"
                   }}>
                     <MapPin size={12} /> {profileData.county}
                   </span>
@@ -320,7 +321,7 @@ export default function Profile() {
                 {profileData.phone && (
                   <span style={{
                     display: "flex", alignItems: "center", gap: "4px",
-                    fontSize: "12px", color: "#9ca3af"
+                    fontSize: "12px", color: "var(--fc-fg-gray400)"
                   }}>
                     <Phone size={12} />
                     {profileData.country_code} {profileData.phone}
@@ -340,9 +341,9 @@ export default function Profile() {
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "8px 16px", borderRadius: "12px",
-                  border: "1.5px solid #e5e7eb", background: "#fff",
+                  border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
                   cursor: "pointer", fontWeight: "600",
-                  fontSize: "13px", color: "#374151"
+                  fontSize: "13px", color: "var(--fc-fg-gray700)"
                 }}
               >
                 <Edit2 size={14} />
@@ -355,9 +356,9 @@ export default function Profile() {
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "8px 16px", borderRadius: "12px",
-                  border: "1.5px solid #dcfce7", background: "#f0fdf4",
+                  border: "1.5px solid var(--fc-line-green100)", background: "var(--fc-bg-green50)",
                   cursor: replayingTour ? "not-allowed" : "pointer",
-                  fontWeight: "600", fontSize: "13px", color: "#15803d",
+                  fontWeight: "600", fontSize: "13px", color: "var(--fc-fg-green700)",
                   opacity: replayingTour ? 0.7 : 1
                 }}
               >
@@ -370,9 +371,9 @@ export default function Profile() {
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "8px 16px", borderRadius: "12px",
-                  border: "1.5px solid #e5e7eb", background: "#fff",
+                  border: "1.5px solid var(--fc-line-gray200)", background: "var(--fc-bg-gray0)",
                   cursor: "pointer", fontWeight: "600",
-                  fontSize: "13px", color: "#374151"
+                  fontSize: "13px", color: "var(--fc-fg-gray700)"
                 }}
               >
                 <LogOut size={14} />
@@ -385,7 +386,7 @@ export default function Profile() {
           {profileData.bio && !editing && (
             <p style={{
               marginTop: "16px", fontSize: "14px",
-              color: "#6b7280", lineHeight: "1.6"
+              color: "var(--fc-fg-gray500)", lineHeight: "1.6"
             }}>
               {profileData.bio}
             </p>
@@ -394,9 +395,9 @@ export default function Profile() {
           {/* ======================== EDIT FORM ======================== */}
           {editing && (
             <div style={{
-              marginTop: "24px", background: "#f9fafb",
+              marginTop: "24px", background: "var(--fc-bg-gray50)",
               borderRadius: "16px", padding: "24px",
-              border: "1px solid #f0f0f0"
+              border: "1px solid var(--fc-line-gray101)"
             }}>
 
               {/* FULL NAME + FARM NAME */}
@@ -445,7 +446,7 @@ export default function Profile() {
               <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>
                   Phone Number
-                  <span style={{ color: "#ef4444", marginLeft: "4px" }}>*</span>
+                  <span style={{ color: "var(--fc-fg-red500)", marginLeft: "4px" }}>*</span>
                 </label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <select
@@ -473,7 +474,7 @@ export default function Profile() {
                   />
                 </div>
                 <p style={{
-                  fontSize: "12px", color: "#9ca3af", marginTop: "6px"
+                  fontSize: "12px", color: "var(--fc-fg-gray400)", marginTop: "6px"
                 }}>
                   Required for order notifications and seller contact
                 </p>
@@ -506,9 +507,9 @@ export default function Profile() {
                     display: "flex", alignItems: "center", gap: "8px",
                     padding: "12px 24px",
                     background: saving
-                      ? "#86efac"
+                      ? "var(--fc-bg-green300)"
                       : "#15803d",
-                    color: "#fff", border: "none", borderRadius: "12px",
+                    color: "var(--fc-fg-gray0)", border: "none", borderRadius: "12px",
                     fontWeight: "700", fontSize: "14px",
                     cursor: saving ? "not-allowed" : "pointer",
                     boxShadow: "none"
@@ -526,12 +527,14 @@ export default function Profile() {
         </div>
       </div>
 
+      <ThemeSetting />
+
       <NotificationSettings />
 
       {/* ======================== TABS ======================== */}
       <div style={{
-        background: "#fff", borderRadius: "16px",
-        border: "1px solid #e5e7eb",
+        background: "var(--fc-bg-gray0)", borderRadius: "16px",
+        border: "1px solid var(--fc-line-gray200)",
         boxShadow: "var(--fc-shadow-card)",
         overflow: "hidden"
       }}>
@@ -539,7 +542,7 @@ export default function Profile() {
         {/* TAB BUTTONS */}
         <div style={{
           display: "flex", gap: "4px", padding: "16px 20px",
-          borderBottom: "1px solid #f0f0f0"
+          borderBottom: "1px solid var(--fc-line-gray101)"
         }}>
           {[
             { key: "listings", label: `My Listings (${myListings.length})` },
@@ -550,9 +553,9 @@ export default function Profile() {
               onClick={() => setActiveTab(tab.key)}
               style={{
                 padding: "8px 18px", borderRadius: "16px",
-                border: `1.5px solid ${activeTab === tab.key ? "#111827" : "#e5e7eb"}`,
-                background: activeTab === tab.key ? "#111827" : "#fff",
-                color: activeTab === tab.key ? "#fff" : "#6b7280",
+                border: `1.5px solid ${activeTab === tab.key ? "var(--fc-line-gray900)" : "var(--fc-line-gray200)"}`,
+                background: activeTab === tab.key ? "var(--fc-bg-gray900)" : "var(--fc-bg-gray0)",
+                color: activeTab === tab.key ? "var(--fc-fg-gray0)" : "var(--fc-fg-gray500)",
                 fontWeight: "600", fontSize: "13px", cursor: "pointer",
                 transition: "all 0.2s"
               }}
@@ -572,9 +575,9 @@ export default function Profile() {
                 <div style={{
                   textAlign: "center", padding: "48px 20px"
                 }}>
-                  <ShoppingBag size={48} color="#e5e7eb"
+                  <ShoppingBag size={48} color="var(--fc-fg-gray200)"
                     style={{ marginBottom: "12px" }} />
-                  <p style={{ color: "#9ca3af", fontSize: "15px" }}>
+                  <p style={{ color: "var(--fc-fg-gray400)", fontSize: "15px" }}>
                     No listings yet.
                   </p>
                 </div>
@@ -589,13 +592,13 @@ export default function Profile() {
                       display: "flex", alignItems: "center",
                       gap: "14px", padding: "14px 16px",
                       borderRadius: "16px",
-                      border: "1px solid #f0f0f0",
-                      background: "#fafafa"
+                      border: "1px solid var(--fc-line-gray101)",
+                      background: "var(--fc-bg-gray25)"
                     }}>
                       <div style={{
                         width: "56px", height: "56px",
                         borderRadius: "12px", overflow: "hidden",
-                        background: "#f3f4f6", flexShrink: 0
+                        background: "var(--fc-bg-gray100)", flexShrink: 0
                       }}>
                         {product.image_url ? (
                           <img
@@ -612,21 +615,21 @@ export default function Profile() {
                             display: "flex", alignItems: "center",
                             justifyContent: "center"
                           }}>
-                            <ShoppingBag size={20} color="#d1d5db" />
+                            <ShoppingBag size={20} color="var(--fc-fg-gray300)" />
                           </div>
                         )}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{
                           margin: 0, fontWeight: "600", fontSize: "14px",
-                          color: "#111827", whiteSpace: "nowrap",
+                          color: "var(--fc-fg-gray900)", whiteSpace: "nowrap",
                           overflow: "hidden", textOverflow: "ellipsis"
                         }}>
                           {product.product_name}
                         </p>
                         <p style={{
                           margin: "2px 0 0", fontWeight: "700",
-                          fontSize: "14px", color: "#15803d"
+                          fontSize: "14px", color: "var(--fc-fg-green700)"
                         }}>
                           KES {Number(product.price).toLocaleString()}
                         </p>
@@ -634,8 +637,8 @@ export default function Profile() {
                       <span style={{
                         fontSize: "11px", fontWeight: "600",
                         padding: "3px 8px", borderRadius: "16px",
-                        background: product.sold_out ? "#fee2e2" : "#dcfce7",
-                        color: product.sold_out ? "#ef4444" : "#15803d"
+                        background: product.sold_out ? "var(--fc-bg-red100)" : "var(--fc-bg-green100)",
+                        color: product.sold_out ? "var(--fc-fg-red500)" : "var(--fc-fg-green700)"
                       }}>
                         {product.sold_out ? "Sold Out" : "Active"}
                       </span>
@@ -651,9 +654,9 @@ export default function Profile() {
             <div style={{
               textAlign: "center", padding: "48px 20px"
             }}>
-              <Star size={48} color="#e5e7eb"
+              <Star size={48} color="var(--fc-fg-gray200)"
                 style={{ marginBottom: "12px" }} />
-              <p style={{ color: "#9ca3af", fontSize: "15px" }}>
+              <p style={{ color: "var(--fc-fg-gray400)", fontSize: "15px" }}>
                 No reviews yet.
               </p>
             </div>

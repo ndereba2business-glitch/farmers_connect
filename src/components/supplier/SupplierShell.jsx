@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import NotificationsBell from "../NotificationsBell";
 import OnboardingTour from "../OnboardingTour";
 import TermsGate from "../TermsGate";
+import ThemeToggle from "../ThemeToggle";
 import { POLICIES_PUBLISHED } from "../../config/features";
 import { SupplierContext } from "./supplierContext";
 import { VERIFICATION_META, initialsOf } from "./supplierFormat";
@@ -243,6 +244,7 @@ export default function SupplierShell() {
                   {status.label}
                 </span>
               )}
+              <ThemeToggle />
               <div className="ss-bell">
                 <NotificationsBell userEmail={userEmail} />
               </div>

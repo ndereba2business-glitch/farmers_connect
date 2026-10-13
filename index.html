@@ -16,6 +16,29 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#14532d" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Chooses light or dark before anything is drawn, so the page never
+         flashes the wrong one: what this browser remembers, or failing that
+         the phone's own setting. src/context/ThemeContext.jsx takes over
+         once the app has loaded. Keep the key in step with src/lib/theme.js. -->
+    <script>
+      (function () {
+        var theme = "light";
+        try {
+          var saved = localStorage.getItem("fc-theme");
+          var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          theme = saved === "dark" || (saved !== "light" && systemDark) ? "dark" : "light";
+        } catch (e) { /* storage blocked: light */ }
+        document.documentElement.setAttribute("data-theme", theme);
+        if (theme === "dark") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#0f1512");
+      })();
+    </script>
+    <style>
+      /* the colour behind the app while it loads, in either theme */
+      html { background: #f7f8f5; }
+      html[data-theme="dark"] { background: #0f1512; }
+    </style>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

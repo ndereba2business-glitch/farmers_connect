@@ -64,7 +64,7 @@
 }
 
 .fc-logo-line2 {
-  color: var(--fc-primary);
+  color: var(--fc-link);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -85,7 +85,7 @@
   flex-shrink: 0;
 }
 .fc-close-btn:hover {
-  background: #f3f4f6;
+  background: var(--fc-bg-gray100);
 }
 
 /* ===== Role badge ===== */
@@ -96,7 +96,7 @@
 
 .fc-role-badge {
   display: inline-block;
-  background: #f3f4f6;
+  background: var(--fc-bg-gray100);
   color: var(--fc-ink-2);
   font-size: 12px;
   font-weight: 600;
@@ -125,11 +125,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #4b5563;
+  color: var(--fc-fg-gray600);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .fc-nav-link:hover {
-  background: #f3f4f6;
+  background: var(--fc-bg-gray100);
   color: var(--fc-ink);
 }
 
@@ -231,7 +231,7 @@
   border-radius: var(--fc-radius-md);
   border: none;
   background: transparent;
-  color: #4b5563;
+  color: var(--fc-fg-gray600);
   font-weight: 500;
   font-size: 14px;
   text-align: left;
@@ -282,7 +282,7 @@
   cursor: pointer;
 }
 .fc-hamburger-btn:hover {
-  background: #f9fafb;
+  background: var(--fc-bg-gray50);
 }
 
 /* On a phone the sidebar is closed, so the bar carries the name. */
@@ -299,7 +299,7 @@
   white-space: nowrap;
 }
 .fc-topbar-brand b {
-  color: var(--fc-primary);
+  color: var(--fc-link);
   font-weight: 700;
 }
 

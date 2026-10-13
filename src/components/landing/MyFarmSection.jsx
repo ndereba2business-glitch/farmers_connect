@@ -1,5 +1,6 @@
 import { Egg, Syringe, ClipboardList, TrendingUp, Check, Clock } from "lucide-react";
 import Reveal from "./Reveal";
+import LandingPhoto from "./LandingPhoto";
 
 // Each item maps to something My Farm really does today: batches,
 // vaccination_tasks, mortality_logs, batch_expenses / batch_sales.
@@ -43,15 +44,21 @@ export default function MyFarmSection() {
   return (
     <section className="lp-myfarm" id="myfarm">
       <div className="lp-wrap">
-        <Reveal className="lp-section-head">
-          <div className="lp-eyebrow">My Farm</div>
-          <h2>Every batch, on record.</h2>
-          <p>
-            Stop keeping the story of your flock in your head or in a
-            notebook. My Farm holds each batch's vaccinations, losses,
-            costs and sales together.
-          </p>
-        </Reveal>
+        <div className="lp-community-top">
+          <Reveal className="lp-section-head">
+            <div className="lp-eyebrow">My Farm</div>
+            <h2>Every batch, on record.</h2>
+            <p>
+              Stop keeping the story of your flock in your head or in a
+              notebook. My Farm holds each batch's vaccinations, losses,
+              costs and sales together.
+            </p>
+          </Reveal>
+
+          <Reveal className="lp-community-photo" delay={100}>
+            <LandingPhoto id="brooder" sizes="(min-width: 900px) 420px, 92vw" />
+          </Reveal>
+        </div>
 
         <div className="lp-split">
           <ul className="lp-feature-list">

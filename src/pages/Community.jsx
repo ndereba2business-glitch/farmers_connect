@@ -493,7 +493,7 @@ export default function Community() {
             aria-label={`${mine ? "Your message" : `Message from ${message.user_name}`}: ${summary.slice(0, 80)}. Open actions`}
           >
             {!mine && showSender && (
-              <span className="cm-name" style={{ color: colour }}>
+              <span className="cm-name" style={{ "--cm-name": colour }}>
                 {message.user_name}
                 {message.sender_badge && (
                   <span className={`cm-badge cm-badge--${message.sender_badge}`}>
@@ -592,7 +592,7 @@ export default function Community() {
 
       {replyingTo && (
         <div className="cm-context">
-          <Reply size={16} color="#166534" aria-hidden="true" />
+          <Reply size={16} color="var(--fc-fg-green800)" aria-hidden="true" />
           <div className="cm-context-text">
             <b>Replying to {replyingTo.user_email === userEmail ? "yourself" : replyingTo.user_name}</b>
             <span>{replyingTo.message || "Photo"}</span>
