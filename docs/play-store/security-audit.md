@@ -17,18 +17,18 @@ which runs against the live database inside a transaction that is always rolled 
 | 1 | Real passwords, including the admin's, in the public repository | **Critical** | Files removed; **Owner must change three passwords** |
 | 2 | Anyone on the internet could list every uploaded photograph | **High** | Fixed |
 | 3 | "Delete Account" did not delete the account or most of its data | **High** | Fixed |
-| 4 | Email addresses are not confirmed at sign-up | **High** | **Owner** (a Supabase setting, and it needs an email service) |
+| 4 | Email addresses are not confirmed at sign-up | **High** | Email: switched on by the owner (seen 14 Oct); app updated for it. **Owner** to confirm an email service is set up. Phone: still not confirmed |
 | 5 | No way to recover a forgotten password | Medium | Fixed for email accounts; phone accounts: **Owner** |
 | 6 | A new account could inherit a previous account's profile | Medium | Fixed |
 | 7 | Questions and farm details went to an AI service with no notice or consent | Medium | Fixed |
 | 8 | Vulnerable dependencies (8 advisories, 6 high) | Medium | Fixed: 0 remain |
 | 9 | Lab-result uploads had no size or type limit | Low | Fixed |
-| 10 | Anonymous sign-ins are still enabled in Supabase | Low | **Owner** (one switch) |
+| 10 | Anonymous sign-ins were enabled in Supabase | Low | Fixed by the owner (seen off on 14 Oct) |
 | 11 | Leaked-password protection is off | Low | **Owner** (needs a paid Supabase plan) |
 | 12 | A deleted account's token works for up to an hour | Low | Accepted |
 | 13 | Edge functions accept requests from any website | Low | **Owner** (one setting), otherwise accepted |
 | 14 | Photographs are reachable by anyone who has their exact address | Low | Accepted and disclosed |
-| 15 | Supabase's Site URL points at a team-only address | Low | Mitigated; **Owner** to finish |
+| 15 | Supabase's Site URL pointed at a team-only address | Low | Fixed by the owner (`check:auth-urls` all ok on 14 Oct) |
 | 16 | 18 tables have overlapping access rules | Info | Accepted (performance only) |
 
 ## 1. Real passwords in the public repository: Critical
@@ -93,6 +93,15 @@ whether phone sign-up is worth keeping without it.
 
 **Not changed in code**, because switching confirmation on without working email would lock new users out.
 
+**Update, 14 October 2026.** The owner switched "Confirm email" on (`/auth/v1/settings` now reports
+`mailer_autoconfirm: false`). The app was not ready for it: sign-up said "Account created successfully!" and
+moved the person into the app with no session. Fixed on branch `fix/email-confirmation-signup`: sign-up now
+says to open the link and can send it again, login explains an unconfirmed address
+(`tests/e2e/email-confirmation.test.js`). Still for the owner: **whether an email service (SMTP) is set up
+cannot be seen from outside.** If it is not, check Authentication > Emails > SMTP before more people sign
+up: the built-in sender allows only a few emails an hour, and every new email account now depends on one.
+Phone sign-ups are still accepted without proof (`phone_autoconfirm: true`).
+
 ## 5. No password recovery: Medium
 
 **What.** There was no "forgot password" anywhere. A farmer who forgot theirs had lost the account.
@@ -155,6 +164,7 @@ storage or uploading something inappropriate.
 - **Anonymous sign-ins are enabled.** The database refuses anonymous sessions on every table (a restrictive
   rule, check `H11` to `H14`), so nothing is exposed, but the setting serves no purpose and produces 36
   of the advisor's 64 warnings (it reports no errors). Turn it off in Authentication > Sign In / Providers.
+  **Done by the owner:** `/auth/v1/settings` reported `anonymous_users: false` on 14 October 2026.
 - **Leaked-password protection is off.** It checks new passwords against known breaches. It is a paid-plan
   feature; turn it on if you move to one.
 
@@ -184,7 +194,8 @@ now closed (finding 2). The privacy policy says this plainly. Lab-result files a
 
 Recorded by the session that fixed Google sign-in: the Site URL is a team-scoped Vercel address;
 `vercel.json` forwards it to the public one and the public address is now on the Redirect URLs list.
-`npm run check:auth-urls` reports the state. **Owner:** set the Site URL to the public address.
+`npm run check:auth-urls` reports the state. **Done by the owner:** on 14 October 2026 `check:auth-urls`
+reported all four checks ok, including the Site URL. Keep `vercel.json`'s forward as a safety net.
 
 ## 16. Overlapping access rules: Info
 

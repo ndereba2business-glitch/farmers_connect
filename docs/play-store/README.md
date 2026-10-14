@@ -12,7 +12,8 @@ published policy is not Google's approval.
 
 | Document | What it is for |
 | --- | --- |
-| [security-audit.md](security-audit.md) | **Start here.** Findings by severity. Item 1 needs action today: three real passwords were in the public repository |
+| [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) | **The working list.** Every step to a release, who can do it, and whether it is done (last checked 14 October 2026) |
+| [security-audit.md](security-audit.md) | **Read first.** Findings by severity. Item 1 needs action today: three real passwords were in the public repository |
 | [policy-matrix.md](policy-matrix.md) | Each Google Play policy, whether it applies, the evidence, and what is left |
 | [data-audit.md](data-audit.md) | What the app holds about people, where it goes, how long it is kept. The evidence behind the next two |
 | [data-safety-worksheet.md](data-safety-worksheet.md) | Suggested answers for Play Console's Data safety form, each marked verified, provider-dependent or console-only |
@@ -32,8 +33,9 @@ In rough order. Details are in the document named.
 2. **Read the Privacy Policy and the Terms**, ideally with someone qualified in Kenyan law, fill in the
    legal name and contact email in `src/config/legal.js`, then publish them by setting
    `VITE_POLICIES_PUBLISHED=true` in Vercel and redeploying (policy-matrix.md, sections 1 and 4).
-3. **Set up an email service in Supabase and turn on email confirmation** (security-audit.md, findings 4
-   and 5). Password reset emails depend on the same service.
+3. **Make sure Supabase has an email service (SMTP).** Email confirmation was switched on by 14 October, so
+   every new email account and every password reset now depends on emails arriving (security-audit.md,
+   findings 4 and 5; LAUNCH_CHECKLIST.md 1.6).
 4. **Decide the production address and the application ID** before any Android build
    (android-release.md). Both are effectively permanent.
 5. **Create the Google Play developer account**, choosing personal or organisation (store-listing.md,
@@ -44,9 +46,9 @@ In rough order. Details are in the document named.
 9. **Fill in Play Console**: store listing, Data safety, content rating, target audience, ads, app access.
 10. **Run the closed test** if the account is a personal one: 12 testers for 14 days.
 11. **Name the person who moderates**, and how often (moderation-runbook.md).
-12. Smaller Supabase settings: Site URL, anonymous sign-ins off, allowed origins for the edge functions
-    (security-audit.md, findings 10, 13, 15), and confirm the Supabase region and the Gemini plan
-    (data-audit.md).
+12. Smaller items: allowed origins for the edge functions (security-audit.md, finding 13), and confirm the
+    Supabase region and the Gemini plan (data-audit.md). The Site URL and anonymous sign-ins were fixed by
+    14 October.
 
 ## Keeping this pack true
 
