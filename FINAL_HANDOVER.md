@@ -26,7 +26,7 @@ need changing. The full list is [docs/play-store/LAUNCH_CHECKLIST.md](docs/play-
 
 ## 2. Changes made in this session
 
-On branch `fix/email-confirmation-signup` (merged by the pull request that carries this file):
+On branch `fix/email-confirmation-signup`, pull request #44, which also carries this file:
 
 1. **Sign-up works with email confirmation switched on.** The owner turned on "Confirm email" in Supabase.
    The app still said "Account created successfully!" and moved the person into the app with no session;
@@ -111,8 +111,9 @@ The safest procedure for each is in [docs/play-store/LAUNCH_CHECKLIST.md](docs/p
    set, add one (Resend, Brevo, Mailgun, SendGrid or similar), then sign up with an address of your own and
    confirm the email arrives. If emails cannot be made to arrive soon, the temporary fallback is to switch
    "Confirm email" off again: the app works either way, but finding 4 of the security review reopens.
-3. **Merge the pull request for `fix/email-confirmation-signup`** if it is not already merged (it is safe:
-   all checks above ran on it). Until it is merged, new email sign-ups see a false "Account created".
+3. **Check that pull request #44 is merged and live** (it was to be merged once Vercel's check passed): open
+   `/signup` on the live site, signed out, with an address of your own; it should say "Check your email".
+   Before it, new email sign-ups saw a false "Account created".
 4. **Policies**: read `/privacy` and `/terms` (run the app locally with `VITE_POLICIES_PUBLISHED=true`), fill
    in `OPERATOR_LEGAL_NAME` and `CONTACT_EMAIL` in `src/config/legal.js`, then set `VITE_POLICIES_PUBLISHED=true`
    in Vercel (Production) and redeploy.
