@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import {
   Egg, Plus, Syringe, Calendar, CheckCircle2,
   Clock, AlertTriangle, ChevronDown, ChevronUp,
@@ -88,6 +89,7 @@ const labelStyle = {
 
 export default function MyFarm() {
   const { userEmail } = useAuth();
+  const toast = useToast();
   const [batches, setBatches] = useState([]);
   const [vaccinations, setVaccinations] = useState([]);
   const [activeTab, setActiveTab] = useState("active");
@@ -149,9 +151,11 @@ export default function MyFarm() {
       .select().single();
     if (error) { alert("Failed to add batch: " + error.message); setSaving(false); return; }
     const schedule = generateVaccinationSchedule(form.hatch_date, form.batch_type);
-    await supabase.from("vaccination_tasks").insert(
+    const { error: scheduleError } = await supabase.from("vaccination_tasks").insert(
       schedule.map(v => ({ ...v, batch_id: newBatch.id, user_email: userEmail }))
     );
+    // The batch itself is saved; say so, rather than leave it without reminders unnoticed.
+    if (scheduleError) toast.error("The batch was saved, but its vaccination schedule was not. Check your connection, then delete and add the batch again.");
     setForm({ batch_name: "", batch_type: "", breed: "", hatch_date: "", quantity: "", notes: "" });
     setSaving(false);
     setView("list");
@@ -160,25 +164,29 @@ export default function MyFarm() {
 
   async function toggleVaccination(task) {
     const completed = !task.completed;
-    await supabase.from("vaccination_tasks")
+    const { error } = await supabase.from("vaccination_tasks")
       .update({ completed, completed_date: completed ? new Date().toISOString().split("T")[0] : null })
       .eq("id", task.id);
+    if (error) toast.error("That vaccination was not updated. Check your connection and try again.");
     fetchBatches();
   }
 
   async function deleteBatch(batchId) {
     if (!window.confirm("Delete this batch? This cannot be undone.")) return;
-    await supabase.from("vaccination_tasks").delete().eq("batch_id", batchId);
-    await supabase.from("mortality_logs").delete().eq("batch_id", batchId);
-    await supabase.from("batch_expenses").delete().eq("batch_id", batchId);
-    await supabase.from("batch_sales").delete().eq("batch_id", batchId);
-    await supabase.from("batch_activities").delete().eq("batch_id", batchId);
-    await supabase.from("farm_batches").delete().eq("id", batchId);
+    // Records first, the batch last; stop at the first failure so a batch is
+    // never removed while its records are left behind.
+    for (const table of ["vaccination_tasks", "mortality_logs", "batch_expenses", "batch_sales", "batch_activities"]) {
+      const { error } = await supabase.from(table).delete().eq("batch_id", batchId);
+      if (error) { toast.error("The batch was not deleted. Check your connection and try again."); fetchBatches(); return; }
+    }
+    const { error } = await supabase.from("farm_batches").delete().eq("id", batchId);
+    if (error) toast.error("The batch was not deleted. Check your connection and try again.");
     fetchBatches();
   }
 
   async function markBatchComplete(batchId) {
-    await supabase.from("farm_batches").update({ status: "completed" }).eq("id", batchId);
+    const { error } = await supabase.from("farm_batches").update({ status: "completed" }).eq("id", batchId);
+    if (error) toast.error("The batch was not marked complete. Check your connection and try again.");
     fetchBatches();
   }
 
@@ -479,6 +487,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
   const [savingExpense, setSavingExpense] = useState(false);
   const [savingSale, setSavingSale] = useState(false);
   const [savingActivity, setSavingActivity] = useState(false);
+  const toast = useToast();
 
   const ageInDays = Math.floor((new Date() - new Date(batch.hatch_date)) / (1000 * 60 * 60 * 24));
   const completed = vaccinations.filter(v => v.completed).length;
@@ -535,9 +544,10 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
     }
     const newCount = Math.max(0, (batch.current_count || batch.quantity) - Number(mortalityForm.count));
     const newMortality = (batch.mortality || 0) + Number(mortalityForm.count);
-    await supabase.from("farm_batches")
+    const { error: countError } = await supabase.from("farm_batches")
       .update({ current_count: newCount, mortality: newMortality })
       .eq("id", batch.id);
+    if (countError) toast.error("The deaths were recorded, but the bird count on this batch was not updated. Refresh and check it.");
     setMortalityForm({ count: "", date: today, notes: "" });
     setSavingMortality(false);
     setShowMortality(false);
@@ -576,7 +586,7 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
   async function handleLogActivity(e) {
     e.preventDefault();
     setSavingActivity(true);
-    await supabase.from("batch_activities").insert([{
+    const { error } = await supabase.from("batch_activities").insert([{
       batch_id: batch.id, user_email: userEmail,
       activity_type: activityType,
       quantity: activityForm.quantity ? Number(activityForm.quantity) : null,
@@ -584,8 +594,11 @@ function BatchCard({ batch, vaccinations, onToggleVaccination, onDelete, onMarkC
       notes: activityForm.notes,
       date: today
     }]);
-    setActivityForm({ quantity: "", unit: "", notes: "" });
     setSavingActivity(false);
+    // keep what was typed so the farmer can simply try again
+    if (error) { toast.error("That activity was not saved. Check your connection and try again."); return; }
+    toast.success("Activity saved.");
+    setActivityForm({ quantity: "", unit: "", notes: "" });
   }
 
   async function handleRecordSale(e) {

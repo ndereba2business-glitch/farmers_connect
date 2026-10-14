@@ -180,7 +180,7 @@ export default function Bookings() {
   async function submitQuestion() {
     if (!questionText.trim()) return;
     setSubmitting(true);
-    await supabase.from("vet_questions").insert([{
+    const { error } = await supabase.from("vet_questions").insert([{
       user_email: userEmail,
       farmer_id: user?.id || null,
       category: selectedCategory,
@@ -188,8 +188,10 @@ export default function Bookings() {
       status: "pending",
       is_emergency: false
     }]);
-    setQuestionText("");
     setSubmitting(false);
+    // Keep the question in the box so nothing typed is lost; the button tries again.
+    if (error) { toast.error("Your question was not sent. Check your connection and tap Submit again."); return; }
+    setQuestionText("");
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
     const { data } = await supabase

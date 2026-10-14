@@ -36,6 +36,7 @@ export function createMockBackend() {
     productDeleteFails: false,
     // Tables whose reads fail with a server error, as on a dropped connection.
     failingTables: new Set(),
+    failingWrites: new Set(),  // tables whose inserts, updates and deletes fail
     // The delete-account function: "ok" really removes the account from
     // this mock; any other value is the problem code it reports instead.
     deleteAccount: { mode: "ok", calls: [] },
@@ -295,6 +296,10 @@ export function createMockBackend() {
       const params = [...url.searchParams.entries()];
 
       if (method === "GET" && db.failingTables.has(table)) {
+        return route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ code: "XX000", message: "server error" }) });
+      }
+      // a save that does not reach the database: a dropped connection, a refused rule
+      if (method !== "GET" && db.failingWrites.has(table)) {
         return route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ code: "XX000", message: "server error" }) });
       }
 
