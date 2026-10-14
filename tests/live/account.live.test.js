@@ -51,6 +51,13 @@ test("deleting an account needs a sign-in", { skip }, async () => {
 });
 
 test("a throwaway account is deleted completely, and only after the word and the right password", { skip, timeout: 120000 }, async (t) => {
+  // With "Confirm email" on, a sign-up makes Supabase send a real email. To an
+  // @example.com address it bounces, which counts against the project's email
+  // sending, and the account stays behind unconfirmed. Stop before signing up.
+  const settings = await (await fetch(`${URL_BASE}/auth/v1/settings`, { headers: headers() })).json();
+  if (settings.mailer_autoconfirm === false) {
+    return t.skip("email confirmation is on, so this check would email a test address; run it on a project or branch with confirmation off");
+  }
   const created = await post("/auth/v1/signup", { email, password, data: { full_name: "Automated deletion check", role: "farmer" } });
   const signup = await created.json();
   if (!signup.access_token) return t.skip(`this project does not sign new accounts in straight away (${created.status}): cannot run without a confirmed account`);
