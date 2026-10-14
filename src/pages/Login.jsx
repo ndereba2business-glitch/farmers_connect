@@ -6,6 +6,8 @@ import { supabase } from "../lib/supabaseClient";
 import { extractRole } from "../context/AuthContext";
 import GoogleButton from "../components/GoogleButton";
 import { POLICIES_PUBLISHED } from "../config/features";
+import { confirmationRedirect, isUnconfirmedEmail, resendMessage, signInErrorMessage } from "../lib/authMessages";
+import "../components/Account.css";
 
 export default function Login() {
 
@@ -30,6 +32,23 @@ export default function Login() {
 
   const navigate =
     useNavigate();
+
+  // The address signed up but its confirmation link was never opened.
+  const [unconfirmed, setUnconfirmed] =
+    useState(false);
+
+  const [resend, setResend] =
+    useState({ busy: false, ok: false, message: "" });
+
+  async function sendLinkAgain() {
+    setResend({ busy: true, ok: false, message: "" });
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: confirmationRedirect(window.location.origin) }
+    });
+    setResend({ busy: false, ...resendMessage(resendError) });
+  }
 
   // Only a path on this site is honoured, never a full address.
   const requested = new URLSearchParams(window.location.search).get("next") || "";
@@ -62,6 +81,8 @@ export default function Login() {
   async function handleLogin() {
 
     setError("");
+    setUnconfirmed(false);
+    setResend({ busy: false, ok: false, message: "" });
 
     if (method === "email" && (!email || !password)) {
       setError("Please enter email and password");
@@ -111,7 +132,8 @@ export default function Login() {
     setLoading(false);
 
     if (authError) {
-      setError(authError.message);
+      setError(signInErrorMessage(authError, method));
+      setUnconfirmed(method === "email" && isUnconfirmedEmail(authError));
       return;
     }
 
@@ -365,6 +387,19 @@ export default function Login() {
             }}
           >
             <AlertTriangle size={14} aria-hidden="true" /> {error}
+          </div>
+        )}
+
+        {unconfirmed && (
+          <div style={{ display: "grid", gap: "8px", marginBottom: "14px" }}>
+            {resend.message && (
+              <p role={resend.ok ? "status" : "alert"} className="ac-error" style={{ margin: 0, fontSize: "14px", color: resend.ok ? "var(--fc-link)" : undefined }}>
+                {resend.message}
+              </p>
+            )}
+            <button type="button" className="fc-btn fc-btn--secondary" onClick={sendLinkAgain} disabled={resend.busy}>
+              {resend.busy ? "Sending..." : "Send the confirmation link again"}
+            </button>
           </div>
         )}
 

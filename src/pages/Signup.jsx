@@ -5,6 +5,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import GoogleButton from "../components/GoogleButton";
 import { MINIMUM_AGE, TERMS_VERSION } from "../config/legal";
+import { MIN_PASSWORD_LENGTH } from "../lib/passwordRules";
+import { confirmationRedirect, needsEmailConfirmation, resendMessage, signUpErrorMessage } from "../lib/authMessages";
 import { POLICIES_PUBLISHED } from "../config/features";
 import "../components/Account.css";
 
@@ -42,6 +44,24 @@ export default function Signup() {
   // With the policies unpublished there is nothing to agree to yet.
   const [agreed, setAgreed] =
     useState(!POLICIES_PUBLISHED);
+
+  // Set when the account exists but waits for its email address to be
+  // confirmed: the address the link was sent to.
+  const [sentTo, setSentTo] =
+    useState("");
+
+  const [resend, setResend] =
+    useState({ busy: false, ok: false, message: "" });
+
+  async function sendLinkAgain() {
+    setResend({ busy: true, ok: false, message: "" });
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: sentTo,
+      options: { emailRedirectTo: confirmationRedirect(window.location.origin) }
+    });
+    setResend({ busy: false, ...resendMessage(resendError) });
+  }
 
   // =========================
   // REDIRECT IF LOGGED IN
@@ -92,6 +112,10 @@ export default function Signup() {
             password,
 
             options: {
+              // where the confirmation link brings them back to, signed in
+              emailRedirectTo:
+                confirmationRedirect(window.location.origin),
+
               data: {
                 full_name:
                   fullName,
@@ -145,10 +169,27 @@ export default function Signup() {
       if (authError) {
 
         setError(
-          authError.message
+          signUpErrorMessage(authError)
         );
 
         setLoading(false);
+
+        return;
+      }
+
+      // =========================
+      // EMAIL TO CONFIRM
+      // =========================
+      // With "Confirm email" on, Supabase creates the account but gives no
+      // session until the link in the email is opened. The database has
+      // already made the profile; the terms are asked for again at first
+      // sign-in (TermsGate). Supabase answers the same way when the address
+      // already has an account, so the words cover both.
+      if (needsEmailConfirmation(data)) {
+
+        setSentTo(
+          data.user.email || email
+        );
 
         return;
       }
@@ -290,6 +331,28 @@ export default function Signup() {
         >
           For poultry farmers, vets and suppliers
         </p>
+
+        {sentTo ? (
+          <div className="ac-sent">
+            <h2>Check your email</h2>
+            <p>
+              We sent a link to <strong>{sentTo}</strong>. Open it on this phone to finish creating
+              your account; it can take a few minutes, so check your spam folder too.
+            </p>
+            <p>
+              If this address already has an account, no new one was made: log in, or reset your password.
+            </p>
+            {resend.message && (
+              <p role={resend.ok ? "status" : "alert"} className={resend.ok ? "ac-note" : "ac-error"}>
+                {resend.message}
+              </p>
+            )}
+            <button type="button" className="fc-btn fc-btn--secondary" onClick={sendLinkAgain} disabled={resend.busy}>
+              {resend.busy ? "Sending..." : "Send the link again"}
+            </button>
+            <Link to="/login" className="fc-btn fc-btn--primary">Go to log in</Link>
+          </div>
+        ) : <>
 
         {/* METHOD TOGGLE */}
         <div
@@ -437,7 +500,7 @@ export default function Signup() {
 
             required
 
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
 
             value={password}
 
@@ -643,6 +706,8 @@ export default function Signup() {
           </Link>
 
         </p>
+
+        </>}
 
       </div>
 

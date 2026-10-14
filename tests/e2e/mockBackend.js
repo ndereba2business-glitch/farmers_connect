@@ -27,6 +27,10 @@ export function createMockBackend() {
     contact_events: [],
     writes: [],
     googleEnabled: false,      // what /auth/v1/settings reports
+    confirmEmail: true,        // "Confirm email" in Supabase: a new email account waits for its link
+    signups: [],               // what /auth/v1/signup received
+    resends: [],               // what /auth/v1/resend received
+    resendStatus: 200,
     // true: the database refuses to delete a product, as a constraint or a
     // dropped connection would. Lets a test see what the page does then.
     productDeleteFails: false,
@@ -59,9 +63,10 @@ export function createMockBackend() {
   // sets from the dashboard; it can't be self-declared.
   // termsAccepted: false is an account from before the terms existed.
   // cluckyConsent: false is one that has not yet agreed to Clucky's AI processing.
-  function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false, termsAccepted = true, cluckyConsent = true }) {
+  // confirmed: false is an email account whose confirmation link was never opened.
+  function addUser({ email, password = "secret123", role = "farmer", newUser = false, admin = false, termsAccepted = true, cluckyConsent = true, confirmed = true }) {
     const user = {
-      id: newId("user"), email, password, role, admin, hasSeenOnboarding: !newUser, notificationsEnabled: true,
+      id: newId("user"), email, password, role, admin, confirmed, hasSeenOnboarding: !newUser, notificationsEnabled: true,
       termsAcceptedAt: termsAccepted ? "2026-10-12T08:00:00Z" : null, termsVersion: termsAccepted ? MOCK_TERMS_VERSION : null,
       cluckyConsentAt: cluckyConsent ? "2026-10-12T08:00:00Z" : null
     };
@@ -135,8 +140,30 @@ export function createMockBackend() {
         const { email, password } = JSON.parse(req.postData() || "{}");
         const user = db.users.get(email);
         if (!user || user.password !== password) return json(400, { error: "invalid_grant", error_description: "Invalid login credentials" });
+        if (user.confirmed === false) return json(400, { code: 400, error_code: "email_not_confirmed", msg: "Email not confirmed" });
         current = user;
         return json(200, session(user));
+      }
+      // Sign-up. With "Confirm email" on, Supabase answers with the user and no
+      // session, and gives the same answer for an address that already has an
+      // account, so nobody can find out who is a member.
+      if (url.pathname.endsWith("/signup")) {
+        const body = JSON.parse(req.postData() || "{}");
+        db.signups.push({ ...body, url: req.url() });
+        const existing = db.users.get(body.email);
+        if (db.confirmEmail && body.email) {
+          const user = existing || addUser({ email: body.email, password: body.password, role: body.data?.role || "farmer", newUser: true, confirmed: false });
+          return json(200, { ...authUser(user), identities: existing ? [] : [{ provider: "email" }] });
+        }
+        if (existing) return json(422, { code: 422, error_code: "user_already_exists", msg: "User already registered" });
+        const user = addUser({ email: body.email, password: body.password, role: body.data?.role || "farmer", newUser: true });
+        current = user;
+        return json(200, session(user));
+      }
+      if (url.pathname.endsWith("/resend")) {
+        db.resends.push(JSON.parse(req.postData() || "{}"));
+        if (db.resendStatus === 429) return json(429, { code: 429, error_code: "over_email_send_rate_limit", msg: "email rate limit exceeded" });
+        return json(200, {});
       }
       if (url.pathname.endsWith("/logout")) { current = null; return route.fulfill({ status: 204, body: "" }); }
       if (url.pathname.endsWith("/settings")) return json(200, { external: { google: db.googleEnabled, email: true, phone: true } });

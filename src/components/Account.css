@@ -26,6 +26,15 @@ textarea.ac-input { min-height: 96px; padding: 10px 12px; resize: vertical; font
 .ac-check input { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: var(--fc-primary); }
 .ac-check a { color: var(--fc-link); font-weight: 600; }
 
+/* Sign-up: the account waits for its email address to be confirmed */
+.ac-sent { display: grid; gap: 12px; }
+.ac-sent h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--fc-ink); }
+.ac-sent p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--fc-ink-2); overflow-wrap: anywhere; }
+.ac-sent strong { color: var(--fc-ink); }
+.ac-sent .fc-btn { width: 100%; min-height: 44px; }
+.ac-sent .ac-note { color: var(--fc-link); font-weight: 600; }
+.ac-sent .ac-error, .ac-error { color: var(--fc-danger); font-weight: 600; }
+
 /* Admin > Requests */
 .ac-requests { display: grid; gap: 24px; }
 .ac-requests h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--fc-ink); }
