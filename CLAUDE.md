@@ -32,6 +32,7 @@ Things that are easy to get wrong because they were deliberately changed:
 - **Clucky needs the farmer's agreement first.** The page asks once and the edge function refuses with `consent_required` until `farmer_profiles.clucky_consent_at` is set, so the check cannot be skipped from the browser
 - **Members can report and block.** Listings, Clucky answers and members are reported into `content_reports` (`src/lib/safety.js`, `ReportDialog`); blocks live in `user_blocks` and hide that person's listings and chat messages for the blocker only. An admin removes a listing through Admin > Products, which notifies the owner by trigger
 - **Uploaded photos can be opened by address but not listed.** The four photo buckets are public so images load without a signed request each; the read rule on `storage.objects` lets a signed-in person list only their own folder and a visitor nothing. Don't add a "public can view" rule back: it lets anyone list every file. Lab results are in a private bucket
+- **Email confirmation is on** (since 14 October 2026). A new email account gets no session until its link is opened; `Signup.jsx` shows "Check your email" and `src/lib/authMessages.js` holds the wording. Never write code that assumes `signUp` returns a session. Anything that creates a real account on the live project (tests included) sends a real email: don't do it with made-up addresses. Phone sign-ups are still confirmed automatically
 - **There are two themes.** See Stack and Style
 
 The marketplace is **contact-first**: farmers contact suppliers by phone or
@@ -108,7 +109,7 @@ This app is for farmers likely using mid-range/low-end Android phones on mobile 
 - Supabase's own security and performance advisor: `supabase db advisors --linked`. Run it after any migration that adds tables, functions or policies
 - Real-login journeys against the live project: `npm run test:live` (skips until `.env.test.local` holds `TEST_SUPPLIER_EMAIL`, `TEST_SUPPLIER_PASSWORD`, `TEST_FARMER_EMAIL`, `TEST_FARMER_PASSWORD`)
 - Secret leak check of the production build: `npm run check:secrets`. The same for the repository itself (a login, an API key, a private key or a key store in a tracked file): `npm run check:repo`
-- Account deletion against the live project, on throwaway accounts it creates and removes itself: `npm run test:account-live`
+- Account deletion against the live project, on throwaway accounts it creates and removes itself: `npm run test:account-live`. The full deletion check skips itself while email confirmation is on, rather than email a made-up address
 - Landing page photographs, resized from the originals: `node scripts/build-landing-images.mjs`
 - Sign-in return addresses of the linked Supabase project (read-only; run after changing a domain or Supabase's URL Configuration): `npm run check:auth-urls`
 - Apply migrations to the linked project: `supabase db push` (after a rolled-back dry run of the SQL)

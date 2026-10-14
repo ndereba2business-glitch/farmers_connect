@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { createNotification } from "../lib/notifications";
+import { useToast } from "../context/ToastContext";
 
 export default function Finance() {
 
+  const toast = useToast();
   const [records, setRecords] = useState([]);
   const [type, setType] = useState("expense");
   const [category, setCategory] = useState("");
@@ -39,9 +41,10 @@ export default function Finance() {
     if (!category || !amount) return;
 
     const { data: userData } = await supabase.auth.getUser();
-    const email = (userData.user.email || userData.user.phone);
+    const email = userData?.user?.email || userData?.user?.phone;
+    if (!email) { toast.error("You are signed out. Log in again, then save the record."); return; }
 
-    await supabase.from("farm_finances").insert([
+    const { error } = await supabase.from("farm_finances").insert([
       {
         user_email: email,
         type,
@@ -50,6 +53,9 @@ export default function Finance() {
         description
       }
     ]);
+
+    // keep what was typed, and no "has been saved" notice for a record that was not
+    if (error) { toast.error("The record was not saved. Check your connection and try again."); return; }
 
     // NOTIFICATION — income recorded
     if (type === "income") {

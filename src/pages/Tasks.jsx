@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { createNotification } from "../lib/notifications";
 import { CheckSquare, Plus, Trash2, Clock, Wheat, Pill, Brush, Syringe, Wrench, Stethoscope, ClipboardList
 } from "lucide-react";
@@ -35,6 +36,7 @@ const labelStyle = {
 
 export default function Tasks() {
   const { userEmail } = useAuth();
+  const toast = useToast();
   const [tasks, setTasks] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
   const [showForm, setShowForm] = useState(false);
@@ -57,7 +59,7 @@ export default function Tasks() {
 
   async function addTask() {
     if (!form.title) return;
-    await supabase.from("farm_tasks").insert([{
+    const { error } = await supabase.from("farm_tasks").insert([{
       user_email: userEmail,
       title: form.title,
       description: form.description,
@@ -66,6 +68,8 @@ export default function Tasks() {
       category: form.category,
       completed: false
     }]);
+    // keep the form filled in, and no "task added" notice for a task that is not there
+    if (error) { toast.error("The task was not saved. Check your connection and try again."); return; }
 
     await createNotification({
       userEmail,
@@ -82,7 +86,8 @@ export default function Tasks() {
 
   async function toggleTask(task) {
     const completed = !task.completed;
-    await supabase.from("farm_tasks").update({ completed }).eq("id", task.id);
+    const { error } = await supabase.from("farm_tasks").update({ completed }).eq("id", task.id);
+    if (error) { toast.error("That task was not updated. Check your connection and try again."); fetchTasks(); return; }
     if (completed) {
       await createNotification({
         userEmail, type: "task",
@@ -95,7 +100,8 @@ export default function Tasks() {
   }
 
   async function deleteTask(id) {
-    await supabase.from("farm_tasks").delete().eq("id", id);
+    const { error } = await supabase.from("farm_tasks").delete().eq("id", id);
+    if (error) toast.error("That task was not deleted. Check your connection and try again.");
     fetchTasks();
   }
 
