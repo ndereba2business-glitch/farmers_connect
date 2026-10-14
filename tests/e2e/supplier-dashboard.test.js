@@ -74,7 +74,8 @@ test("wrong password shows an error and stays on login", { timeout: 60000 }, asy
   await page.fill('input[type="email"]', SUPPLIER.email);
   await page.fill('input[type="password"]', "wrong");
   await page.click('button:has-text("Log in")');
-  await page.locator("text=Invalid login credentials").waitFor();
+  // Supabase says "Invalid login credentials"; the page says it in plain words
+  await page.locator('[role="alert"]', { hasText: "email address and password don't match an account" }).waitFor();
   assert.equal(new URL(page.url()).pathname, "/login");
   await context.close();
 });
